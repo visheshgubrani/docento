@@ -1,0 +1,86 @@
+---
+title: Managed Authentication
+description: How to use HeadlessLMS's built-in authentication system for your project.
+---
+
+# Managed Authentication
+
+If you are building a learning platform from scratch and don't want to worry about user identity, passwords, and tokens, **Managed Authentication** is the right choice. HeadlessLMS will handle user registration, secure sign-in, and password resets while exposing APIs for your frontend to consume.
+
+## Setting up Managed Auth
+
+When creating your project, ensure `authMode` is set to `MANAGED` (`MANAGED` is the default).
+
+## API Endpoints
+
+All endpoints require your project's `x-api-key` in the header or are consumed directly by the client browser.
+
+### 1. User Sign Up
+
+Create a new user account for a managed project.
+
+```http
+POST /v1/auth/sign-up
+x-api-key: your_project_secret
+Content-Type: application/json
+
+{
+  "email": "student@example.com",
+  "password": "securepassword123",
+  "name": "Alex Student"
+}
+```
+
+**Response (201 Created):**
+Returns the user details along with an authentication token. You should capture this token in your application state.
+
+### 2. User Sign In
+
+Authenticates an existing user and returns standard short-lived access tokens and refresh tokens.
+
+```http
+POST /v1/auth/sign-in
+x-api-key: your_project_secret
+Content-Type: application/json
+
+{
+  "email": "student@example.com",
+  "password": "securepassword123"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "status": 200,
+  "message": "User logged in successfully",
+  "data": {
+    "user": {
+      "id": "cuid...",
+      "email": "student@example.com",
+      "name": "Alex Student"
+    },
+    "accessToken": "ey...",
+    "refreshToken": "ey..."
+  }
+}
+```
+
+*Note: The access token should be provided as a `Bearer` token in the `Authorization` header for subsequent requests fetching course content or tracking progress.*
+
+### 3. Password Resets
+
+HeadlessLMS provides password reset flows out of the box.
+
+*   **Request Reset:** `POST /v1/auth/forgot-password` with the user's email.
+*   **Complete Reset:** `POST /v1/auth/reset-password` with the reset token and new password.
+
+### 4. Managing User Sessions
+
+- **Get Profile:** `GET /v1/auth/me` (requires Bearer Token). Get the logged in user profile & enrollments.
+- **Refresh Token:** `POST /v1/auth/refresh-token` to rotate an expired `accessToken`.
+- **Sign out:** `POST /v1/auth/sign-out` to invalidate the active session.
+
+## Next Steps
+
+Once the user is authenticated and you have their token, you can start fetching courses and tracking their progress through the [API Reference](/docs/api-reference).

@@ -1,0 +1,74 @@
+---
+title: Delegated Authentication
+description: Integrating HeadlessLMS with Auth0, Clerk, Firebase, or your custom SSO.
+---
+
+# Delegated Authentication
+
+**Delegated Authentication** allows you to bring your own users. If you already have an application with authentication, you don't want your users to create a separate password to access your learning content. 
+
+In Delegated mode, HeadlessLMS stores a minimal reference to your user (an "EndUser) and trusts your backend to vouch for their identity.
+
+## How it works
+
+1. A user logs into your main application using your existing identity provider (Auth0, Clerk, etc.).
+2. The user navigates to your Learning Management System frontend.
+3. Your **Frontend** requests an LMS token from your **Backend**.
+4. Your **Backend** securely calls the HeadlessLMS API `POST /v1/delegated/login` with the user's unique ID.
+5. HeadlessLMS creates the user if they don't exist, and returns a short-lived `accessToken`.
+6. Your backend passes this token to your frontend, replacing the need for an LMS password.
+
+## Implementing the Handshake
+
+Your backend service must hold your `x-api-key`. **Never expose this key to your frontend.**
+
+### 1. Perform Delegated Login
+
+When your frontend needs LMS access for a logged-in user, your backend proxies the token creation:
+
+```http
+POST /v1/delegated/login
+x-api-key: your_project_secret
+Content-Type: application/json
+
+{
+  "userId": "usr_998234FromYourSystem",
+  "metadata": {
+    "name": "Alice Developer"
+  }
+}
+```
+
+The `userId` can be any string that uniquely identifies the user in your database (e.g., a Firebase UID, an Auth0 sub, or a UUID from Postgres).
+
+**Response (200 OK):**
+```json
+{
+  "status": 200,
+  "message": "Handshake successful",
+  "data": {
+    "accessToken": "eyJhbG...",
+    "user": {
+      "id": "cuid_from_lms...",
+      "externalId": "usr_998234FromYourSystem"
+    }
+  }
+}
+```
+
+### 2. Provide Token to Frontend
+
+Take the `accessToken` returned by HeadlessLMS and send it back to your frontend application. 
+
+### 3. Consume LMS APIs
+
+Your frontend can now use this token as a Bearer Token in the `Authorization` header to talk directly to HeadlessLMS endpoints without routing traffic through your backend!
+
+```http
+GET /v1/auth/me
+Authorization: Bearer eyJhbG...
+```
+
+## Security Best Practices
+- **Never expose the `x-api-key`**. The `/delegated/login` request MUST come from your secure server.
+- The issued `accessToken` is short-lived for security reasons. Upon expiration, your frontend should request a new token quietly via your backend handshake route.

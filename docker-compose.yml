@@ -1,0 +1,22 @@
+name: learning-management
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    ports:
+      - '5450:5432' # 5432 is taken by vm-postgres-1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: learning_dev
+    volumes:
+      - learning_postgres_dev_data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  learning_postgres_dev_data:

@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "openrouter-typescript-sdk": {
+      "source": "OpenRouterTeam/agent-skills",
+      "sourceType": "github",
+      "computedHash": "0cb0e2f07f6b42fb8974c2ee89ca3ba3a103dfe565f12bc7ca9f41945fc7227a"
+    }
+  }
+}

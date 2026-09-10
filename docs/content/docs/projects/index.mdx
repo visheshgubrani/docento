@@ -1,0 +1,52 @@
+---
+title: Understanding Projects
+description: The core tenant entity in HeadlessLMS, managing courses, users, and settings.
+---
+
+# Understanding Projects
+
+In HeadlessLMS, a **Project** represents a single tenant or "learning portal." It acts as the absolute boundary for your data. 
+
+Everything you create—Courses, API Keys, End Users, Roles, Events, and Webhooks—is scoped entirely to a single Project. You can create multiple projects under one account (for example, if you run multiple academies or white-label platforms for different clients).
+
+## Core Project Relationships
+
+When you create a project, it acts as the foundation for the following entities:
+- **API Keys:** Server-side secrets used to communicate with the LMS.
+- **End Users:** The students/learners belonging to the project.
+- **Courses & Content:** The learning material.
+- **Team Members:** Other administrators or editors you invite to manage the content.
+
+## End User Scoping & Authentication
+
+HeadlessLMS allows you to choose your `authMode` at the Project level during creation.
+
+```json
+{
+  "name": "Acme Academy",
+  "authMode": "MANAGED" // or "DELEGATED"
+}
+```
+
+An `EndUser` (whether their login is managed by us or delegated to your system) belongs exclusively to that specific project. This means a user with `alice@example.com` in Project A has absolutely zero access to Project B unless explicitly added to Project B. **End users cannot cross project boundaries.**
+
+## Creating & Managing API Keys
+
+To interact with the backend APIs (creating enrollments, fetching stats, making offline progress updates), you need a Server API Key. **API Keys are scoped strictly to the Project they are created in.**
+
+- Once a Project is created, you can generate multiple API Keys.
+- Each API Key begins with `sk_live_...`.
+- You can provide a `name` for each key (e.g., "Production Backend Server", "Zapier Sync") to easily identify and revoke them later.
+
+> [!WARNING]
+> Keep your `sk_live_...` API keys secret. Never expose them to your frontend browser applications. Use them securely on your servers.
+
+## Inviting Team Members
+
+Projects support teamwork! By default, the user who creates a project is the `OWNER`. However, you can invite additional team members via email.
+
+There are two roles available for Project Members:
+1. `OWNER`: Can manage team members, access API keys, delete the project, and configure dangerous settings.
+2. `EDITOR`: Can create and edit courses, lessons, and manage user enrollments, but cannot edit high-level project settings or access billing details.
+
+Team members use their own HeadlessLMS dashboard logins, keeping credentials secure without sharing passwords.

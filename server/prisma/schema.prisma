@@ -1,0 +1,560 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String              @id
+  name          String
+  email         String              @unique
+  emailVerified Boolean             @default(false)
+  image         String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @default(now()) @updatedAt
+  role          String?
+  banned        Boolean?            @default(false)
+  banReason     String?
+  banExpires    DateTime?
+  accounts      Account[]
+  projects      Project[]
+  memberships   ProjectMember[]
+  sessions      Session[]
+  subscription  TenantSubscription?
+
+  @@map("user")
+}
+
+model Session {
+  id             String   @id
+  expiresAt      DateTime
+  token          String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  ipAddress      String?
+  userAgent      String?
+  userId         String
+  impersonatedBy String?
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@map("verification")
+}
+
+model ProjectMember {
+  id        String     @id @default(cuid())
+  projectId String
+  userId    String
+  role      MemberRole @default(EDITOR)
+  joinedAt  DateTime   @default(now())
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_member")
+}
+
+model ProjectInvitation {
+  id        String     @id @default(cuid())
+  email     String
+  projectId String
+  role      MemberRole @default(EDITOR)
+  status    InvitationStatus @default(PENDING)
+  token     String     @unique
+  expiresAt DateTime
+  respondedAt DateTime?
+  acceptedAt DateTime?
+  rejectedAt DateTime?
+  revokedAt DateTime?
+  createdAt DateTime   @default(now())
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, email])
+  @@index([projectId, status])
+  @@index([expiresAt])
+  @@index([token])
+  @@map("project_invitation")
+}
+
+model Project {
+  id                    String              @id @default(cuid())
+  name                  String
+  slug                  String              @unique
+  ownerId               String
+  authMode              String
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  branding              Json?
+  customDomain          String?             @unique
+  allowedOrigins        String[]
+  webhookUrl            String?
+  webhookSecret         String?
+  stripePublishableKey  String?
+  stripeSecretKey       String?
+  stripeWebhookSecret   String?
+  razorpayKeyId         String?
+  razorpayKeySecret     String?
+  razorpayWebhookSecret String?
+  publishableKey        String              @unique @default(cuid())
+  tenantSubscriptionId  String?
+  apiKeys               ApiKey[]
+  courses               Course[]
+  endUsers              EndUser[]
+  Order                 Order[]
+  owner                 User                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  TenantSubscription    TenantSubscription? @relation(fields: [tenantSubscriptionId], references: [id])
+  invitations           ProjectInvitation[]
+  members               ProjectMember[]
+  coupons               Coupon[]
+
+  @@unique([id, ownerId])
+  @@map("project")
+}
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  name       String
+  key        String    @unique
+  projectId  String
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([id, projectId])
+  @@map("api_key")
+}
+
+model TenantSubscription {
+  id                 String    @id @default(cuid())
+  stripeCustomerId   String?
+  subscriptionId     String?
+  plan               String    @default("FREE")
+  status             String    @default("ACTIVE")
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  userId             String    @unique
+  Project            Project[]
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("tenant_subscription")
+}
+
+model EndUser {
+  id         String   @id @default(cuid())
+  projectId  String
+  createdAt  DateTime @default(now())
+  email      String?
+  externalId String?
+  status     String   @default("ACTIVE")
+
+  project               Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  managedUser            ManagedUser?
+  delegatedUser          DelegatedUser?
+  enrollments            Enrollment[]
+  progress               Progress[]
+  quizAttempts           QuizAttempt[]
+  Order                  Order[]
+  assignmentSubmissions  AssignmentSubmission[]
+
+  @@unique([projectId, email])
+  @@unique([projectId, externalId])
+  @@map("end_user")
+}
+
+model Order {
+  id           String   @id @default(cuid())
+  projectId    String
+  endUserId    String
+  courseId     String
+  amount       Int
+  currency     String   @default("USD")
+  status       String
+  provider     String
+  providerTxId String?
+  receiptUrl   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  metadata     Json?
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  endUser      EndUser  @relation(fields: [endUserId], references: [id], onDelete: Cascade)
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([providerTxId])
+  @@map("order")
+}
+
+model ManagedUser {
+  id           String  @id @default(cuid())
+  password     String
+  name         String?
+  endUserId    String  @unique
+  refreshToken String?
+  endUser      EndUser @relation(fields: [endUserId], references: [id], onDelete: Cascade)
+
+  @@map("managed_user")
+}
+
+model DelegatedUser {
+  id         String    @id @default(cuid())
+  metadata   Json?
+  lastSeenAt DateTime? @default(now())
+  endUserId  String    @unique
+  endUser    EndUser   @relation(fields: [endUserId], references: [id], onDelete: Cascade)
+
+  @@map("delegated_user")
+}
+
+model Course {
+  id                  String       @id @default(cuid())
+  projectId           String
+  title               String
+  description         String?
+  thumbnail           String?
+  isPublished         Boolean      @default(false)
+  price               Float?
+  enrollmentValidityDays Int?
+  certificatesEnabled Boolean      @default(true)
+  type                String       @default("COURSE") // "COURSE" | "TEST_SERIES"
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  slug                String       @unique
+  collectionId        String?      @unique
+  category            String[]
+  instructors         Json?
+  project             Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  enrollments         Enrollment[]
+  modules             Module[]
+  Order               Order[]
+  couponCourses       CouponCourse[]
+
+  @@unique([id, projectId])
+  @@map("course")
+}
+
+model Module {
+  id          String   @id @default(cuid())
+  courseId    String
+  title       String
+  description String?
+  order       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lessons     Lesson[]
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, order])
+  @@unique([id, courseId])
+  @@map("module")
+}
+
+model Lesson {
+  id                    String     @id @default(cuid())
+  moduleId              String
+  title                 String
+  description           String?
+  contentType           String // "VIDEO", "TEXT", "QUIZ", "FILE", "ASSIGNMENT", "MOCK_TEST", "YOUTUBE"
+  videoUrl              String?
+  videoId               String?
+  videoStatus           String?    @default("PROCESSING")
+  transcriptionStatus   String?
+  transcriptionLanguage String?    @default("en")
+  textContent           String?
+  fileUrl               String?
+  duration              Int?       @default(0)
+  order                 Int
+  isFree                Boolean    @default(false)
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
+  thumbnail             String?
+
+  module     Module      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  quiz       Quiz?
+  assignment Assignment?
+  progress   Progress[]
+  uploads    Upload[]
+
+  @@unique([moduleId, order])
+  @@unique([id, moduleId])
+  @@index([videoId])
+  @@map("lesson")
+}
+
+model Upload {
+  id        String   @id @default(cuid())
+  lessonId  String
+  title     String
+  fileUrl   String
+  key       String
+  type      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([id, lessonId])
+  @@index([lessonId])
+  @@map("upload")
+}
+
+model Quiz {
+  id           String        @id @default(cuid())
+  lessonId     String        @unique
+  title        String
+  description  String?
+  passingScore Int           @default(70)
+  maxAttempts  Int?
+  timeLimit    Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Negative Marking
+  negativeMarking    Boolean  @default(false)
+  defaultNegativeMark Float?  // Default deduction for wrong answers (e.g. 1.0 = -1 point)
+
+  // Mock Test
+  isMockTest Boolean   @default(false)
+  startTime  DateTime? // For scheduled exams
+  endTime    DateTime? // Exam window closes
+
+  lesson    Lesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  questions Question[]
+  attempts  QuizAttempt[]
+  sections  QuizSection[]
+
+  @@map("quiz")
+}
+
+model QuizSection {
+  id     String @id @default(cuid())
+  quizId String
+  title  String // e.g. "Physics", "Section A"
+  order  Int
+
+  quiz      Quiz       @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  questions Question[]
+
+  @@unique([quizId, order])
+  @@map("quiz_section")
+}
+
+model Question {
+  id             String   @id @default(cuid())
+  quizId         String
+  sectionId      String?  // Optional: link to a QuizSection
+  questionText   String   @db.Text
+  questionType   String // "MULTIPLE_CHOICE", "MULTI_SELECT", "TRUE_FALSE", "SHORT_ANSWER", "INTEGER"
+  options        Json? // For multiple choice: ["A", "B", "C", "D"]
+  correctAnswer  String // For single-answer types (MULTIPLE_CHOICE, TRUE_FALSE, SHORT_ANSWER, INTEGER)
+  correctAnswers String[] // For MULTI_SELECT: multiple correct options e.g. ["A", "C"]
+  explanation    String?  @db.Text
+  points         Int      @default(1) // ✅ Allow weighted questions
+  negativePoints Float    @default(0) // Deduction for wrong answer (overrides quiz default)
+  partialMarking Boolean  @default(false) // JEE Advanced: partial credit for partially correct multi-select
+  order          Int
+  createdAt      DateTime @default(now())
+
+  quiz    Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  section QuizSection? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  answers Answer[]
+
+  @@unique([quizId, order])
+  @@map("question")
+}
+
+model QuizAttempt {
+  id            String    @id @default(cuid())
+  quizId        String
+  endUserId     String
+  attemptNumber Int
+  score         Float
+  totalPoints   Int
+  passed        Boolean
+  startedAt     DateTime  @default(now())
+  completedAt   DateTime?
+  timeSpent     Int?
+  answers       Answer[]
+  endUser       EndUser   @relation(fields: [endUserId], references: [id], onDelete: Cascade)
+  quiz          Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@unique([quizId, endUserId, attemptNumber])
+  @@map("quiz_attempt")
+}
+
+model Answer {
+  id           String      @id @default(cuid())
+  attemptId    String
+  questionId   String
+  userAnswer   String   // For single-answer types
+  userAnswers  String[] // For MULTI_SELECT: student's selected options
+  isCorrect    Boolean
+  pointsEarned Float    @default(0) // Float for partial marks (e.g. +1.33 in JEE Advanced)
+  answeredAt   DateTime @default(now())
+
+  attempt  QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, questionId])
+  @@map("answer")
+}
+
+model Enrollment {
+  id          String    @id @default(cuid())
+  courseId    String
+  endUserId   String
+  enrolledAt  DateTime  @default(now())
+  completedAt DateTime?
+  progress    Float     @default(0)
+  expiresAt   DateTime?
+  amountPaid  Int?      @default(0)
+  status      String?
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  endUser     EndUser   @relation(fields: [endUserId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, endUserId])
+  @@unique([id, courseId])
+  @@map("enrollment")
+}
+
+model Progress {
+  id              String    @id @default(cuid())
+  lessonId        String
+  endUserId       String
+  isCompleted     Boolean   @default(false)
+  watchedDuration Int       @default(0)
+  lastWatchedAt   DateTime  @default(now())
+  completedAt     DateTime?
+  endUser         EndUser   @relation(fields: [endUserId], references: [id], onDelete: Cascade)
+  lesson          Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, endUserId])
+  @@map("progress")
+}
+
+// ===== ASSIGNMENT SYSTEM =====
+
+model Assignment {
+  id          String   @id @default(cuid())
+  lessonId    String   @unique // One assignment per lesson
+  title       String
+  description String?  @db.Text
+  dueDate     DateTime?
+  totalPoints Int      @default(100)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lesson      Lesson               @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  submissions AssignmentSubmission[]
+
+  @@map("assignment")
+}
+
+model AssignmentSubmission {
+  id           String    @id @default(cuid())
+  assignmentId String
+  endUserId    String
+  content      String?   @db.Text // Text submission
+  fileUrl      String?             // File submission (S3/R2 URL)
+  grade        Float?              // Null until graded
+  feedback     String?   @db.Text
+  gradedAt     DateTime?
+  gradedById   String?             // User ID of grader (Project owner/team)
+  submittedAt  DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  endUser    EndUser    @relation(fields: [endUserId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, endUserId])
+  @@index([assignmentId])
+  @@map("assignment_submission")
+}
+
+model Coupon {
+  id            String             @id @default(cuid())
+  projectId     String
+  code          String
+  discountType  CouponDiscountType
+  discountValue Float
+  appliesToAll  Boolean            @default(true)
+  usageLimit    Int?
+  usageCount    Int                @default(0)
+  expiresAt     DateTime?
+  status        CouponStatus       @default(ACTIVE)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  project       Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  couponCourses CouponCourse[]
+
+  @@unique([projectId, code])
+  @@index([projectId, status])
+  @@map("coupon")
+}
+
+model CouponCourse {
+  id        String   @id @default(cuid())
+  couponId  String
+  courseId  String
+  createdAt DateTime @default(now())
+  coupon    Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([couponId, courseId])
+  @@index([courseId])
+  @@map("coupon_course")
+}
+
+enum CouponDiscountType {
+  PERCENTAGE
+  FLAT
+}
+
+enum CouponStatus {
+  ACTIVE
+  PAUSED
+}
+
+enum MemberRole {
+  OWNER
+  EDITOR
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  REVOKED
+  EXPIRED
+}

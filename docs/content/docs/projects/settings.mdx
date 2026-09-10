@@ -1,0 +1,36 @@
+---
+title: Project Settings
+description: Configuring Branding, Domains, Webhooks, and security settings.
+---
+
+# Project Settings
+
+Each Project in HeadlessLMS contains diverse settings controlling both appearance and infrastructure. You can configure these settings via the API securely using your API keys, making it possible to integrate these features directly into your own product's dashboard (for example, if you're building a marketplace).
+
+## 1. Security: Allowed Origins
+
+To prevent malicious sites from embedding your courses or abusing your public-facing APIs via Cross-Origin Resource Sharing (CORS), you should explicitly declare **Allowed Origins**. 
+
+Only requests originating from these exact Origins (e.g., `https://learn.acme.com`) will be able to perform Client-Side operations (like tracking progress or fetching course metadata) successfully. 
+
+```json
+{
+  "allowedOrigins": ["https://learn.acme.com", "http://localhost:3000"]
+}
+```
+
+If the `allowedOrigins` array is empty, all origins `*` are accepted (Useful for testing, completely discouraged for production).
+
+## 2. Webhooks
+
+HeadlessLMS allows you to react to events occurring within your project in real-time. Whether a user completes a course or creates a new account, we dispatch payloads to your configured `webhookUrl`.
+
+```json
+{
+  "webhookUrl": "https://api.acme.com/lms/webhooks"
+}
+```
+
+When a webhook is triggered, we send a `POST` request to your `webhookUrl` with a JSON payload outlining the `event` type and the associated `data`.
+
+Always verify webhooks in your backend. In future updates, `webhookSecret` will be utilized to sign payloads, allowing you to reject malicious or unverified POST requests.

@@ -1,0 +1,190 @@
+@layer components {
+  .font-cinzel {
+    font-family: var(--font-cinzel), Georgia, "Times New Roman", serif;
+  }
+
+  .font-brand {
+    font-family: var(--font-brand), sans-serif;
+  }
+
+  .font-tangerine {
+    font-family: var(--font-tangerine), "Brush Script MT", cursive;
+  }
+
+  .font-baskerville {
+    font-family: var(--font-baskerville), Georgia, "Times New Roman", serif;
+  }
+
+  .lesson-prose {
+    color: var(--foreground);
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  .dark .lesson-prose {
+    color: color-mix(in oklab, var(--foreground) 88%, transparent);
+  }
+
+  .lesson-prose > * + * {
+    margin-top: 1rem;
+  }
+
+  .lesson-prose h1,
+  .lesson-prose h2,
+  .lesson-prose h3,
+  .lesson-prose h4,
+  .lesson-prose h5,
+  .lesson-prose h6 {
+    color: var(--foreground);
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+  }
+
+  .lesson-prose h1 {
+    font-size: 2rem;
+    margin-top: 2rem;
+  }
+
+  .lesson-prose h2 {
+    font-size: 1.5rem;
+    margin-top: 1.75rem;
+  }
+
+  .lesson-prose h3 {
+    font-size: 1.25rem;
+    margin-top: 1.5rem;
+  }
+
+  .lesson-prose p {
+    color: color-mix(in oklab, var(--foreground) 92%, transparent);
+    font-size: 1rem;
+    line-height: 1.75;
+    margin-top: 0.875rem;
+  }
+
+  .dark .lesson-prose p {
+    color: color-mix(in oklab, var(--foreground) 90%, transparent);
+  }
+
+  .lesson-prose a {
+    color: var(--foreground);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: color-mix(in oklab, var(--foreground) 28%, transparent);
+  }
+
+  .lesson-prose a:hover {
+    text-decoration-color: color-mix(in oklab, var(--foreground) 50%, transparent);
+  }
+
+  .lesson-prose ul,
+  .lesson-prose ol {
+    margin-top: 0.45rem;
+    margin-bottom: 0.45rem;
+    margin-left: 0;
+    padding-inline-start: 1.25rem;
+    list-style-position: outside;
+  }
+
+  .lesson-prose ul {
+    list-style-type: disc;
+  }
+
+  .lesson-prose ol {
+    list-style-type: decimal;
+  }
+
+  .lesson-prose ul ul {
+    list-style-type: circle;
+  }
+
+  .lesson-prose ul ul ul {
+    list-style-type: square;
+  }
+
+  .lesson-prose li {
+    margin-top: 0.125rem;
+    padding-left: 0.35rem;
+  }
+
+  .lesson-prose li::marker {
+    color: var(--muted-foreground);
+  }
+
+  .lesson-prose hr {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border-color: color-mix(in oklab, var(--border) 95%, transparent);
+  }
+
+  .lesson-prose blockquote {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border-inline-start: 3px solid color-mix(in oklab, var(--foreground) 28%, transparent);
+    padding-inline-start: 0.9rem;
+    color: var(--muted-foreground);
+  }
+
+  .lesson-prose pre {
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;
+    overflow-x: auto;
+    border: 1px solid color-mix(in oklab, var(--border) 88%, transparent);
+    border-radius: var(--radius-lg);
+    background: color-mix(in oklab, var(--muted) 82%, transparent);
+    padding: 0.875rem 1rem;
+  }
+
+  .dark .lesson-prose pre {
+    background: color-mix(in oklab, var(--muted) 55%, transparent);
+  }
+
+  .lesson-prose pre code {
+    color: color-mix(in oklab, var(--foreground) 96%, transparent);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  .lesson-prose code:not(pre code) {
+    color: color-mix(in oklab, var(--foreground) 95%, transparent);
+    background: var(--muted);
+    border-radius: var(--radius-sm);
+    padding: 0.1rem 0.4rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    font-weight: 500;
+  }
+
+  .dark .lesson-prose code:not(pre code) {
+    background: color-mix(in oklab, var(--muted) 50%, transparent);
+  }
+
+  .lesson-prose strong {
+    color: var(--foreground);
+    font-weight: 600;
+  }
+
+  .lesson-prose figure {
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .lesson-prose img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    border: 1px solid color-mix(in oklab, var(--border) 88%, transparent);
+  }
+
+  .lesson-prose figcaption {
+    display: none;
+  }
+}

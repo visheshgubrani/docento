@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-server:
+    name: Build Server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install server dependencies
+        working-directory: ./server
+        run: npm install
+
+      - name: Build server
+        working-directory: ./server
+        run: npm run build
+
+  build-client:
+    name: Build Client
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install client dependencies
+        working-directory: ./client
+        run: pnpm install --frozen-lockfile
+
+      - name: Build client
+        working-directory: ./client
+        run: pnpm run build
+        env:
+          NEXT_PUBLIC_API_BASE_URL: http://localhost:4000/api/v1
+          NEXT_PUBLIC_AUTH_BASE_URL: http://localhost:4000/api/auth
+          NEXT_PUBLIC_FRONTEND_URL: http://localhost:3000
