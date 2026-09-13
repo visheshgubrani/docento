@@ -20,8 +20,27 @@ service. Media is stored and served with entitlement checked per request, both
 frontends reach the API from the browser, studio authors quizzes and
 assignments, and there are container images for all four services.
 
-What is left before the milestone is formally closed is time in CI on `main`
-rather than new work — see the milestone's exit condition below.
+What is left before it is formally closed is time in CI on `main` rather than new
+work — see the milestone's exit condition below.
+
+**The next scope is milestone C, and the first half of it is the product UI.**
+The port replaced the commercial application with minimal shells: the API, the
+domain and the SDK are complete and tested, and only some of what they can do is
+reachable by a person. 23 of the 61 operations have no screen at all. That is the
+work — not a rebuild of the deleted commercial dashboard, most of which belongs to
+the deferred payments milestone or to nothing.
+
+Two things follow from that, and they shape the order:
+
+- **The UI is the least verified part of this repository.** The domain and API
+  have 511 tests including the end-to-end loop; the UI has almost none, and the
+  one bug that mattered — the learner application's browser calls never reaching
+  the API — was found by reading a config file. The compose `app` profile is what
+  makes closing that possible, so a browser-level suite belongs to the UI work
+  rather than after it.
+- **Milestone E cannot start until C is done.** Its exit condition is that a
+  stranger can self-host and use the product, and its accessibility work is an
+  audit of screens. There is nothing to audit yet.
 
 ## Milestones
 
@@ -97,17 +116,80 @@ any more. In `apps/studio` the remaining violations were nine, seven of them in
 hooks nothing imported; the dead hooks and one unused component are deleted, so
 every rule the port downgraded now gates the application.
 
-### C. Complete AI and media
+### C. The product UI, with AI and media
+
+This milestone has two halves on purpose. The AI surfaces — a brief, an outline,
+draft lessons to review, a tutor — _are_ screens, so building them before the
+product UI exists would mean designing the authoring experience twice. They are
+one milestone because they are one body of work, not two.
+
+#### The product UI
+
+The port deleted the commercial application's UI along with the features it
+served: 42 studio pages and 18 learner pages. Most of that is **not** work to be
+redone. Billing, coupons, transactions, pricing, checkout, purchase receipts,
+webhook and payment settings, and the marketing and blog pages went because the
+features went — they belong to milestone D, or to nothing. Rebuilding them now
+would be rebuilding a product that was deliberately removed.
+
+What is genuinely missing is narrower and measurable: **23 of the 61 API
+operations have no UI anywhere.** They come to seven areas:
+
+| Missing                               | What it costs today                                                                                                                                                        |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Curriculum management                 | A course can be built but not reorganised: no rename, reorder or delete for modules and lessons, no course settings, no archiving, no release history.                     |
+| Grading                               | A learner can submit an assignment and nobody can mark it. The submissions list, grade entry and the quiz gradebook are all reachable over HTTP with no screen.            |
+| Media library and upload              | No upload anywhere in the product. The API creates an asset, hands back an upload address and serves the bytes; nothing can attach a video to a lesson.                    |
+| Service keys                          | The headless API's own credentials have no screen, so an operator cannot issue or revoke a key without `curl`.                                                             |
+| Password reset and email verification | Both are implemented, rate-limited and wired to the email integration — and neither application has a page for them. An operator who forgets their password is locked out. |
+| Learner progress and attempt history  | A learner sees a percentage and nothing behind it: no per-lesson detail, no history of their own attempts.                                                                 |
+| Public academy profile                | `catalog.academy` exists and nothing renders it, so an academy has no public page.                                                                                         |
+
+#### Testing the UI, which is the part that is actually unverified
+
+The domain and the API are covered by 511 tests, including the end-to-end loop.
+The UI is covered by almost nothing: its server components, its forms and the
+browser proxy are verified by reading them. That is not a theoretical gap — the
+learn application could not reach the API from a browser at all, and the only
+reason it is fixed is that the missing proxy was found by reading the config
+rather than by a test. A unit test cannot tell you that enrolling works when the
+session cookie is first-party.
+
+The compose `app` profile now runs the whole stack against Postgres alone, which
+is what makes this closable: a browser-level suite (Playwright) driving that
+stack in CI. It belongs to this milestone rather than to E because the screens
+are being built here, and a browser test written afterwards tests what somebody
+remembered to write.
+
+#### AI and media
 
 - Reviewed AI authoring: brief → outline → human edits → draft lessons and
   quizzes → review → publish, as durable resumable jobs
 - A grounded learner tutor that cites the material it used
 - Local video playback, S3-compatible storage, and OpenVOD integration
-- A kill switch that disables AI per academy without a deploy
+- AI provider connections as a per-academy setting, with the kill switch that
+  disables AI without a deploy
 
-**Exit:** the same authoring flow produces valid output against both a local
-OpenAI-compatible endpoint and Anthropic, and no AI feature 500s when
-unconfigured.
+#### Carried over from B, deliberately
+
+Two things were found while finishing B and left on purpose rather than dropped
+quietly:
+
+- **Short-lived playback URLs.** ADR 0008 says a client never receives a durable
+  media URL. Entitlement _is_ re-checked on every request, which is the security
+  half; the URL itself is still stable. Signed, expiring playback URLs belong
+  with the player work here.
+- **Unreachable schema.** `MediaAsset.status = FAILED` is never set,
+  `thumbnailUrl`, `durationSeconds` and `MediaCaption` are written by nothing, and
+  the `openvod` and `external` providers are declared with no adapter. Either they
+  get a code path here or the columns go: a column nothing writes is a promise the
+  schema makes on the code's behalf.
+
+**Exit:** a person can complete the whole loop in a browser — author, publish,
+enrol, learn, be assessed, certify, verify — with the browser suite proving it
+against the compose stack; the same authoring flow produces valid output against
+both a local OpenAI-compatible endpoint and Anthropic; and no AI feature 500s
+when unconfigured.
 
 ### D. Complete paid learning
 

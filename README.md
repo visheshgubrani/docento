@@ -13,22 +13,29 @@ proprietary edition: everything in this repository is the whole product.
 Be aware of what you are cloning. **The foundation is complete and verified; the
 product is being built on top of it.**
 
-|                                                                      | State            |
-| -------------------------------------------------------------------- | ---------------- |
-| Monorepo, licensing, governance, CI                                  | Done             |
-| Database schema, authentication, authorization, jobs, rate limiting  | Done, with tests |
-| The application itself (authoring, publishing, learning, assessment) | **In progress**  |
+|                                                                      | State             |
+| -------------------------------------------------------------------- | ----------------- |
+| Monorepo, licensing, governance, CI                                  | Done              |
+| Database schema, authentication, authorization, jobs, rate limiting  | Done, with tests  |
+| The application itself (authoring, publishing, learning, assessment) | API done, UI next |
 
-Milestone A — the foundation — is complete and verified. Milestone B is the
-product: authoring a course, publishing it as an immutable release, and a learner
-enrolling, learning, being assessed and earning a verifiable certificate. While
-that work is in flight, `apps/api` is still the previous closed-source Express
-application on its own Prisma schema, and both it and its replacement are
-temporary residents.
+Milestone A — the foundation — is complete and verified. Milestone B is done: a
+staff member authors a course, publishes it as an immutable release, and a learner
+enrols, learns, is assessed and earns a verifiable certificate. The closed-source
+Express application and its Prisma schema are gone; the API, the worker and both
+frontends all run on one schema through domain operations.
+
+The honest gap is the **product UI**, and it is the next scope. Replacing the
+commercial application meant deleting its screens along with the features they
+served, and the current frontends are deliberately minimal: the API, the domain
+and the SDK are complete, and 23 of the 61 operations have no screen at all —
+grading, media upload, curriculum reordering, service keys and password reset
+among them. See [ROADMAP.md](./ROADMAP.md) for what that covers.
 
 What you _can_ do right now is real: install, migrate the database, **seed a
-working workspace, academy and owner account**, run the worker, and run the test
-suite. See [ROADMAP.md](./ROADMAP.md) for what is next and how far along it is.
+working workspace, academy and owner account**, run the whole stack from a
+checkout or from the container images, and run the test suite — which includes the
+free-learning loop driven end to end over HTTP.
 
 If you want a working LMS today, this is not it yet. If you want to help build
 one, the foundation is a good place to start.
