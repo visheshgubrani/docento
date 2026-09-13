@@ -85,3 +85,124 @@ export type {
   SnapshotQuestion,
   SubmittedAnswer,
 } from './assessment/grading.js'
+
+// Tenancy
+//
+// `resolveAcademy` is exported as prominently as the management operations
+// because it is the security boundary every request crosses, not a helper.
+export {
+  RESERVED_SLUGS,
+  SLUG_PATTERN,
+  assertAcademy,
+  normaliseHostname,
+  normaliseSlug,
+  resolveAcademy,
+  validateSlug,
+} from './tenancy/resolve-academy.js'
+export type {
+  AcademyResolution,
+  AcademyResolutionFailure,
+  ResolveAcademyInput,
+  ResolvedAcademy,
+} from './tenancy/resolve-academy.js'
+export {
+  addAcademyDomain,
+  createAcademy,
+  createPublishableKey,
+  createWorkspace,
+  getAcademy,
+  getWorkspace,
+  listAcademies,
+  listAcademyDomains,
+  listPublishableKeys,
+  revokePublishableKey,
+  updateAcademy,
+  updateWorkspace,
+  verifyAcademyDomain,
+} from './tenancy/academies.js'
+export type { AcademySummary, WorkspaceSummary } from './tenancy/academies.js'
+
+// Content
+export {
+  LESSON_CONTENT_TYPES,
+  archiveCourse,
+  createCourse,
+  createLesson,
+  createModule,
+  deleteDraftLesson,
+  deleteModule,
+  getCourse,
+  listCourses,
+  reorderLessons,
+  reorderModules,
+  updateCourse,
+  updateLesson,
+  updateModule,
+} from './content/drafts.js'
+export type {
+  CourseSummary,
+  LessonContentType,
+  LessonSummary,
+  ModuleSummary,
+} from './content/drafts.js'
+export {
+  buildReleaseSnapshot,
+  getRelease,
+  gradingSnapshotFrom,
+  publishCourse,
+} from './content/publishing.js'
+export type {
+  ReleaseSnapshot,
+  ReleaseSummary,
+  SnapshotLesson,
+  SnapshotModule,
+  SnapshotQuiz,
+} from './content/publishing.js'
+
+// Learning
+export {
+  completeLesson,
+  enroll,
+  getCourseForLearner,
+  getCourseProgress,
+  grantAccess,
+  hasAccess,
+  listLearnerCourses,
+  listEnrollments,
+  recordProgress,
+  revokeAccess,
+} from './learning/enrollment.js'
+export type {
+  CourseProgress,
+  EnrollmentSummary,
+  LearnerLesson,
+  LearnerModule,
+  LessonProgressSummary,
+} from './learning/enrollment.js'
+export {
+  generateVerificationId,
+  getCertificate,
+  issueCertificate,
+  listLearnerCertificates,
+  revokeCertificate,
+  verifyCertificate,
+} from './learning/certificates.js'
+export type {
+  CertificateSummary,
+  CompletionEvidence,
+  PublicCertificateView,
+} from './learning/certificates.js'
+
+// Errors
+//
+// Exported because the transport layer maps them to status codes and error
+// codes, and a layer that has to guess at an error's type ends up inspecting
+// messages.
+export {
+  ConflictError,
+  DomainRuleError,
+  ForbiddenError,
+  NotFoundError,
+  assertCan,
+  assertFound,
+} from './shared/errors.js'

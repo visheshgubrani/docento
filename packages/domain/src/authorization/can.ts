@@ -113,10 +113,12 @@ export const REQUIRED_RESOURCE_FIELDS: Record<
    * Enrolling needs the course as well as the academy.
    *
    * Without `courseId` this is a permission to enrol in *something*, and a
-   * caller that forgot which course would still pass the check. Named here so
-   * that omission is a refusal rather than a silent grant.
+   * caller that forgot which course would still pass the check. And without
+   * `workspaceId` a staff principal from another workspace would pass it too,
+   * which is why this is the staff-shaped action and `learner:enroll` is the
+   * learner-shaped one — a learner has no workspace to name.
    */
-  'enrollment:create': ['academyId', 'courseId'],
+  'enrollment:create': ['workspaceId', 'academyId', 'courseId'],
 
   // A published release belongs to an academy and identifies a course.
   'release:read': ['academyId', 'courseId'],
@@ -125,7 +127,15 @@ export const REQUIRED_RESOURCE_FIELDS: Record<
   'submission:grade': ['workspaceId', 'academyId'],
 
   'certificate:read': ['workspaceId', 'academyId'],
-  'certificate:issue': ['workspaceId', 'academyId'],
+  /**
+   * Issuing names the course as well as the academy.
+   *
+   * An earlier version required only the academy, which meant a caller could
+   * pass an `academyId` and assert nothing about which course the certificate
+   * was for. The operation needs the course to recompute completion, so
+   * requiring it here keeps the check and the work describing the same thing.
+   */
+  'certificate:issue': ['workspaceId', 'academyId', 'courseId'],
   'certificate:revoke': ['workspaceId', 'academyId'],
 
   /**

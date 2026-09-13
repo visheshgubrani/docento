@@ -496,8 +496,105 @@ export async function publishCourse(
       data: { status: 'PUBLISHED' },
     })
 
+    /**
+     * Every enrolment is re-evaluated against the release it now follows.
+     *
+     * Adding a lesson makes a course incomplete for learners who had finished
+     * it — correctly, because there is now something they have not done — and
+     * removing one lets a learner who was one lesson short become complete.
+     * Without this, `Enrollment.completedAt` would be a stale stamp that
+     * disagrees with the derived progress on the dashboard, and a certificate
+     * could refuse to issue for a learner the progress page says is finished.
+     *
+     * Done here rather than in a job so it is in the same transaction as the
+     * release: a learner must never be following a release whose effect on
+     * their completion has not been applied.
+     */
+    await recomputeEnrollments(tx, input.courseId, release.id)
+
     return { ...release, unchanged: false }
   })
+}
+
+type Tx = Parameters<Parameters<typeof prisma.$transaction>[0]>[0]
+
+/**
+ * Re-derive completion for every enrolment in a course.
+ *
+ * The rule is the one `completeLesson` applies, kept in one place by querying
+ * the release's required lessons and comparing counts — not by asking each
+ * enrolment's stored flag, which is exactly what may now be wrong.
+ */
+async function recomputeEnrollments(
+  tx: Tx,
+  courseId: string,
+  releaseId: string,
+): Promise<void> {
+  const required = await tx.releaseLesson.findMany({
+    where: { releaseId, isRequired: true },
+    select: { lessonId: true },
+  })
+
+  const requiredIds = required.map((lesson) => lesson.lessonId)
+
+  const enrollments = await tx.enrollment.findMany({
+    where: { courseId },
+    select: { id: true, completedAt: true },
+  })
+
+  if (enrollments.length === 0) return
+
+  /**
+   * A release with nothing required completes nobody.
+   *
+   * Vacuous truth would mark every enrolment complete, which is the same shape
+   * of error the grading engine avoids for a question with no key: a data
+   * problem must not manufacture a pass.
+   */
+  if (requiredIds.length === 0) {
+    await tx.enrollment.updateMany({
+      where: { courseId, completedAt: { not: null } },
+      data: { completedAt: null },
+    })
+    return
+  }
+
+  const completedCounts = await tx.lessonProgress.groupBy({
+    by: ['enrollmentId'],
+    where: {
+      enrollmentId: { in: enrollments.map((enrollment) => enrollment.id) },
+      isCompleted: true,
+      lessonId: { in: requiredIds },
+    },
+    _count: { _all: true },
+  })
+
+  const completedByEnrollment = new Map(
+    completedCounts.map((row) => [row.enrollmentId, row._count._all]),
+  )
+
+  const now = new Date()
+
+  for (const enrollment of enrollments) {
+    const completed = completedByEnrollment.get(enrollment.id) ?? 0
+
+    if (completed >= requiredIds.length) {
+      if (enrollment.completedAt === null) {
+        await tx.enrollment.update({
+          where: { id: enrollment.id },
+          data: { completedAt: now },
+        })
+      }
+      continue
+    }
+
+    if (enrollment.completedAt !== null) {
+      await tx.enrollment.update({
+        where: { id: enrollment.id },
+        data: { completedAt: null },
+      })
+    }
+  }
 }
 
 /**
