@@ -63,3 +63,25 @@ export {
   resetRateLimits,
 } from './rate-limit/index.js'
 export type { RateLimitResult, RateLimitRule } from './rate-limit/index.js'
+
+// Assessment
+//
+// Pure grading, exported because it is needed outside an attempt lifecycle: a
+// results view grades against the attempt's stored snapshot, and an authoring
+// preview grades against a draft key without creating an attempt at all.
+export {
+  QUESTION_TYPES,
+  gradeAnswer,
+  gradeFromSnapshot,
+  scoreAttempt,
+} from './assessment/grading.js'
+export type {
+  AttemptScore,
+  GradedAnswer,
+  GradingSnapshot,
+  QuestionMarking,
+  QuestionType,
+  QuizMarking,
+  SnapshotQuestion,
+  SubmittedAnswer,
+} from './assessment/grading.js'
