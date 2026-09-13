@@ -95,6 +95,14 @@ jobs:
         # is reported next to the change that caused it.
         run: pnpm boundaries
 
+      - name: OpenAPI document is current
+        # Generated from the operation registry, so a contract change that was
+        # not regenerated fails here rather than reaching an integrator as a
+        # document that describes a different API.
+        run: |
+          pnpm --filter @docento/contracts openapi
+          git diff --exit-code openapi.json
+
   build:
     name: Build
     runs-on: ubuntu-latest

@@ -686,6 +686,9 @@ importers:
 
   packages/contracts:
     dependencies:
+      '@asteasolutions/zod-to-openapi':
+        specifier: ^8.5.0
+        version: 8.5.0(zod@4.6.2)
       zod:
         specifier: 'catalog:'
         version: 4.6.2
@@ -699,6 +702,9 @@ importers:
       eslint:
         specifier: ^9.39.5
         version: 9.39.5(jiti@2.7.0)(supports-color@8.1.1)
+      tsx:
+        specifier: ^4.23.13
+        version: 4.23.13
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -9518,6 +9524,11 @@ snapshots:
     dependencies:
       openapi3-ts: 4.6.1
       zod: 4.6.1
+
+  '@asteasolutions/zod-to-openapi@8.5.0(zod@4.6.2)':
+    dependencies:
+      openapi3-ts: 4.6.1
+      zod: 4.6.2
 
   '@aws-sdk/checksums@3.1001.0':
     dependencies:

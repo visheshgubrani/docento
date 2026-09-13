@@ -17,17 +17,20 @@
   "scripts": {
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "openapi": "tsx scripts/generate-openapi.ts"
   },
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^8.5.0",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "typescript": "catalog:",
-    "vitest": "^3.2.4",
     "@docento/config": "workspace:*",
+    "@eslint/js": "^9.39.5",
     "eslint": "^9.39.5",
+    "tsx": "^4.23.13",
+    "typescript": "catalog:",
     "typescript-eslint": "^8.70.0",
-    "@eslint/js": "^9.39.5"
+    "vitest": "^3.2.4"
   }
 }
