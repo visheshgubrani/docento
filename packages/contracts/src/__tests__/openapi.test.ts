@@ -208,9 +208,10 @@ describe('the generated document', () => {
      * renamed or dropped, this fails rather than silently leaving the guard
      * covering a path that no longer exists.
      */
-    const authoringRead = paths[
-      '/workspaces/{workspaceId}/academies/{academyId}/courses/{courseId}/lessons/{lessonId}/quiz'
-    ]?.get
+    const authoringRead =
+      paths[
+        '/workspaces/{workspaceId}/academies/{academyId}/courses/{courseId}/lessons/{lessonId}/quiz'
+      ]?.get
 
     expect(JSON.stringify(authoringRead)).toContain('correctAnswer')
 

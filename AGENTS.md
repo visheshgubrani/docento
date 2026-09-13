@@ -19,16 +19,29 @@ The single most important thing to understand:
 
 The consequence you will hit:
 
-- **The frontends are on the public API now, but the free-learning loop is not
-  yet verified end to end.** Both applications call `@docento/sdk` over HTTP;
-  what is missing is the CI job that drives the whole loop — author, publish,
-  enrol, complete, certify — against a fresh database. Until that exists, treat
-  the loop as built and individually tested rather than proven.
-- **Media upload and serving have no routes yet.** `packages/integrations`
-  implements local and S3 storage, and the domain carries `MediaAsset`, but
-  `media.upload`, `media.complete` and `media.serve` are deliberately absent
-  from the operation registry until the routes exist. The SDK's completeness
-  test is what keeps them from being claimed.
+- **The free-learning loop is proven end to end, in CI.** Both frontends call
+  `@docento/sdk` over HTTP, and `apps/api/src/__tests__/free-loop.test.ts` drives
+  the SDK against the app over real requests — author, publish, enrol, complete,
+  certify, verify — against real Postgres. It runs in CI's `verify` job, whose
+  only service is Postgres. Treat a change that breaks it as breaking the
+  milestone's exit condition rather than one test among many.
+- **Media moves bytes outside the operation registry, on purpose.** Four
+  operations are registered — `media.create`, `media.complete`, `media.list`,
+  `media.delete` — and two routes are not: `PUT /media/upload/{key}` and
+  `GET /media/{academyId}/{assetId}`. The registry describes JSON operations with
+  a response schema a generated client can unwrap, and a byte stream is neither.
+  `media.upload` and `media.serve` are therefore _names that will never exist as
+  operations_; the anti-drift test in `apps/api/src/__tests__/routes.test.ts`
+  asserts the two byte routes exist so they cannot be dropped silently.
+- **Serving media is authorized per request.** `authorizeMediaServe` requires the
+  caller to reach the academy and, for a learner, to have access to a course
+  whose _published release_ uses the asset. The second half is the one that
+  matters: `media:serve` is granted academy-wide, so the check alone would hand
+  any learner every video in the academy.
+- **Payments are out of scope for now.** Stripe and Razorpay are deferred, not
+  cancelled — see milestone D in `ROADMAP.md`. The groundwork is deliberate:
+  `AccessGrant` is separate from `Enrollment`, so entitlement does not depend on
+  how it was paid for. Do not add checkout scaffolding ahead of the work.
 
 ## Layout
 
@@ -61,6 +74,14 @@ pnpm test                 # turbo, all packages
 pnpm typecheck
 pnpm lint
 pnpm boundaries           # architecture rules — run before pushing
+```
+
+To run the product itself in containers rather than from the checkout — the API,
+worker and both frontends, against Postgres alone — use the `app` profile. It
+requires three secrets that have no safe default and fails closed without them:
+
+```bash
+docker compose --profile app up -d --build
 ```
 
 Per package: `pnpm --filter @docento/domain test`.
@@ -125,13 +146,13 @@ nothing that matters.
 
 Required when you touch the corresponding area:
 
-| You changed              | Required test                                                         |
-| ------------------------ | --------------------------------------------------------------------- |
-| Authorization or tenancy | Cross-tenant attempts must fail. A positive test alone is not enough. |
-| Money, checkout, refunds | Idempotency: the same request twice produces one business effect.     |
-| Provider callbacks       | Duplicate and out-of-order delivery.                                  |
-| Quizzes or grading       | Attempt limits; answer keys never leave the server.                   |
-| The schema               | A migration that applies cleanly to an empty database.                |
+| You changed              | Required test                                                                                                                                                                                   |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Authorization or tenancy | Cross-tenant attempts must fail. A positive test alone is not enough.                                                                                                                           |
+| Money, checkout, refunds | Idempotency: the same request twice produces one business effect.                                                                                                                               |
+| Provider callbacks       | Duplicate and out-of-order delivery.                                                                                                                                                            |
+| Quizzes or grading       | Attempt limits; answer keys never leave the server. `quiz.get` is the one exception — staff-only, behind `course:read` — and the OpenAPI test names it so a second one cannot appear unnoticed. |
+| The schema               | A migration that applies cleanly to an empty database.                                                                                                                                          |
 
 ## Conventions
 
@@ -149,14 +170,15 @@ Required when you touch the corresponding area:
 Do not "fix" these without reading the reasoning first. Each is recorded where
 it lives.
 
-| Debt                                                                | Why it exists                                                                                                    |
-| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| React Compiler rules downgraded to warnings in `studio` and `learn` | Real violations in code being replaced. Downgraded rather than disabled, so the work stays visible in every run. |
+There are none outstanding. The carve-outs that existed while the legacy
+application was being replaced are all gone: `apps/api` is in the lint and
+typecheck gate like every other package, the Prisma-boundary rule no longer
+exempts it, and neither frontend downgrades a rule. Each was written with the
+condition for its removal, and removing them was part of finishing the port.
 
-Two carve-outs are gone: `apps/api` is in the lint and typecheck gate like every
-other package, and the Prisma-boundary rule no longer exempts it. Both were
-written with the condition for their removal, and removing them was part of
-finishing the port.
+What replaced them is the gate itself. If something needs a downgrade to pass,
+that is a conversation to have in the pull request — with the condition for
+removing it written down — rather than a rule quietly relaxed.
 
 ## Before you push
 

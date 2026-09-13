@@ -14,11 +14,14 @@ feature-gated edition. **Everything in this repository is the whole product.**
 
 ## Where we are
 
-Milestone A is complete. Milestone B is close: the domain layer, the contracts,
-the generated OpenAPI document, the SDK, the HTTP surface and both frontends are
-done and individually tested. What remains is the CI job that proves the loop end
-to end, the media routes, and the container story. See below for what each
-milestone covers and how far along it is.
+Milestone A is complete. Milestone B is implemented and verified: the loop runs
+end to end over HTTP against a real database, in CI, with Postgres as the only
+service. Media is stored and served with entitlement checked per request, both
+frontends reach the API from the browser, studio authors quizzes and
+assignments, and there are container images for all four services.
+
+What is left before the milestone is formally closed is time in CI on `main`
+rather than new work — see the milestone's exit condition below.
 
 ## Milestones
 
@@ -54,34 +57,45 @@ The core loop, end to end, with no payments and no external services.
 
 **Exit:** the whole loop runs in CI with only Postgres running.
 
-Every bullet above is built and tested in isolation. What the exit condition
-still needs:
+Every bullet above is built, and the loop is now proven rather than assembled
+from parts that each pass. What closed it:
 
-- **An end-to-end suite in CI.** Author → publish → enrol → complete → certify,
-  driven against a fresh database, so the loop is proven rather than assembled
-  from parts that each pass.
-- **Media routes.** `packages/integrations` implements local and S3 storage and
-  the domain carries `MediaAsset`, but `media.upload`, `media.complete` and
-  `media.serve` are deliberately absent from the registry until the routes
-  exist — the SDK's completeness test is what stops them being claimed.
-- **Quiz and assignment authoring in `apps/studio`.** Both are implemented in
-  the domain and reachable over HTTP; the studio edits lesson content and
-  publishes, and the question editor is outstanding.
-- **Containers.** A workspace-aware Dockerfile, a compose `app` profile running
-  the API, worker and both frontends against Postgres alone, and a CI job that
-  builds them.
+- **An end-to-end suite.** `apps/api/src/__tests__/free-loop.test.ts` drives the
+  SDK against the app over real HTTP requests, against real Postgres, through
+  author → publish → enrol → complete → certify and a stranger verifying the
+  certificate by its id. It runs in CI's `verify` job, whose only service is
+  Postgres. It found two bugs the isolated tests could not: the SDK omitted the
+  API mount from every URL it built, and nothing in the domain completed a quiz
+  lesson when its attempt passed.
+- **Media routes.** Four registry operations — `media.create`, `media.complete`,
+  `media.list`, `media.delete` — plus two byte routes, `PUT /media/upload/{key}`
+  and `GET /media/{academyId}/{assetId}`, which are deliberately outside the
+  registry because the registry describes JSON operations and neither of these
+  is one. Serving is authorized per request by `authorizeMediaServe`: the caller
+  must reach the academy, and a learner must additionally have access to a course
+  whose published release uses the asset, so entitlement is re-checked at play
+  time against enrollment rather than when a URL was handed out.
+- **Quiz and assignment authoring in `apps/studio`.** Both editors are on the
+  lesson page. Closing this needed a server-side gap fixed first: no staff-facing
+  quiz read existed anywhere, and `quiz.upsert` answers with a `quizId` that
+  nothing returned again — so an editor could create a quiz, add one question,
+  and lose the ability to add a second one on the next page load. `quiz.get`
+  returns the quiz with its answer keys, behind `course:read`; it is the only
+  response in the API that carries one, and the OpenAPI test names that exception
+  explicitly rather than relaxing the rule.
+- **Containers.** One workspace-aware `Dockerfile` with a target per service, a
+  compose `app` profile running the API, worker and both frontends against
+  Postgres alone, and an `images` CI job that builds all four. The API and the
+  worker mount the same uploads volume, because ADR 0008 makes that a deployment
+  invariant rather than a preference.
 
 **Debt this milestone clears.** Three carve-outs existed so the workspace gate
-could be green while the legacy application was still in place. Two are gone —
-`apps/api` is in the lint and typecheck gate like every other package, and the
-Prisma-boundary rule no longer exempts it. The third remains:
-
-| Carve-out                                   | Where                                                           | Removed when                    |
-| ------------------------------------------- | --------------------------------------------------------------- | ------------------------------- |
-| React Compiler rules downgraded to warnings | `apps/studio/eslint.config.mjs`, `apps/learn/eslint.config.mjs` | The affected hooks are reworked |
-
-The React rules are downgraded rather than disabled, so the violations stay
-visible in every lint run instead of disappearing.
+could be green while the legacy application was still in place. All three are
+gone: `apps/api` is in the lint and typecheck gate like every other package, the
+Prisma-boundary rule no longer exempts it, and neither frontend downgrades a rule
+any more. In `apps/studio` the remaining violations were nine, seven of them in
+hooks nothing imported; the dead hooks and one unused component are deleted, so
+every rule the port downgraded now gates the application.
 
 ### C. Complete AI and media
 
@@ -97,6 +111,21 @@ unconfigured.
 
 ### D. Complete paid learning
 
+**Deferred, and not the current focus.** Payments are wanted and will be built;
+they are not being built now. The product being finished first is the free
+learning loop, because a payment integration on top of a loop that is not proven
+is two problems to debug at once — and because the commercial model here is
+hosting and support, not a paid edition, so nothing about the free product is
+waiting on a checkout.
+
+The groundwork is already in place and deliberately so: `AccessGrant` is a
+separate model from `Enrollment` and from orders, so entitlement is already a
+question the domain answers independently of how it was paid for. `enroll` mints
+a `FREE` grant today, and a checkout is another way to create one rather than a
+change to how access is checked.
+
+When this milestone is picked up:
+
 - Stripe and Razorpay checkout
 - Access grants that are separate from orders and enrollments
 - Full and partial refunds with correct access consequences
@@ -105,6 +134,10 @@ unconfigured.
 
 **Exit:** duplicate and out-of-order callbacks cannot produce a wrong business
 state, verified by tests.
+
+Nothing in this milestone is a prerequisite for milestones C or E, and no
+scaffolding for it should be added before it is worked on: a half-built checkout
+is a worse answer than an honest absence.
 
 ### E. Public beta
 
@@ -124,6 +157,7 @@ thing that works beats shipping a larger thing that half works.
 
 | Deferred                                                       | Why                                                                                                                          |
 | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Payments — Stripe and Razorpay (milestone D)**               | Wanted, and deliberately after the free loop is proven rather than before. Milestone D lists what it covers.                 |
 | Shared or cross-academy course libraries                       | Academy-owned courses with explicit copying cover the need. Sync and unlisting semantics are a large problem to solve early. |
 | Cohorts, drip scheduling, learning paths                       | Depends on the release model being settled first.                                                                            |
 | SCORM, xAPI, cmi5                                              | A substantial integration requiring an LRS. High value for institutional buyers, post-beta.                                  |
