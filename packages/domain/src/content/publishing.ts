@@ -480,6 +480,13 @@ export async function publishCourse(
       .map((lesson, index) => ({
         releaseId: release.id,
         lessonId: lesson.id,
+        /**
+         * Recorded so the media sweep can ask whether a *published* release
+         * still needs an asset. Without it the sweep would see only the draft,
+         * and deleting a video an author had removed from the draft while
+         * learners were still following the release that contains it.
+         */
+        mediaAssetId: lesson.mediaAssetId,
         title: lesson.title,
         contentType: lesson.contentType,
         position: index + 1,

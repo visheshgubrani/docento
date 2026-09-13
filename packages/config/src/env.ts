@@ -218,9 +218,48 @@ export const videoEnvSchema = z.object({
   OPENVOD_WEBHOOK_SECRET: z.string().optional(),
 })
 
+/**
+ * Email is `selfSufficient`, because the console provider works with nothing
+ * configured — a fresh install completes sign-up and password reset by printing
+ * the code to the log.
+ *
+ * SMTP fields are here rather than in the core schema because they are only
+ * meaningful when `EMAIL_PROVIDER=smtp`, and a required field that only applies
+ * to one provider is a boot failure waiting for the other two.
+ */
 export const emailEnvSchema = z.object({
-  RESEND_API_KEY: z.string().optional(),
+  EMAIL_PROVIDER: z.enum(['console', 'resend', 'smtp']).default('console'),
   EMAIL_FROM: z.string().optional(),
+  /**
+   * The display name on the sender.
+   *
+   * Cosmetic, and worth having: a bare address is deliverable but reads as
+   * machine-generated, and a display name is what makes a password reset
+   * recognisable in an inbox.
+   */
+  EMAIL_FROM_NAME: z.string().optional(),
+  RESEND_API_KEY: z.string().optional(),
+
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().int().min(1).max(65535).optional(),
+  /** Implicit TLS on connect. Port 465 uses this; 587 uses STARTTLS instead. */
+  SMTP_SECURE: z
+    .enum(['true', 'false'])
+    .transform((value) => value === 'true')
+    .optional(),
+  /**
+   * Require STARTTLS.
+   *
+   * Defaults to true, because the alternative is sending a password reset over a
+   * plaintext connection when a server does not offer it — a downgrade that is
+   * invisible in a config file and obvious in a breach report.
+   */
+  SMTP_REQUIRE_TLS: z
+    .enum(['true', 'false'])
+    .transform((value) => value === 'true')
+    .optional(),
+  SMTP_USERNAME: z.string().optional(),
+  SMTP_PASSWORD: z.string().optional(),
 })
 
 export type IntegrationSchemas = {
@@ -315,6 +354,29 @@ const integrationDefinitions = {
       if (config.RESEND_API_KEY && !config.EMAIL_FROM) {
         warnings.push(
           'email → RESEND_API_KEY is set without EMAIL_FROM; the sender address is required.',
+        )
+      }
+
+      if (config.EMAIL_PROVIDER === 'resend' && !config.RESEND_API_KEY) {
+        warnings.push(
+          'email → EMAIL_PROVIDER is resend but RESEND_API_KEY is not set; no mail will be sent.',
+        )
+      }
+
+      if (config.EMAIL_PROVIDER === 'smtp' && !config.SMTP_HOST) {
+        warnings.push(
+          'email → EMAIL_PROVIDER is smtp but SMTP_HOST is not set; no mail will be sent.',
+        )
+      }
+
+      /**
+       * A warning rather than an error, because an unauthenticated relay on a
+       * private network is a real deployment — and because refusing to start
+       * over it would break an install that works.
+       */
+      if (config.SMTP_USERNAME && !config.SMTP_PASSWORD) {
+        warnings.push(
+          'email → SMTP_USERNAME is set without SMTP_PASSWORD; authentication will fail unless the server allows an empty password.',
         )
       }
 

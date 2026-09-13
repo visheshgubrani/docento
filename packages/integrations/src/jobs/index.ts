@@ -70,14 +70,47 @@ export const JOB_DEFINITIONS = {
     },
   },
 
-  /** Send a transactional email. */
+  /**
+   * Send a transactional email.
+   *
+   * The template is an enum rather than a string, so a typo is a validation
+   * failure when the job is enqueued — while the caller still has a stack trace
+   * and a request to attach it to — rather than inside a retrying job, where the
+   * symptom is a message that never arrives and a failure nobody reads.
+   *
+   * Retries are bounded and backed off. A refused recipient fails identically on
+   * every attempt, so the handler distinguishes it and stops.
+   */
   'email.send': {
     schema: z.object({
       to: z.string().email(),
-      template: z.string().min(1),
-      data: z.record(z.string(), z.unknown()).optional(),
+      template: z.enum([
+        'verify-email',
+        'reset-password',
+        'workspace-invitation',
+        'certificate-issued',
+      ]),
+      data: z.record(z.string(), z.unknown()),
     }),
-    options: { retryLimit: 5, retryBackoff: true, retryDelaySeconds: 30 },
+    options: { retryLimit: 5, retryBackoff: true, retryDelaySeconds: 60 },
+  },
+
+  /**
+   * Sweep media that was never finished, superseded, or deleted.
+   *
+   * A sweep rather than a reference count, because a counter decremented from
+   * several replicas is a race: two requests that both read `1` both write `0`,
+   * and one of them was wrong. A periodic job that asks the database what is
+   * actually unreferenced is idempotent and cannot drift.
+   */
+  'media.gc': {
+    schema: z.object({}),
+    options: {
+      retryLimit: 2,
+      // Hourly. Deleting bytes promptly is not urgent, and a missed run costs
+      // nothing because the next one catches up.
+      schedule: '0 * * * *',
+    },
   },
 } as const satisfies Record<
   string,

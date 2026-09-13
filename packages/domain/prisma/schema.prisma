@@ -462,6 +462,14 @@ model ReleaseLesson {
   id         String @id @default(cuid())
   releaseId  String
   lessonId   String
+  /// The media this release's version of the lesson uses.
+  ///
+  /// Copied from the draft at publish time rather than looked up, because a
+  /// release is a snapshot: an author changing a lesson's video must not change
+  /// what a learner following an older release sees. It is also what lets the
+  /// media sweep ask whether a *published* release still needs an asset, which
+  /// is the question that stops it deleting a video out from under a course.
+  mediaAssetId String?
   title      String
   /// VIDEO | TEXT | FILE | QUIZ | ASSIGNMENT | EMBED
   contentType String
@@ -471,9 +479,11 @@ model ReleaseLesson {
   /// reports are input, never proof.
   completionRule Json?
 
-  release CourseRelease @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  release    CourseRelease @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+  mediaAsset MediaAsset?   @relation(fields: [mediaAssetId], references: [id], onDelete: SetNull)
 
   @@unique([releaseId, lessonId])
+  @@index([mediaAssetId])
   @@index([releaseId, position])
   @@map("release_lesson")
 }
@@ -509,7 +519,15 @@ model Lesson {
   /// Rich text for TEXT lessons.
   body      String?
   /// Provider-neutral media reference; see MediaAsset.
+  ///
+  /// A real foreign key, not a bare id. The Milestone A review noted that
+  /// without one `MediaAsset.referenceCount` could not be kept correct — and
+  /// this is the same problem from the other side: a sweep that deletes
+  /// unreferenced media needs to be able to *ask* what references an asset.
+  /// `onDelete: SetNull` because removing a video should detach it from a
+  /// lesson rather than take the lesson with it.
   mediaAssetId String?
+  mediaAsset   MediaAsset? @relation(fields: [mediaAssetId], references: [id], onDelete: SetNull)
   /// External embed URL for EMBED lessons.
   embedUrl  String?
   createdAt DateTime @default(now())
@@ -812,6 +830,18 @@ model MediaAsset {
 
   workspace Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   captions  MediaCaption[]
+
+  /**
+   * What points at this asset.
+   *
+   * Two relations, because media is reachable two ways: from a draft lesson an
+   * author is editing, and from a release's lesson list that a learner is
+   * following. The second is the one that must not be missed — an asset deleted
+   * while a published release names it is a lesson that stops playing for
+   * everybody who enrolled.
+   */
+  lessons        Lesson[]
+  releaseLessons ReleaseLesson[]
 
   @@unique([connectionId, providerAssetId])
   @@index([workspaceId, status])
