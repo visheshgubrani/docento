@@ -19,10 +19,16 @@ The single most important thing to understand:
 
 The consequence you will hit:
 
-- **The frontends have not been rebuilt yet.** `apps/studio` and `apps/learn`
-  still call the legacy API's URLs, which the new API does not serve. A complete
-  academy cannot be run end to end from the browser today; the domain and the
-  HTTP surface beneath it are complete and tested.
+- **The frontends are on the public API now, but the free-learning loop is not
+  yet verified end to end.** Both applications call `@docento/sdk` over HTTP;
+  what is missing is the CI job that drives the whole loop — author, publish,
+  enrol, complete, certify — against a fresh database. Until that exists, treat
+  the loop as built and individually tested rather than proven.
+- **Media upload and serving have no routes yet.** `packages/integrations`
+  implements local and S3 storage, and the domain carries `MediaAsset`, but
+  `media.upload`, `media.complete` and `media.serve` are deliberately absent
+  from the operation registry until the routes exist. The SDK's completeness
+  test is what keeps them from being claimed.
 
 ## Layout
 

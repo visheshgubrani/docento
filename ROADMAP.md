@@ -14,10 +14,10 @@ feature-gated edition. **Everything in this repository is the whole product.**
 
 ## Where we are
 
-Milestone A is complete. Milestone B is in progress: the domain layer, the
-contracts, the generated OpenAPI document, the SDK and the HTTP surface are
-done and tested. The two frontends have not been rebuilt onto them yet, and the
-storage, email and container work is outstanding. See below for what each
+Milestone A is complete. Milestone B is close: the domain layer, the contracts,
+the generated OpenAPI document, the SDK, the HTTP surface and both frontends are
+done and individually tested. What remains is the CI job that proves the loop end
+to end, the media routes, and the container story. See below for what each
 milestone covers and how far along it is.
 
 ## Milestones
@@ -54,15 +54,31 @@ The core loop, end to end, with no payments and no external services.
 
 **Exit:** the whole loop runs in CI with only Postgres running.
 
-**Debt this milestone clears.** Three carve-outs exist so the workspace gate can
-be green while the legacy application is still in place. All three are removed
-when the port completes, and none of them applies to new code:
+Every bullet above is built and tested in isolation. What the exit condition
+still needs:
 
-| Carve-out                                       | Where                                                           | Removed when                                                        |
-| ----------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `apps/api` excluded from lint and typecheck     | `apps/api/package.json` (`lint:legacy`, `typecheck:legacy`)     | The app runs on `packages/domain` rather than its own Prisma schema |
-| `apps/api` exempt from the Prisma-boundary rule | `.dependency-cruiser.cjs`                                       | Same                                                                |
-| React Compiler rules downgraded to warnings     | `apps/studio/eslint.config.mjs`, `apps/learn/eslint.config.mjs` | The affected screens are reworked                                   |
+- **An end-to-end suite in CI.** Author → publish → enrol → complete → certify,
+  driven against a fresh database, so the loop is proven rather than assembled
+  from parts that each pass.
+- **Media routes.** `packages/integrations` implements local and S3 storage and
+  the domain carries `MediaAsset`, but `media.upload`, `media.complete` and
+  `media.serve` are deliberately absent from the registry until the routes
+  exist — the SDK's completeness test is what stops them being claimed.
+- **Quiz and assignment authoring in `apps/studio`.** Both are implemented in
+  the domain and reachable over HTTP; the studio edits lesson content and
+  publishes, and the question editor is outstanding.
+- **Containers.** A workspace-aware Dockerfile, a compose `app` profile running
+  the API, worker and both frontends against Postgres alone, and a CI job that
+  builds them.
+
+**Debt this milestone clears.** Three carve-outs existed so the workspace gate
+could be green while the legacy application was still in place. Two are gone —
+`apps/api` is in the lint and typecheck gate like every other package, and the
+Prisma-boundary rule no longer exempts it. The third remains:
+
+| Carve-out                                   | Where                                                           | Removed when                    |
+| ------------------------------------------- | --------------------------------------------------------------- | ------------------------------- |
+| React Compiler rules downgraded to warnings | `apps/studio/eslint.config.mjs`, `apps/learn/eslint.config.mjs` | The affected hooks are reworked |
 
 The React rules are downgraded rather than disabled, so the violations stay
 visible in every lint run instead of disappearing.
