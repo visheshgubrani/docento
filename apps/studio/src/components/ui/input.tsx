@@ -2,7 +2,15 @@ import * as React from 'react'
 
 import { cn } from '@/lib/utils'
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+/**
+ * A type alias rather than an empty interface.
+ *
+ * `interface X extends Y {}` says nothing Y does not, and the lint rule that
+ * flags it is right: an empty declaration is a place for a field to be added by
+ * accident, and a reader cannot tell it apart from one that was meant to have
+ * fields and lost them.
+ */
+export type InputProps = React.InputHTMLAttributes<HTMLInputElement>
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, ...props }, ref) => {

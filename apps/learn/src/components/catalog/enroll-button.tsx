@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 
 import { browserApiClient, messageFor } from '@/lib/client-api'
 import { Button } from '@/components/ui/button'
@@ -24,8 +23,6 @@ export function EnrollButton({
   courseId: string
   academySlug: string
 }) {
-  const router = useRouter()
-
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [key, setKey] = useState<string | null>(null)

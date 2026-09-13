@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
 import { authClient } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
@@ -26,7 +26,6 @@ import { Label } from '@/components/ui/label'
  * frontend controls, and it does not add the distinction back.
  */
 export function SignInForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
 
   const [email, setEmail] = useState('')

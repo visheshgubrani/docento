@@ -29,7 +29,12 @@ export default async function LearnerCoursePage({
 }) {
   const { courseId } = await params
 
-  const session = await redirectIfSignedOut(`/courses/${courseId}`)
+  /**
+   * The guard is the call, not its result: it redirects when there is no
+   * session and returns normally otherwise, so the value is deliberately
+   * unused — the API is what decides what a session may see.
+   */
+  await redirectIfSignedOut(`/courses/${courseId}`)
 
   const api = await apiClient()
 

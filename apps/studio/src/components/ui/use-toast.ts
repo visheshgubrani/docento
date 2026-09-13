@@ -12,12 +12,16 @@ type ToasterToast = ToastProps & {
   action?: ToastActionElement
 }
 
-const actionTypes = {
-  ADD_TOAST: 'ADD_TOAST',
-  UPDATE_TOAST: 'UPDATE_TOAST',
-  DISMISS_TOAST: 'DISMISS_TOAST',
-  REMOVE_TOAST: 'REMOVE_TOAST',
-} as const
+/**
+ * The four actions the reducer understands, as a type.
+ *
+ * These were a `const` object whose values mirrored its keys, and whose only
+ * use was `typeof actionTypes` — so the runtime object existed solely to be
+ * read by the compiler. A union says the same thing and cannot drift from the
+ * string literals the `dispatch` calls below actually pass.
+ */
+type ActionType =
+  'ADD_TOAST' | 'UPDATE_TOAST' | 'DISMISS_TOAST' | 'REMOVE_TOAST'
 
 let count = 0
 
@@ -26,23 +30,21 @@ function genId() {
   return count.toString()
 }
 
-type ActionType = typeof actionTypes
-
 type Action =
   | {
-      type: ActionType['ADD_TOAST']
+      type: Extract<ActionType, 'ADD_TOAST'>
       toast: ToasterToast
     }
   | {
-      type: ActionType['UPDATE_TOAST']
+      type: Extract<ActionType, 'UPDATE_TOAST'>
       toast: Partial<ToasterToast>
     }
   | {
-      type: ActionType['DISMISS_TOAST']
+      type: Extract<ActionType, 'DISMISS_TOAST'>
       toastId?: ToasterToast['id']
     }
   | {
-      type: ActionType['REMOVE_TOAST']
+      type: Extract<ActionType, 'REMOVE_TOAST'>
       toastId?: ToasterToast['id']
     }
 

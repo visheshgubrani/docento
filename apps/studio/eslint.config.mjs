@@ -16,48 +16,22 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
 
-  {
-    rules: {
-      /**
-       * React Compiler and hooks-correctness rules are reported as warnings.
-       *
-       * This app predates the OSS architecture and is reworked during the
-       * Milestone B port. It has ~48 genuine violations of these rules
-       * (setState in effects, refs read during render, and similar), and they
-       * are real bugs rather than lint noise — but rewriting them now means
-       * rewriting code that is about to be replaced.
-       *
-       * Downgraded rather than disabled, and deliberately not excluded from
-       * linting altogether: every other rule still gates this app, and the
-       * remaining work stays visible in every run instead of disappearing.
-       */
-      'react-hooks/set-state-in-effect': 'warn',
-      'react-hooks/refs': 'warn',
-      'react-hooks/immutability': 'warn',
-      'react-hooks/purity': 'warn',
-      'react-hooks/static-components': 'warn',
-      'react-hooks/globals': 'warn',
-      'react-hooks/use-memo': 'warn',
-      'react-hooks/preserve-manual-memoization': 'warn',
-
-      /**
-       * The rest of the pre-existing debt, downgraded for the same reason.
-       *
-       * `no-explicit-any` is normally an error and should stay one for new
-       * code; these are 13 untyped boundaries in the legacy API layer. The
-       * unescaped entities are literal apostrophes in marketing copy, and
-       * `no-assign-module-variable` fires on local variables named `module`.
-       *
-       * All of it is in code the port replaces. Reported as warnings so it
-       * stays visible, rather than suppressed.
-       */
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-empty-object-type': 'warn',
-      '@next/next/no-assign-module-variable': 'warn',
-      '@next/next/no-html-link-for-pages': 'warn',
-      'react/no-unescaped-entities': 'warn',
-    },
-  },
+  /**
+   * No rule overrides.
+   *
+   * This block used to downgrade React Compiler and hooks-correctness rules to
+   * warnings, with a comment explaining that this application "predates the OSS
+   * architecture and is reworked during the Milestone B port" and had "~48
+   * genuine violations". Both halves of that stopped being true: the port is
+   * done, and what remained was nine violations in vendored shadcn primitives —
+   * seven of them in hooks that nothing imported at all.
+   *
+   * The debt is discharged rather than hidden. The dead hooks and the one unused
+   * component are gone, `use-toast` describes its actions as a union instead of
+   * a runtime object it only ever read as a type, and three empty interfaces are
+   * type aliases. Every rule the port downgraded now gates this application, so
+   * a new violation is a failed build rather than a line in a log.
+   */
 
   globalIgnores([
     'node_modules/**',
