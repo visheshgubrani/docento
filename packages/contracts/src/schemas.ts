@@ -241,6 +241,38 @@ export const lessonSummarySchema = z.object({
 
 export type LessonSummary = z.infer<typeof lessonSummarySchema>
 
+/**
+ * A stored file.
+ *
+ * Note what is absent: no URL. Bytes are served by the API at
+ * `GET /media/{assetId}` so that entitlement is checked when the file is asked
+ * for rather than when a link was minted — a presigned download URL outlives a
+ * revoked grant, and the window is exactly when it matters.
+ */
+export const mediaAssetSchema = z.object({
+  id: idSchema,
+  workspaceId: idSchema,
+  academyId: idSchema,
+  provider: z.string(),
+  status: z.enum(['PROCESSING', 'READY', 'FAILED', 'DELETED']),
+  storageKey: z.string().nullable(),
+  title: z.string().nullable(),
+  originalFilename: z.string().nullable(),
+  mimeType: z.string().nullable(),
+  /**
+   * A number, not a bigint.
+   *
+   * The column is `BigInt` and `JSON.stringify` throws on one, so a
+   * `sizeBytes` that reached a response without conversion would turn a
+   * successful read into a 500 far from its cause. The domain converts at its
+   * boundary; this declares the converted shape.
+   */
+  sizeBytes: z.number().int().nonnegative().nullable(),
+  createdAt: dateSchema,
+})
+
+export type MediaAsset = z.infer<typeof mediaAssetSchema>
+
 export const releaseSummarySchema = z.object({
   id: idSchema,
   courseId: idSchema,

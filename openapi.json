@@ -14365,6 +14365,1140 @@
         }
       }
     },
+    "/workspaces/{workspaceId}/academies/{academyId}/media": {
+      "post": {
+        "summary": "Create a media asset and get the address to upload its bytes to",
+        "operationId": "media.create",
+        "tags": [
+          "media"
+        ],
+        "security": [
+          {
+            "staffSession": []
+          },
+          {
+            "serviceKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "academyId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "Optional caller-chosen request id, echoed back and logged. Pass your own tracing id to correlate a support report with the server logs."
+            },
+            "required": false,
+            "description": "Optional caller-chosen request id, echoed back and logged. Pass your own tracing id to correlate a support report with the server logs.",
+            "name": "x-request-id",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "filename": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255
+                  },
+                  "mimeType": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255
+                  },
+                  "sizeBytes": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
+                  },
+                  "title": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "maxLength": 255
+                  }
+                },
+                "required": [
+                  "filename",
+                  "mimeType"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "asset": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 64
+                            },
+                            "workspaceId": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 64
+                            },
+                            "academyId": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 64
+                            },
+                            "provider": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "PROCESSING",
+                                "READY",
+                                "FAILED",
+                                "DELETED"
+                              ]
+                            },
+                            "storageKey": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "title": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "originalFilename": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "mimeType": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "sizeBytes": {
+                              "type": [
+                                "integer",
+                                "null"
+                              ],
+                              "minimum": 0
+                            },
+                            "createdAt": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "format": "date-time"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "workspaceId",
+                            "academyId",
+                            "provider",
+                            "status",
+                            "storageKey",
+                            "title",
+                            "originalFilename",
+                            "mimeType",
+                            "sizeBytes",
+                            "createdAt"
+                          ]
+                        },
+                        "upload": {
+                          "type": "object",
+                          "properties": {
+                            "url": {
+                              "type": "string"
+                            },
+                            "method": {
+                              "type": "string",
+                              "enum": [
+                                "PUT",
+                                "POST"
+                              ]
+                            },
+                            "headers": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "string"
+                              }
+                            },
+                            "expiresAt": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "format": "date-time"
+                            }
+                          },
+                          "required": [
+                            "url",
+                            "method",
+                            "headers",
+                            "expiresAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "asset",
+                        "upload"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "requestId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. `error.code` is one of: validation_failed, unauthorized, forbidden, not_found, conflict, stale_revision, rate_limited, payment_required, provider_not_configured, provider_error, idempotency_replay, internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "validation_failed",
+                            "unauthorized",
+                            "forbidden",
+                            "not_found",
+                            "conflict",
+                            "stale_revision",
+                            "rate_limited",
+                            "payment_required",
+                            "provider_not_configured",
+                            "provider_error",
+                            "idempotency_replay",
+                            "internal_error"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "message"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "requestId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Media in an academy, newest first",
+        "operationId": "media.list",
+        "tags": [
+          "media"
+        ],
+        "security": [
+          {
+            "staffSession": []
+          },
+          {
+            "serviceKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "academyId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "Optional caller-chosen request id, echoed back and logged. Pass your own tracing id to correlate a support report with the server logs."
+            },
+            "required": false,
+            "description": "Optional caller-chosen request id, echoed back and logged. Pass your own tracing id to correlate a support report with the server logs.",
+            "name": "x-request-id",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "assets": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64
+                              },
+                              "workspaceId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64
+                              },
+                              "academyId": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 64
+                              },
+                              "provider": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "PROCESSING",
+                                  "READY",
+                                  "FAILED",
+                                  "DELETED"
+                                ]
+                              },
+                              "storageKey": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "title": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "originalFilename": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "mimeType": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "sizeBytes": {
+                                "type": [
+                                  "integer",
+                                  "null"
+                                ],
+                                "minimum": 0
+                              },
+                              "createdAt": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "format": "date-time"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "workspaceId",
+                              "academyId",
+                              "provider",
+                              "status",
+                              "storageKey",
+                              "title",
+                              "originalFilename",
+                              "mimeType",
+                              "sizeBytes",
+                              "createdAt"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "assets"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "requestId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. `error.code` is one of: validation_failed, unauthorized, forbidden, not_found, conflict, stale_revision, rate_limited, payment_required, provider_not_configured, provider_error, idempotency_replay, internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "validation_failed",
+                            "unauthorized",
+                            "forbidden",
+                            "not_found",
+                            "conflict",
+                            "stale_revision",
+                            "rate_limited",
+                            "payment_required",
+                            "provider_not_configured",
+                            "provider_error",
+                            "idempotency_replay",
+                            "internal_error"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "message"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "requestId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspaces/{workspaceId}/academies/{academyId}/media/{assetId}/complete": {
+      "post": {
+        "summary": "Confirm an upload landed and mark the asset ready",
+        "operationId": "media.complete",
+        "tags": [
+          "media"
+        ],
+        "security": [
+          {
+            "staffSession": []
+          },
+          {
+            "serviceKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "academyId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "assetId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "Optional caller-chosen request id, echoed back and logged. Pass your own tracing id to correlate a support report with the server logs."
+            },
+            "required": false,
+            "description": "Optional caller-chosen request id, echoed back and logged. Pass your own tracing id to correlate a support report with the server logs.",
+            "name": "x-request-id",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sizeBytes": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "asset": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 64
+                            },
+                            "workspaceId": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 64
+                            },
+                            "academyId": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 64
+                            },
+                            "provider": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "PROCESSING",
+                                "READY",
+                                "FAILED",
+                                "DELETED"
+                              ]
+                            },
+                            "storageKey": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "title": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "originalFilename": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "mimeType": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "sizeBytes": {
+                              "type": [
+                                "integer",
+                                "null"
+                              ],
+                              "minimum": 0
+                            },
+                            "createdAt": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "format": "date-time"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "workspaceId",
+                            "academyId",
+                            "provider",
+                            "status",
+                            "storageKey",
+                            "title",
+                            "originalFilename",
+                            "mimeType",
+                            "sizeBytes",
+                            "createdAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "asset"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "requestId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. `error.code` is one of: validation_failed, unauthorized, forbidden, not_found, conflict, stale_revision, rate_limited, payment_required, provider_not_configured, provider_error, idempotency_replay, internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "validation_failed",
+                            "unauthorized",
+                            "forbidden",
+                            "not_found",
+                            "conflict",
+                            "stale_revision",
+                            "rate_limited",
+                            "payment_required",
+                            "provider_not_configured",
+                            "provider_error",
+                            "idempotency_replay",
+                            "internal_error"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "message"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "requestId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspaces/{workspaceId}/academies/{academyId}/media/{assetId}": {
+      "delete": {
+        "summary": "Delete a media asset",
+        "operationId": "media.delete",
+        "tags": [
+          "media"
+        ],
+        "security": [
+          {
+            "staffSession": []
+          },
+          {
+            "serviceKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "academyId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "assetId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "Optional caller-chosen request id, echoed back and logged. Pass your own tracing id to correlate a support report with the server logs."
+            },
+            "required": false,
+            "description": "Optional caller-chosen request id, echoed back and logged. Pass your own tracing id to correlate a support report with the server logs.",
+            "name": "x-request-id",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "ok": {
+                          "type": "boolean",
+                          "enum": [
+                            true
+                          ]
+                        }
+                      },
+                      "required": [
+                        "ok"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "requestId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. `error.code` is one of: validation_failed, unauthorized, forbidden, not_found, conflict, stale_revision, rate_limited, payment_required, provider_not_configured, provider_error, idempotency_replay, internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "validation_failed",
+                            "unauthorized",
+                            "forbidden",
+                            "not_found",
+                            "conflict",
+                            "stale_revision",
+                            "rate_limited",
+                            "payment_required",
+                            "provider_not_configured",
+                            "provider_error",
+                            "idempotency_replay",
+                            "internal_error"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "message"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "requestId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/workspaces/{workspaceId}/service-keys": {
       "get": {
         "summary": "Service keys in a workspace, without their secrets",

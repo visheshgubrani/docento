@@ -45,6 +45,7 @@ export type {
   LearnerLesson,
   LearnerModule,
   LessonSummary,
+  MediaAsset,
   ModuleSummary,
   OutlineLesson,
   OutlineModule,

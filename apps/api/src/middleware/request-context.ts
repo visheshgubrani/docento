@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import type { Context, MiddlewareHandler } from 'hono'
 
 import { REQUEST_ID_HEADER } from '@docento/contracts'
+import type { StorageAdapter } from '@docento/integrations'
 
 /**
  * Request identity and access logging.
@@ -28,6 +29,15 @@ export type RequestContext = {
 declare module 'hono' {
   interface ContextVariableMap {
     request: RequestContext
+    /**
+     * The storage adapter this process serves media with.
+     *
+     * A context variable rather than a module import, so `createApp` can be
+     * assembled with a fake in a test. Declared here with the other context
+     * variable because `c.set` and `c.get` are typed from this map, and an
+     * undeclared key is one the compiler has to be told to trust.
+     */
+    storage: StorageAdapter
   }
 }
 

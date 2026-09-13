@@ -1,6 +1,8 @@
 import { Hono } from 'hono'
 
 import { buildOpenApiDocument } from '@docento/contracts'
+import { createStorageFromEnv } from '@docento/integrations'
+import type { StorageAdapter } from '@docento/integrations'
 import {
   LEARNER_AUTH_BASE_PATH,
   STAFF_AUTH_BASE_PATH,
@@ -9,6 +11,7 @@ import {
 } from '@docento/domain'
 
 import { resolveAcademyFor } from './auth/principal.js'
+import { createMediaRoutes } from './routes/media.js'
 import { requestContext } from './middleware/request-context.js'
 import { fail, handleError } from './middleware/respond.js'
 import { createRoutes } from './routes/index.js'
@@ -38,10 +41,40 @@ import { createRoutes } from './routes/index.js'
  * to — which is the fail-closed behaviour, expressed as a type rather than as a
  * branch somebody has to remember to write.
  */
-export function createApp(): Hono {
+export function createApp(options: { storage?: StorageAdapter } = {}): Hono {
   const app = new Hono()
 
   app.use('*', requestContext())
+
+  /**
+   * Storage is assembled once, on the first request that needs it.
+   *
+   * `createApp` is called by tests that configure no storage at all, so building
+   * an S3 client here would make every test that touches a route require a
+   * bucket. It is also why an adapter can be injected: the media route tests
+   * supply a fake, which is the seam that lets the byte paths be exercised
+   * without a filesystem.
+   */
+  const storage =
+    options.storage ??
+    // Built lazily so `loadEnv()` has already run in the entry point.
+    new Proxy({} as StorageAdapter, {
+      get(_target, property) {
+        cachedStorage ??= createStorageFromEnv(process.env, {
+          apiUrl: process.env.API_URL ?? 'http://localhost:4000',
+        })
+
+        return Reflect.get(cachedStorage, property) as unknown
+      },
+    })
+
+  let cachedStorage: StorageAdapter | null = null
+
+  app.use('*', async (c, next) => {
+    c.set('storage', storage)
+
+    await next()
+  })
 
   // --- Authentication realms ----------------------------------------------
 
@@ -84,6 +117,13 @@ export function createApp(): Hono {
   })
 
   // --- API ----------------------------------------------------------------
+
+  /**
+   * The byte routes are mounted first, because one of them is a prefix match
+   * (`/media/upload/:key{.+}`) that would otherwise be shadowed by the operation
+   * routes beneath it.
+   */
+  app.route('/api/v1', createMediaRoutes({ storage }))
 
   app.route('/api/v1', createRoutes())
 

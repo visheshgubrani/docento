@@ -22,8 +22,14 @@ import {
   getLesson,
   getCourseProgress,
   getLearnerProfile,
+  DomainRuleError,
+  completeMediaAsset,
+  createMediaAsset,
+  deleteMediaAsset,
+  getMediaAsset,
   getPublicAcademy,
   getStaffIdentity,
+  listMediaAssets,
   readAcademyIdentity,
   getPublicCourse,
   getPublicOutline,
@@ -61,6 +67,9 @@ import {
   upsertSection,
   verifyCertificate,
 } from '@docento/domain'
+
+import { buildStorageKey } from '@docento/integrations'
+import type { StorageAdapter } from '@docento/integrations'
 
 import { operation } from './operation.js'
 
@@ -154,6 +163,30 @@ function param(input: { params?: unknown }, key: string): string {
   const params = (input.params ?? {}) as Record<string, string>
 
   return params[key] ?? ''
+}
+
+/** A validated query value, or `undefined` when the operation declares none. */
+function query<T>(input: { query?: unknown }, key: string): T | undefined {
+  return ((input.query ?? {}) as Record<string, T>)[key]
+}
+
+/**
+ * The storage adapter for this process.
+ *
+ * ## Why it is resolved lazily and cached
+ *
+ * Building an S3 client per request would reconnect on every upload, and
+ * building one at import time would make `createApp` untestable without a full
+ * environment — the routes are exercised in tests that configure no storage at
+ * all. The first request that needs storage builds it, and every one after that
+ * reuses it.
+ *
+ * The dependency arrives on the Hono context rather than being imported, so the
+ * app can be assembled with a fake adapter in a test. That is the seam the media
+ * route tests use, and it is why this function exists rather than module state.
+ */
+function storageFor(c: Context): StorageAdapter {
+  return c.get('storage')
 }
 
 export function createRoutes(): Hono {
@@ -688,6 +721,160 @@ export function createRoutes(): Hono {
         curriculum: await getPublicOutline({ academyId, courseId }),
       }
     }),
+  )
+
+  // -------------------------------------------------------------------------
+  // Media
+  // -------------------------------------------------------------------------
+
+  /**
+   * Begin an upload.
+   *
+   * The storage key is built here rather than by the domain operation, because
+   * the key is where a provider's rules live and `buildStorageKey` is the
+   * function that sanitises the filename into it. The operation receives the
+   * finished key, so the sanitising cannot be skipped by a caller that forgot.
+   */
+  routes.post(
+    '/workspaces/:workspaceId/academies/:academyId/media',
+    operation('media.create', async ({ principal, input, request }) => {
+      const workspaceId = param(input, 'workspaceId')
+      const academyId = param(input, 'academyId')
+
+      const body = (input.body ?? {}) as {
+        filename: string
+        mimeType: string
+        sizeBytes?: number | null
+        title?: string | null
+      }
+
+      const storage = storageFor(request)
+
+      const asset = await createMediaAsset(principal, {
+        workspaceId,
+        academyId,
+        provider: storage.provider,
+        /**
+         * The operation supplies the id and asks for the key it should use. It
+         * generates the id because the schema's `@default(cuid())` is a format
+         * only the database knows, and the key has to contain that same id — so
+         * the two cannot be decided in different places.
+         */
+        storageKeyFor: (assetId) =>
+          buildStorageKey({ workspaceId, assetId, filename: body.filename }),
+        title: body.title ?? null,
+        originalFilename: body.filename,
+        mimeType: body.mimeType,
+        sizeBytes: body.sizeBytes ?? null,
+      })
+
+      /**
+       * The destination is minted after the row exists, so a client given a URL
+       * is always given one for an asset this API knows about — which is what
+       * makes the upload route's lookup meaningful rather than decorative.
+       *
+       * The key comes back from the row rather than being recomposed here: one
+       * composition, in the operation, so the two cannot drift.
+       */
+      if (!asset.storageKey) {
+        throw new NotFoundError('media asset', asset.id)
+      }
+
+      const upload = await storage.createUploadTarget({
+        key: asset.storageKey,
+        contentType: body.mimeType,
+        ...(body.sizeBytes ? { sizeBytes: body.sizeBytes } : {}),
+      })
+
+      return {
+        asset,
+        upload: {
+          url: upload.url,
+          method: upload.method,
+          headers: upload.headers,
+          expiresAt: upload.expiresAt,
+        },
+      }
+    }),
+  )
+
+
+  /**
+   * Confirm an upload landed.
+   *
+   * The provider is asked whether the object exists before the row is marked
+   * ready. Without that, a client could mark an upload complete that never
+   * arrived, and the first evidence would be a learner whose video does not
+   * play — a failure a long way from its cause.
+   */
+  routes.post(
+    '/workspaces/:workspaceId/academies/:academyId/media/:assetId/complete',
+    operation('media.complete', async ({ principal, input, request }) => {
+      const workspaceId = param(input, 'workspaceId')
+      const academyId = param(input, 'academyId')
+      const assetId = param(input, 'assetId')
+
+      const asset = await getMediaAsset(principal, {
+        workspaceId,
+        academyId,
+        assetId,
+      })
+
+      if (!asset.storageKey) {
+        throw new NotFoundError('media asset', assetId)
+      }
+
+      const storage = storageFor(request)
+      const landed = await storage.exists(asset.storageKey)
+
+      if (!landed) {
+        /**
+         * A `422` rather than a `404`: the asset exists and the caller may see
+         * it, and what is missing is the bytes. Reporting it as not-found would
+         * send an operator looking for the wrong thing.
+         */
+        throw new DomainRuleError(
+          'upload_missing',
+          'The upload has not arrived yet. Send the bytes to the address this asset was created with, then confirm again.',
+          [{ path: 'assetId', message: 'No object is stored under this asset.' }],
+        )
+      }
+
+      const body = (input.body ?? {}) as { sizeBytes?: number | null }
+
+      return {
+        asset: await completeMediaAsset(principal, {
+          workspaceId,
+          academyId,
+          assetId,
+          ...(body.sizeBytes !== undefined ? { sizeBytes: body.sizeBytes } : {}),
+        }),
+      }
+    }),
+  )
+
+  routes.get(
+    '/workspaces/:workspaceId/academies/:academyId/media',
+    operation('media.list', async ({ principal, input }) => ({
+      assets: await listMediaAssets(principal, {
+        workspaceId: param(input, 'workspaceId'),
+        academyId: param(input, 'academyId'),
+        ...(query<number>(input, 'limit') !== undefined
+          ? { limit: query<number>(input, 'limit') }
+          : {}),
+      }),
+    })),
+  )
+
+  routes.delete(
+    '/workspaces/:workspaceId/academies/:academyId/media/:assetId',
+    operation('media.delete', async ({ principal, input }) =>
+      deleteMediaAsset(principal, {
+        workspaceId: param(input, 'workspaceId'),
+        academyId: param(input, 'academyId'),
+        assetId: param(input, 'assetId'),
+      }),
+    ),
   )
 
   // -------------------------------------------------------------------------

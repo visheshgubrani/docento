@@ -84,6 +84,7 @@ model Academy {
   accessGrants    AccessGrant[]
   enrollments     Enrollment[]
   certificates    Certificate[]
+  mediaAssets     MediaAsset[]
 
   @@unique([workspaceId, slug])
   @@index([workspaceId])
@@ -803,6 +804,16 @@ model AccessGrant {
 model MediaAsset {
   id              String   @id @default(cuid())
   workspaceId     String
+  /**
+   * The academy the asset belongs to.
+   *
+   * A workspace can run several academies, and media is academy-scoped in the
+   * same way courses are: an instructor scoped to one academy must not be able
+   * to serve, or delete, another's files. It is a column rather than a join
+   * through `Lesson`, because an asset precedes the lesson that will use it —
+   * an upload happens first, and a file with no lesson yet still has an owner.
+   */
+  academyId       String
   /// local | s3 | openvod | external
   provider        String
   /// Which configured connection produced this asset, recorded once and never
@@ -829,6 +840,7 @@ model MediaAsset {
   updatedAt       DateTime @updatedAt
 
   workspace Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  academy   Academy        @relation(fields: [academyId], references: [id], onDelete: Cascade)
   captions  MediaCaption[]
 
   /**
@@ -845,6 +857,9 @@ model MediaAsset {
 
   @@unique([connectionId, providerAssetId])
   @@index([workspaceId, status])
+  /// The sweep asks "what in this academy is unreferenced" and the serve route
+  /// asks "is this asset in the academy the caller is entitled to".
+  @@index([academyId, status])
   @@map("media_asset")
 }
 

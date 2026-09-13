@@ -72,3 +72,7 @@ export type {
   TemplateName,
   TemplatePayload,
 } from './email/index.js'
+
+// Assembly from the environment. Here rather than in each process, so the API
+// and the worker cannot disagree about how a provider is configured.
+export { createEmailFromEnv, createStorageFromEnv } from './from-env.js'

@@ -35,6 +35,8 @@ export type Resource = {
   courseId?: string | null
   /** Set when the resource belongs to a specific learner (self-service). */
   learnerId?: string | null
+  /** Set when the resource is a specific media asset. */
+  assetId?: string | null
 }
 
 export type Decision = { allowed: true } | { allowed: false; reason: string }
@@ -148,9 +150,18 @@ export const REQUIRED_RESOURCE_FIELDS: Record<
    */
   'certificate:verify': [],
 
-  'media:read': ['workspaceId'],
-  'media:upload': ['workspaceId'],
-  'media:delete': ['workspaceId'],
+  /**
+   * Media is academy-scoped, like courses.
+   *
+   * An earlier draft required only a workspace, which meant an instructor whose
+   * assignment is scoped to one academy could read, upload into, and delete from
+   * every academy in the workspace. Requiring the academy is what makes the
+   * assignment scoping in `canViaAssignment` apply to media at all.
+   */
+  'media:read': ['workspaceId', 'academyId'],
+  'media:upload': ['workspaceId', 'academyId'],
+  /// Named by the asset as well, so "may upload here" is not "may delete that".
+  'media:delete': ['workspaceId', 'academyId', 'assetId'],
   /// Served in the context of an academy, because entitlement is a learner's
   /// enrolment in that academy — not staff membership of the workspace.
   'media:serve': ['academyId'],

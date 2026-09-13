@@ -5,10 +5,12 @@ import {
   brandingSchema,
   catalogCourseSchema,
   courseSummarySchema,
+  dateSchema,
   enrollmentSummarySchema,
   learnerCourseSchema,
   learnerModuleSchema,
   lessonSummarySchema,
+  mediaAssetSchema,
   moduleSummarySchema,
   progressSummarySchema,
   publicCertificateSchema,
@@ -1078,22 +1080,123 @@ export const OPERATIONS = {
     retryable: true,
   },
 
+  // --- Media --------------------------------------------------------------
+
   /**
-   * Media operations are deliberately absent.
+   * Begin an upload.
    *
-   * The registry describes what the API serves, and a declared endpoint with no
-   * route is worse than an absent one: it appears in the generated document, it
-   * gets an SDK method, and it 404s the first time an integrator calls it. The
-   * storage adapters are the next piece of work, and these three arrive with
-   * them:
+   * ## Why this is three calls and not one
    *
-   *   POST /workspaces/{workspaceId}/media/uploads
-   *   POST /workspaces/{workspaceId}/media/{assetId}/complete
-   *   GET  /media/{assetId}
+   * The bytes do not necessarily come through this API. With S3 configured, the
+   * client is given a presigned URL and uploads directly to the bucket — which
+   * is the entire reason presigning exists, and it is what keeps a two-gigabyte
+   * video out of a Node process. With local disk, the target points back here
+   * and the bytes do stream through the API, because the API is the only process
+   * that can write to that directory.
    *
-   * The last of those returns bytes rather than an envelope, which is why the
-   * SDK's completeness test has a category for operations it cannot wrap — the
-   * category exists before the operation does.
+   * A single multipart endpoint would work for the second case and make the
+   * first impossible, so the two-step shape is the one that fits both: *create*
+   * names the asset and asks where the bytes should go, the client sends them,
+   * and *complete* records that they arrived.
+   *
+   * ## Why it is not `retryable`
+   *
+   * Creating an asset is not idempotent: a retry creates a second row. Marking it
+   * retryable would require the caller to send a key, and the natural key is one
+   * the server would have to invent — the asset id is what makes the storage key
+   * unique, so it has to exist before the key does. What a retried create leaves
+   * behind is a `PROCESSING` asset with no bytes, which is precisely what
+   * `media.gc` sweeps, so the cost of the failure is bounded and reclaimed.
+   */
+  'media.create': {
+    method: 'POST',
+    path: '/workspaces/{workspaceId}/academies/{academyId}/media',
+    params: z.object({ workspaceId: id, academyId: id }),
+    body: z
+      .object({
+        filename: z.string().min(1).max(255),
+        mimeType: z.string().min(1).max(255),
+        sizeBytes: z.number().int().nonnegative().nullable().optional(),
+        title: z.string().max(255).nullable().optional(),
+      })
+      .strict(),
+    response: z.object({
+      asset: mediaAssetSchema,
+      /**
+       * Where the bytes go, and how.
+       *
+       * `method` and `headers` are supplied rather than assumed to be `PUT` with
+       * a content type, because the local adapter's target is this API's own
+       * upload route while S3's is a presigned bucket URL. A client that assumed
+       * would work against exactly one deployment.
+       */
+      upload: z.object({
+        url: z.string(),
+        method: z.enum(['PUT', 'POST']),
+        headers: z.record(z.string(), z.string()),
+        expiresAt: dateSchema,
+      }),
+    }),
+    action: 'media:upload',
+    summary: 'Create a media asset and get the address to upload its bytes to',
+  },
+
+  /**
+   * Record that the bytes arrived.
+   *
+   * The API asks the storage provider whether the object exists before this
+   * succeeds, so a client cannot mark an upload complete that never landed. That
+   * check is the reason this is a separate call rather than an assumption made
+   * when the target was issued.
+   */
+  'media.complete': {
+    method: 'POST',
+    path: '/workspaces/{workspaceId}/academies/{academyId}/media/{assetId}/complete',
+    params: z.object({ workspaceId: id, academyId: id, assetId: id }),
+    body: z
+      .object({
+        sizeBytes: z.number().int().nonnegative().nullable().optional(),
+      })
+      .strict(),
+    response: z.object({ asset: mediaAssetSchema }),
+    action: 'media:upload',
+    summary: 'Confirm an upload landed and mark the asset ready',
+  },
+
+  'media.list': {
+    method: 'GET',
+    path: '/workspaces/{workspaceId}/academies/{academyId}/media',
+    params: z.object({ workspaceId: id, academyId: id }),
+    query: z.object({
+      limit: z.coerce.number().int().min(1).max(200).optional(),
+    }),
+    response: z.object({ assets: z.array(mediaAssetSchema) }),
+    action: 'media:read',
+    summary: 'Media in an academy, newest first',
+  },
+
+  'media.delete': {
+    method: 'DELETE',
+    path: '/workspaces/{workspaceId}/academies/{academyId}/media/{assetId}',
+    params: z.object({ workspaceId: id, academyId: id, assetId: id }),
+    response: okSchema,
+    action: 'media:delete',
+    summary: 'Delete a media asset',
+  },
+
+  /**
+   * Serving bytes is deliberately absent from this registry.
+   *
+   * `GET /media/{assetId}` returns the file itself, not an envelope, and the
+   * registry describes JSON operations — every entry here has a Zod `response`
+   * and an SDK method that unwraps `data`. Declaring it would mean either a
+   * `response` schema that lies about what the route returns or a special case
+   * in every consumer.
+   *
+   * It is a real route with a real entitlement check (`media:serve`, which a
+   * learner holds for their own academy and an anonymous visitor holds for a
+   * free-preview lesson). What it is not is an operation, and the SDK's
+   * `STREAMING_OPERATIONS` list is where that category is recorded.
    */
 
   // --- Service keys -------------------------------------------------------

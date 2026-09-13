@@ -170,6 +170,27 @@ export type {
 export { getStaffIdentity } from './tenancy/session'
 export type { StaffIdentity, StaffSessionWorkspace } from './tenancy/session'
 
+// Media
+export {
+  ALLOWED_MIME_TYPES,
+  MEDIA_PROVIDERS,
+  MEDIA_STATUSES,
+  completeMediaAsset,
+  createMediaAsset,
+  deleteMediaAsset,
+  getMediaAsset,
+  isAllowedMimeType,
+  listMediaAssets,
+  resolvePendingAssetByKey,
+  resolveServableAsset,
+} from './media/assets'
+export type {
+  AllowedMimeType,
+  MediaAssetSummary,
+  MediaProvider,
+  MediaStatus,
+} from './media/assets'
+
 // Content
 export {
   LESSON_CONTENT_TYPES,

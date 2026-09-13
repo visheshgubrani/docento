@@ -39,7 +39,20 @@ const app = createApp()
  * themselves rather than about where the mount happens to be — a mount moved
  * from `/api/v1` to `/api/v2` should not read as fifty-three missing routes.
  */
+/**
+ * The byte routes, collected rather than discarded.
+ *
+ * The registry cannot describe them, so the comparison excludes them — and an
+ * exclusion that throws away what it excludes makes their disappearance
+ * invisible. They are collected here so the test below can assert they exist,
+ * and both sets are built once from the one app this suite describes.
+ */
+const byteRoutes = new Set<string>()
+let cachedRoutes: Set<string> | null = null
+
 function mountedRoutes(): Set<string> {
+  if (cachedRoutes) return cachedRoutes
+
   const mounted = new Set<string>()
 
   for (const route of app.routes) {
@@ -52,8 +65,30 @@ function mountedRoutes(): Set<string> {
 
     const normalised = route.path.replace(/^\/api\/v1/, '')
 
+    /**
+     * The byte routes, which are excluded by shape rather than by name.
+     *
+     * They return a file and receive a file, so they cannot be registry
+     * operations — a registry entry has a Zod response schema and an SDK method
+     * that unwraps `data`, and neither is true of a video. The exclusion is
+     * narrow on purpose: a *new* JSON route under `/media/` still has to have a
+     * contract behind it, and the test below asserts these two exist so the
+     * exclusion cannot quietly hide their removal.
+     */
+    if (normalised.includes('/media/upload/')) {
+      byteRoutes.add(`${route.method} ${normalised}`)
+      continue
+    }
+
+    if (normalised === '/media/:academyId/:assetId') {
+      byteRoutes.add(`${route.method} ${normalised}`)
+      continue
+    }
+
     mounted.add(`${route.method} ${normalised.length > 0 ? normalised : '/'}`)
   }
+
+  cachedRoutes = mounted
 
   return mounted
 }
@@ -98,6 +133,24 @@ describe('the router matches the registry', () => {
     )
 
     expect(undocumented, 'routes with no contract behind them').toEqual([])
+  })
+
+  it('serves the byte routes the registry cannot describe', () => {
+    /**
+     * Asserted rather than left to the exclusion above.
+     *
+     * The registry deliberately does not describe the two routes that move
+     * bytes, which means nothing else would notice if they disappeared — and
+     * "media uploads silently stopped working" is not a failure the contract
+     * tests can see.
+     */
+    expect(byteRoutes, 'the routes that move bytes').toContain(
+      'PUT /media/upload/:key{.+}',
+    )
+
+    expect(byteRoutes, 'the routes that move bytes').toContain(
+      'GET /media/:academyId/:assetId',
+    )
   })
 
   it('declares the parameters it uses in the path', () => {

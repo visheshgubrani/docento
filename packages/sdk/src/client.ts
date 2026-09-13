@@ -83,6 +83,60 @@ export class DocentoApi extends DocentoClient {
   }
 
   // -------------------------------------------------------------------------
+  // Media
+  // -------------------------------------------------------------------------
+
+  createMedia(
+    workspaceId: string,
+    academyId: string,
+    input: {
+      filename: string
+      mimeType: string
+      sizeBytes?: number | null
+      title?: string | null
+    },
+  ) {
+    return this.call(
+      'media.create',
+      { params: { workspaceId, academyId }, body: input },
+      describe('createMedia'),
+    )
+  }
+
+  completeMedia(
+    workspaceId: string,
+    academyId: string,
+    assetId: string,
+    input: { sizeBytes?: number | null } = {},
+  ) {
+    return this.call(
+      'media.complete',
+      { params: { workspaceId, academyId, assetId }, body: input },
+      describe('completeMedia'),
+    )
+  }
+
+  listMedia(
+    workspaceId: string,
+    academyId: string,
+    query: { limit?: number } = {},
+  ) {
+    return this.call(
+      'media.list',
+      { params: { workspaceId, academyId }, query },
+      describe('listMedia'),
+    )
+  }
+
+  deleteMedia(workspaceId: string, academyId: string, assetId: string) {
+    return this.call(
+      'media.delete',
+      { params: { workspaceId, academyId, assetId } },
+      describe('deleteMedia'),
+    )
+  }
+
+  // -------------------------------------------------------------------------
   // Workspace
   // -------------------------------------------------------------------------
 
@@ -797,6 +851,10 @@ export const IMPLEMENTED_OPERATIONS = {
   'course.publish': 'publishCourse',
   'course.release': 'getRelease',
   'staff.session': 'getStaffSession',
+  'media.create': 'createMedia',
+  'media.complete': 'completeMedia',
+  'media.list': 'listMedia',
+  'media.delete': 'deleteMedia',
   'module.create': 'createModule',
   'module.update': 'updateModule',
   'module.reorder': 'reorderModules',
