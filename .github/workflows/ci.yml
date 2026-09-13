@@ -123,3 +123,38 @@ jobs:
       - name: Generate Prisma client
         run: pnpm db:generate
       - run: pnpm build
+
+  # The container story, built rather than asserted.
+  #
+  # A Dockerfile is the one part of this repository nothing else exercises: the
+  # test suite runs from a checkout with a Node toolchain already present, so an
+  # image that installs the wrong thing stays invisible until an operator tries
+  # it. These are the four targets `docker compose --profile app` uses, and
+  # building them here is what keeps that path working.
+  #
+  # Nothing is pushed. This job's output is the fact that it succeeded.
+  images:
+    name: Images (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    strategy:
+      # One failing target should not hide the state of the other three.
+      fail-fast: false
+      matrix:
+        target: [api, worker, studio, learn]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build the ${{ matrix.target }} image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: ${{ matrix.target }}
+          push: false
+          # The build installs the whole workspace, so the cache is worth more
+          # here than in any other job.
+          cache-from: type=gha,scope=${{ matrix.target }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.target }}
+          build-args: |
+            API_INTERNAL_URL=http://api:4000

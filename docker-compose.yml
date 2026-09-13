@@ -1,6 +1,6 @@
 name: docento
 
-# Postgres is the only required service.
+# Postgres is the only *required* service.
 #
 # That is a deliberate constraint, not an accident: the difference between one
 # dependency and two is the difference between a five-minute install and an
@@ -13,6 +13,21 @@ name: docento
 #   pnpm install
 #   pnpm db:migrate
 #   pnpm dev
+#
+# ## The `app` profile
+#
+# The services after Postgres run the product in containers instead, which is the
+# path an operator takes when they do not want a Node toolchain on the host:
+#
+#   docker compose --profile app up -d --build
+#
+# It needs three secrets that have no safe default, so they are required rather
+# than defaulted. A placeholder long enough to pass validation would mean an
+# install that starts up with signing keys published in this repository, and
+# nothing would say so:
+#
+#   STAFF_AUTH_SECRET, LEARNER_AUTH_SECRET   openssl rand -base64 48
+#   ENCRYPTION_KEY                           openssl rand -hex 32
 
 services:
   postgres:
@@ -35,6 +50,125 @@ services:
       retries: 5
       start_period: 10s
 
+  # ---------------------------------------------------------------------------
+  # The application, behind the `app` profile
+  # ---------------------------------------------------------------------------
+
+  migrate:
+    profiles: ['app']
+    build:
+      context: .
+      target: api
+    # One-shot, so `up` brings the schema to this release's version before
+    # anything serves. A container that boots against an unmigrated database
+    # fails on its first query with a message about a missing column, which
+    # reads as a bug in the application rather than as a step nobody ran.
+    command: pnpm --filter @docento/domain db:deploy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-docento}?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+
+  api:
+    profiles: ['app']
+    build:
+      context: .
+      target: api
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-docento}?schema=public
+      # The public origin. Required behind a proxy: without it authentication
+      # falls back to deriving the origin from each request, which breaks
+      # callbacks and redirects.
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      API_URL: ${API_URL:-http://localhost:4000}
+      STAFF_AUTH_SECRET: ${STAFF_AUTH_SECRET:?set STAFF_AUTH_SECRET, e.g. openssl rand -base64 48}
+      LEARNER_AUTH_SECRET: ${LEARNER_AUTH_SECRET:?set LEARNER_AUTH_SECRET, e.g. openssl rand -base64 48}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?set ENCRYPTION_KEY, e.g. openssl rand -hex 32}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-console}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      LOCAL_STORAGE_DIR: /data/uploads
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - '${API_PORT:-4000}:4000'
+    volumes:
+      # ADR 0008: with local storage the API and the worker must see the same
+      # directory, or the worker silently cannot find files the API wrote. That
+      # is a deployment invariant, so it is demonstrated here rather than
+      # mentioned in a comment somewhere.
+      - docento_uploads:/data/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  worker:
+    profiles: ['app']
+    build:
+      context: .
+      target: worker
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-docento}?schema=public
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      API_URL: ${API_URL:-http://localhost:4000}
+      STAFF_AUTH_SECRET: ${STAFF_AUTH_SECRET:?set STAFF_AUTH_SECRET, e.g. openssl rand -base64 48}
+      LEARNER_AUTH_SECRET: ${LEARNER_AUTH_SECRET:?set LEARNER_AUTH_SECRET, e.g. openssl rand -base64 48}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?set ENCRYPTION_KEY, e.g. openssl rand -hex 32}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-console}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      LOCAL_STORAGE_DIR: /data/uploads
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    volumes:
+      # The same volume as the API, for the same reason.
+      - docento_uploads:/data/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+  studio:
+    profiles: ['app']
+    build:
+      context: .
+      target: studio
+      args:
+        # This is a build argument *and* a runtime variable, which is worth
+        # being explicit about: Next evaluates `rewrites()` when the config is
+        # loaded and bakes the result into its routes manifest, so the
+        # browser-facing origin is fixed when the image is built. Server-side
+        # calls read the runtime value. The service name resolves inside the
+        # compose network.
+        API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4000}
+    environment:
+      API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4000}
+    ports:
+      - '${STUDIO_PORT:-3000}:3000'
+    depends_on:
+      - api
+
+  learn:
+    profiles: ['app']
+    build:
+      context: .
+      target: learn
+      args:
+        API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4000}
+    environment:
+      API_INTERNAL_URL: ${API_INTERNAL_URL:-http://api:4000}
+      # An install serving one academy from one domain names it here. The learner
+      # realm is resolved per request, and an address that resolves to no academy
+      # serves none rather than defaulting to one.
+      NEXT_PUBLIC_ACADEMY_SLUG: ${NEXT_PUBLIC_ACADEMY_SLUG:-}
+    ports:
+      - '${LEARN_PORT:-3001}:3000'
+    depends_on:
+      - api
+
 volumes:
   docento_postgres:
     name: docento_postgres
+  docento_uploads:
+    name: docento_uploads

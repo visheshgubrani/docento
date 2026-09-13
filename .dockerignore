@@ -1,0 +1,49 @@
+# What the build context leaves out.
+#
+# The context is the repository root, which is what makes the workspace
+# installable — and also what would otherwise copy a contributor's entire
+# `node_modules`, every build output, and the local database.
+
+# Dependencies are installed inside the image, from the lockfile. Copying a host
+# `node_modules` would put host-specific binaries — including Prisma's query
+# engine, which is per-platform — into a Linux image.
+node_modules
+**/node_modules
+
+# Build output. `.next/standalone` traces what it needs from source, so a stale
+# local build would be a second, older version of the application.
+**/.next
+**/dist
+.turbo
+**/.turbo
+
+# Secrets. `packages/domain/.env` holds the two auth signing keys, the
+# encryption key and the database URL, and an image built with them is an image
+# whose secrets are in its layers.
+**/.env
+**/.env.local
+**/.env.*.local
+# The examples are templates with empty secrets, and they are referenced by the
+# documentation, so they stay.
+!**/.env.example
+
+# Local storage for uploads, which is a volume at runtime and never image
+# content.
+.data
+**/.data
+
+# Version control and CI. Not needed to build, and `.git` is large.
+.git
+.gitignore
+.github
+
+# Documentation and editor configuration do not affect any build output.
+*.md
+docs
+.vscode
+.idea
+
+# Local logs and test artifacts.
+*.log
+coverage
+**/coverage
