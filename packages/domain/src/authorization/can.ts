@@ -279,6 +279,21 @@ export function can(
   }
 
   // --- Staff -------------------------------------------------------------
+  /**
+   * A staff session with no workspace chosen acts in none.
+   *
+   * Checked explicitly rather than left to the comparison below, which would
+   * compare a resource's workspace against `null` and refuse with "belongs to a
+   * different workspace" — true, but it names the wrong problem. The state is
+   * ordinary rather than broken: signing in does not pick a workspace, and
+   * `staff.session` lists the ones an identity may enter.
+   */
+  if (!principal.workspaceId || !principal.role) {
+    return deny(
+      `"${action}" requires a workspace to act in, and this session has not chosen one.`,
+    )
+  }
+
   if (resource.workspaceId !== principal.workspaceId) {
     return deny('The resource belongs to a different workspace.')
   }

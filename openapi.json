@@ -214,6 +214,222 @@
         }
       }
     },
+    "/staff/session": {
+      "get": {
+        "summary": "The signed-in staff identity and the workspaces it may enter",
+        "operationId": "staff.session",
+        "tags": [
+          "staff"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "Optional caller-chosen request id, echoed back and logged. Pass your own tracing id to correlate a support report with the server logs."
+            },
+            "required": false,
+            "description": "Optional caller-chosen request id, echoed back and logged. Pass your own tracing id to correlate a support report with the server logs.",
+            "name": "x-request-id",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "session": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 64
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "email": {
+                              "type": "string",
+                              "format": "email"
+                            },
+                            "workspaces": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 64
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "slug": {
+                                    "type": "string"
+                                  },
+                                  "role": {
+                                    "type": "string",
+                                    "enum": [
+                                      "owner",
+                                      "admin"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "name",
+                                  "slug",
+                                  "role"
+                                ]
+                              }
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "name",
+                            "email",
+                            "workspaces"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "session"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "requestId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. `error.code` is one of: validation_failed, unauthorized, forbidden, not_found, conflict, stale_revision, rate_limited, payment_required, provider_not_configured, provider_error, idempotency_replay, internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "validation_failed",
+                            "unauthorized",
+                            "forbidden",
+                            "not_found",
+                            "conflict",
+                            "stale_revision",
+                            "rate_limited",
+                            "payment_required",
+                            "provider_not_configured",
+                            "provider_error",
+                            "idempotency_replay",
+                            "internal_error"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "message"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "requestId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/workspaces": {
       "get": {
         "summary": "Workspaces the caller belongs to",
@@ -2879,6 +3095,51 @@
                               },
                               "position": {
                                 "type": "integer"
+                              },
+                              "lessons": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 64
+                                    },
+                                    "moduleId": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 64
+                                    },
+                                    "title": {
+                                      "type": "string"
+                                    },
+                                    "summary": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    },
+                                    "contentType": {
+                                      "type": "string"
+                                    },
+                                    "position": {
+                                      "type": "integer"
+                                    },
+                                    "isFree": {
+                                      "type": "boolean"
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "moduleId",
+                                    "title",
+                                    "summary",
+                                    "contentType",
+                                    "position",
+                                    "isFree"
+                                  ]
+                                }
                               }
                             },
                             "required": [
@@ -2889,11 +3150,55 @@
                               "position"
                             ]
                           }
+                        },
+                        "release": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 64
+                            },
+                            "courseId": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 64
+                            },
+                            "version": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0
+                            },
+                            "publishedAt": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "format": "date-time"
+                            },
+                            "supersededAt": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "format": "date-time"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "courseId",
+                            "version",
+                            "publishedAt",
+                            "supersededAt"
+                          ]
                         }
                       },
                       "required": [
                         "course",
-                        "modules"
+                        "modules",
+                        "release"
                       ]
                     },
                     "meta": {
@@ -4403,6 +4708,51 @@
                             },
                             "position": {
                               "type": "integer"
+                            },
+                            "lessons": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 64
+                                  },
+                                  "moduleId": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 64
+                                  },
+                                  "title": {
+                                    "type": "string"
+                                  },
+                                  "summary": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "contentType": {
+                                    "type": "string"
+                                  },
+                                  "position": {
+                                    "type": "integer"
+                                  },
+                                  "isFree": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "moduleId",
+                                  "title",
+                                  "summary",
+                                  "contentType",
+                                  "position",
+                                  "isFree"
+                                ]
+                              }
                             }
                           },
                           "required": [
@@ -4670,6 +5020,51 @@
                             },
                             "position": {
                               "type": "integer"
+                            },
+                            "lessons": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 64
+                                  },
+                                  "moduleId": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 64
+                                  },
+                                  "title": {
+                                    "type": "string"
+                                  },
+                                  "summary": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "contentType": {
+                                    "type": "string"
+                                  },
+                                  "position": {
+                                    "type": "integer"
+                                  },
+                                  "isFree": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "moduleId",
+                                  "title",
+                                  "summary",
+                                  "contentType",
+                                  "position",
+                                  "isFree"
+                                ]
+                              }
                             }
                           },
                           "required": [
@@ -5601,6 +5996,285 @@
       }
     },
     "/workspaces/{workspaceId}/academies/{academyId}/courses/{courseId}/lessons/{lessonId}": {
+      "get": {
+        "summary": "Read one lesson, body included",
+        "operationId": "lesson.get",
+        "tags": [
+          "lesson"
+        ],
+        "security": [
+          {
+            "staffSession": []
+          },
+          {
+            "serviceKey": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "workspaceId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "academyId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "courseId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "lessonId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "Optional caller-chosen request id, echoed back and logged. Pass your own tracing id to correlate a support report with the server logs."
+            },
+            "required": false,
+            "description": "Optional caller-chosen request id, echoed back and logged. Pass your own tracing id to correlate a support report with the server logs.",
+            "name": "x-request-id",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "lesson": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 64
+                            },
+                            "moduleId": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 64
+                            },
+                            "title": {
+                              "type": "string"
+                            },
+                            "summary": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "contentType": {
+                              "type": "string",
+                              "enum": [
+                                "VIDEO",
+                                "TEXT",
+                                "FILE",
+                                "QUIZ",
+                                "ASSIGNMENT",
+                                "EMBED"
+                              ]
+                            },
+                            "position": {
+                              "type": "integer"
+                            },
+                            "isFree": {
+                              "type": "boolean"
+                            },
+                            "body": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "mediaAssetId": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "minLength": 1,
+                              "maxLength": 64
+                            },
+                            "embedUrl": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "moduleId",
+                            "title",
+                            "summary",
+                            "contentType",
+                            "position",
+                            "isFree",
+                            "body",
+                            "mediaAssetId",
+                            "embedUrl"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "lesson"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "requestId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. `error.code` is one of: validation_failed, unauthorized, forbidden, not_found, conflict, stale_revision, rate_limited, payment_required, provider_not_configured, provider_error, idempotency_replay, internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "validation_failed",
+                            "unauthorized",
+                            "forbidden",
+                            "not_found",
+                            "conflict",
+                            "stale_revision",
+                            "rate_limited",
+                            "payment_required",
+                            "provider_not_configured",
+                            "provider_error",
+                            "idempotency_replay",
+                            "internal_error"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "message"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "requestId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
       "patch": {
         "summary": "Edit a lesson",
         "operationId": "lesson.update",

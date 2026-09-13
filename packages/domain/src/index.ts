@@ -166,6 +166,10 @@ export type {
   WorkspaceMembership,
 } from './tenancy/service-keys'
 
+// Session
+export { getStaffIdentity } from './tenancy/session'
+export type { StaffIdentity, StaffSessionWorkspace } from './tenancy/session'
+
 // Content
 export {
   LESSON_CONTENT_TYPES,
@@ -176,6 +180,7 @@ export {
   deleteDraftLesson,
   deleteModule,
   getCourse,
+  getLesson,
   listCourses,
   reorderLessons,
   reorderModules,

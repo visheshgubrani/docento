@@ -117,4 +117,25 @@ export type IdempotencyKey = z.infer<typeof idempotencyKeySchema>
  */
 export const REQUEST_ID_HEADER = 'x-request-id'
 
+/**
+ * Header naming the workspace a staff request acts in.
+ *
+ * ## Why this is a header and not a body field
+ *
+ * A staff identity spans workspaces, so a request has to say which one it means
+ * — and it may not say it in a payload, because a payload is the part of a
+ * request an attacker controls most easily. A header is no more trustworthy
+ * than a body field in itself; what makes this safe is that the API checks it
+ * against the membership table and refuses a workspace the caller is not in,
+ * rather than trusting it. See `apps/api/src/auth/principal.ts`.
+ *
+ * ## Why the name lives here
+ *
+ * The SDK has to send exactly this string, and the API has to read exactly this
+ * string. They are separate packages with separate licences, so a convention
+ * agreed in prose is a convention that drifts — and a drifted workspace header
+ * does not fail loudly, it reads as "not signed in".
+ */
+export const WORKSPACE_HEADER = 'x-workspace-id'
+
 export const requestIdSchema = z.string().min(1).max(128)

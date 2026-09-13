@@ -106,6 +106,11 @@ describe('the public surface', () => {
   it('is small, and every member is a read or a verification', () => {
     // An unauthenticated write would be the most consequential mistake this
     // registry could contain, so the list is asserted rather than reviewed.
+    //
+    // `staff.session` is on it because it is the one staff operation callable
+    // before a workspace has been chosen — which is the state it exists to
+    // resolve. It reads the caller's own identity and answers with that or
+    // refuses, so there is no tenant to contain it in.
     expect([...PUBLIC_OPERATIONS].sort()).toEqual([
       'academy.resolve',
       'catalog.academy',
@@ -113,6 +118,7 @@ describe('the public surface', () => {
       'catalog.courses',
       'certificate.verify',
       'health',
+      'staff.session',
     ])
 
     for (const name of PUBLIC_OPERATIONS) {

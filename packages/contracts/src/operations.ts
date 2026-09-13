@@ -189,6 +189,57 @@ export const OPERATIONS = {
     summary: 'Liveness probe',
   },
 
+  /**
+   * Who the staff caller is, and where they may act.
+   *
+   * ## Why this is separate from `workspace.list`
+   *
+   * `workspace.list` is scoped to a workspace the caller has already chosen and
+   * refuses a session that has not chosen one. Something has to answer that
+   * question *before* a workspace exists in the URL — otherwise the application
+   * has to read the session cookie itself, which makes it a second
+   * implementation of session validation.
+   *
+   * ## Why the workspaces come back with the identity
+   *
+   * The application's shell needs both, every render, and two requests to draw
+   * one header is one request too many. They are one fact about one session, so
+   * they are one response.
+   */
+  'staff.session': {
+    method: 'GET',
+    path: '/staff/session',
+    response: z.object({
+      session: z.object({
+        userId: id,
+        name: z.string(),
+        email: z.string().email(),
+        /**
+         * Only the roles `can()` recognises.
+         *
+         * A membership in any other role grants nothing, so listing it would
+         * offer a workspace that refuses its holder on arrival.
+         */
+        workspaces: z.array(
+          z.object({
+            id,
+            name: z.string(),
+            slug: z.string(),
+            role: z.enum(['owner', 'admin']),
+          }),
+        ),
+      }),
+    }),
+    /**
+     * No workspace yet, so no workspace to require. Declared as a public action
+     * rather than left unlisted because this operation *is* reachable
+     * anonymously — and it answers with the caller's own identity or refuses,
+     * so there is nothing to contain.
+     */
+    action: 'public',
+    summary: 'The signed-in staff identity and the workspaces it may enter',
+  },
+
   // --- Workspace ----------------------------------------------------------
   'workspace.list': {
     method: 'GET',
@@ -312,6 +363,14 @@ export const OPERATIONS = {
     response: z.object({
       course: courseSummarySchema,
       modules: z.array(moduleSummarySchema),
+      /**
+       * The release a learner currently sees, or null before the first publish.
+       *
+       * Reported with the draft rather than fetched separately because the whole
+       * point of this page is the difference between the two, and a client that
+       * had to ask twice is a client that can show one without the other.
+       */
+      release: releaseSummarySchema.nullable(),
     }),
     action: 'course:read',
     summary: 'Read a course with its draft curriculum',
@@ -467,6 +526,20 @@ export const OPERATIONS = {
     action: 'course:update',
     summary: 'Add a lesson',
     retryable: true,
+  },
+
+  'lesson.get': {
+    method: 'GET',
+    path: '/workspaces/{workspaceId}/academies/{academyId}/courses/{courseId}/lessons/{lessonId}',
+    params: z.object({
+      workspaceId: id,
+      academyId: id,
+      courseId: id,
+      lessonId: id,
+    }),
+    response: z.object({ lesson: lessonSummarySchema }),
+    action: 'course:read',
+    summary: 'Read one lesson, body included',
   },
 
   'lesson.update': {

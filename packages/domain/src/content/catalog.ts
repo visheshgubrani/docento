@@ -20,7 +20,8 @@
  */
 
 import { prisma } from '../db'
-import { NotFoundError } from '../shared/errors'
+import { NotFoundError, assertCan, assertFound } from '../shared/errors'
+import type { Principal } from '../authorization/principal'
 import type { ReleaseSnapshot } from '../content/publishing'
 import {
   type AcademyAuthMode,
@@ -223,18 +224,61 @@ export async function getPublicCourse(input: {
  * An author editing a course needs its modules, which are draft rows and appear
  * in no release until publishing. Shaped like the contract rather than like the
  * table so the API does not have to translate.
+ *
+ * ## Why it takes a principal
+ *
+ * It used to take a bare `courseId`, which made it the one read in this module
+ * with no authorization check at all: whichever route mounted it would have had
+ * to remember one, and the module list of any course would have been readable by
+ * anyone who could guess an id. The academy is looked up from the course rather
+ * than taken as an argument, so the check is against the academy the course is
+ * actually in — a caller cannot pair a course with an academy they are allowed
+ * to read.
+ *
+ * ## Why the lessons come with it
+ *
+ * A module list without its lessons cannot be rendered into anything an author
+ * can act on, and the caller would have to ask once per module — a request per
+ * module to draw one page. They are loaded in the same query, which is also what
+ * keeps the ordering consistent between the two: both are ordered by `position`
+ * within their parent.
  */
-export async function listDraftModules(courseId: string): Promise<
+export async function listDraftModules(
+  principal: Principal,
+  input: { workspaceId: string; courseId: string },
+): Promise<
   {
     id: string
     courseId: string
     title: string
     summary: string | null
     position: number
+    lessons: {
+      id: string
+      moduleId: string
+      title: string
+      summary: string | null
+      contentType: string
+      position: number
+      isFree: boolean
+    }[]
   }[]
 > {
+  const course = await prisma.course.findUnique({
+    where: { id: input.courseId },
+    select: { academyId: true },
+  })
+
+  assertFound('course', course, input.courseId)
+
+  assertCan(principal, 'course:read', {
+    workspaceId: input.workspaceId,
+    academyId: course.academyId,
+    courseId: input.courseId,
+  })
+
   return prisma.module.findMany({
-    where: { courseId },
+    where: { courseId: input.courseId },
     orderBy: { position: 'asc' },
     select: {
       id: true,
@@ -242,6 +286,18 @@ export async function listDraftModules(courseId: string): Promise<
       title: true,
       summary: true,
       position: true,
+      lessons: {
+        orderBy: { position: 'asc' },
+        select: {
+          id: true,
+          moduleId: true,
+          title: true,
+          summary: true,
+          contentType: true,
+          position: true,
+          isFree: true,
+        },
+      },
     },
   })
 }

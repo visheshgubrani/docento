@@ -591,6 +591,41 @@ function toLessonSummary(row: {
   return { ...row, contentType: assertContentType(row.contentType) }
 }
 
+/**
+ * One lesson, for an editor.
+ *
+ * Separate from the outline that `listDraftModules` returns, which deliberately
+ * omits bodies: a list of a course's lessons should not carry every word of
+ * them, and the page that shows one lesson should not have to fetch twelve.
+ *
+ * The academy is looked up from the course so the check is against the academy
+ * the lesson is actually in, rather than one the caller asserts alongside it.
+ */
+export async function getLesson(
+  principal: Principal,
+  input: {
+    workspaceId: string
+    academyId: string
+    courseId: string
+    lessonId: string
+  },
+): Promise<LessonSummary> {
+  assertCan(principal, 'course:read', {
+    workspaceId: input.workspaceId,
+    academyId: input.academyId,
+    courseId: input.courseId,
+  })
+
+  const lesson = await prisma.lesson.findFirst({
+    where: { id: input.lessonId, module: { courseId: input.courseId } },
+    select: LESSON_FIELDS,
+  })
+
+  assertFound('lesson', lesson, input.lessonId)
+
+  return toLessonSummary(lesson)
+}
+
 const LESSON_FIELDS = {
   id: true,
   moduleId: true,

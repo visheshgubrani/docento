@@ -140,15 +140,55 @@ export const courseSummarySchema = z.object({
 
 export type CourseSummary = z.infer<typeof courseSummarySchema>
 
+/**
+ * A lesson in the draft curriculum.
+ *
+ * Deliberately not `lessonSummarySchema` with fields removed: this is the
+ * *outline* shape, and the two are allowed to diverge — an outline is what a
+ * module list needs, and a lesson read is a different operation with a body,
+ * a quiz and an assignment attached.
+ */
+export const outlineLessonSchema = z.object({
+  id: idSchema,
+  moduleId: idSchema,
+  title: z.string(),
+  summary: z.string().nullable(),
+  contentType: z.string(),
+  position: z.number().int(),
+  isFree: z.boolean(),
+})
+
+export type OutlineLesson = z.infer<typeof outlineLessonSchema>
+
 export const moduleSummarySchema = z.object({
   id: idSchema,
   courseId: idSchema,
   title: z.string(),
   summary: z.string().nullable(),
   position: z.number().int(),
+  /**
+   * The module's lessons, in order.
+   *
+   * Present on the authoring read and not on the create/update responses, which
+   * describe a module that has just been written and whose lessons the caller
+   * already knows. Optional rather than omitted so one schema can serve both
+   * without the API returning a shape the contract does not describe.
+   */
+  lessons: z.array(outlineLessonSchema).optional(),
 })
 
 export type ModuleSummary = z.infer<typeof moduleSummarySchema>
+
+/**
+ * A module with its lessons attached.
+ *
+ * The authoring read's shape. Separate from `ModuleSummary` only in that
+ * `lessons` is present, which the type states rather than leaving every caller
+ * to handle an optional it knows is there.
+ */
+export type OutlineModule = ModuleSummary & {
+  lessons: OutlineLesson[]
+}
 
 /**
  * The public catalogue's view of a course.

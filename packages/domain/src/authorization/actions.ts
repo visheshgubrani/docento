@@ -86,8 +86,10 @@ export const ACTIONS = [
   'learner:profile:read',
   'learner:profile:update',
   'learner:enroll',
-  'enrollment:create',
-  'release:read',
+  // `enrollment:create` and `release:read` are declared above, in the staff
+  // grouping. Listing them twice would widen nothing — a union dedupes — but
+  // this list is read as the inventory of actions, and an inventory that
+  // repeats itself is one nobody can count.
   'learner:progress:write',
   'learner:attempt:write',
   'learner:submission:write',
@@ -112,6 +114,12 @@ export const LEARNER_SELF_ACTIONS: readonly Action[] = [
   'learner:profile:read',
   'learner:profile:update',
   'learner:enroll',
+  /**
+   * Enrolling and reading a release are named for the resources they touch
+   * rather than for the self-service namespace, so they are listed rather than
+   * matched by a prefix. Both are actions a learner takes on their *own* behalf,
+   * which is why `can()` pairs this list with an owner check on `learnerId`.
+   */
   'enrollment:create',
   'release:read',
   'learner:progress:write',

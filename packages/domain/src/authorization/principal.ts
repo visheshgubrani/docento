@@ -17,9 +17,23 @@ export type AssignmentRole = 'instructor' | 'grader'
 export type StaffPrincipal = {
   kind: 'staff'
   userId: string
-  workspaceId: string
-  memberId: string
-  role: StaffRole
+  /**
+   * The workspace this request acts in, or `null` when none was chosen.
+   *
+   * Signing in does not pick a workspace — a staff identity may belong to
+   * several, and choosing is the operator's act. So "signed in, no workspace
+   * yet" is a first-class state rather than a half-built principal, and the
+   * fields below are present exactly when it is.
+   *
+   * Widening this is safe because every action that needs a workspace declares
+   * it in `REQUIRED_RESOURCE_FIELDS`, and `can()` denies when the resource
+   * cannot identify one. An operation cannot reach a query on a workspace it
+   * does not have, because `can()` refuses it first.
+   */
+  workspaceId: string | null
+  /** The membership in `workspaceId`; null when none is chosen. */
+  memberId: string | null
+  role: StaffRole | null
 }
 
 /**
