@@ -40,12 +40,16 @@ module.exports = {
       comment:
         'Database access belongs to packages/domain. Allowing it elsewhere guarantees a query that forgets its tenant filter, which is the most severe bug this system can have.',
       from: {
-        // apps/api is the pre-port application: it still owns its own Prisma
-        // access because it has not yet been migrated onto packages/domain
-        // operations. This carve-out is removed when that port completes in
-        // Milestone B, and is tracked in ROADMAP.md. Nothing new may be added
-        // here — the rule applies to every other path, including any new app.
-        pathNot: ['^packages/domain/', '^apps/api/'],
+        /**
+         * No carve-outs. The rule applies everywhere.
+         *
+         * `apps/api` used to be exempt, because it was the pre-port application
+         * with its own Prisma client. It now invokes domain operations like
+         * every other consumer, and the exemption is gone with it — which is
+         * the point of a carve-out being written down: it has a condition for
+         * its removal rather than becoming permanent.
+         */
+        pathNot: ['^packages/domain/'],
       },
       to: { path: 'node_modules/@prisma/client' },
     },

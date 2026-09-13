@@ -12,26 +12,23 @@ feature exists.
 
 The single most important thing to understand:
 
-> `apps/api` is the previous closed-source Express application. It still runs on
-> **its own Prisma schema** at `apps/api/prisma/schema.prisma` and has **not**
-> been ported onto `packages/domain`. The two coexist during the port.
+> There is **one** database schema, in `packages/domain`, and **one** query
+> path. The closed-source Express application and its Prisma schema are gone.
+> Every consumer — the API, the worker, both frontends — goes through a domain
+> operation.
 
-Consequences you will hit:
+The consequence you will hit:
 
-- There are two Prisma schemas. `apps/api` generates to
-  `apps/api/src/generated/prisma` (gitignored) precisely so that generating the
-  domain client does not overwrite it. Do not remove that `output` setting.
-- `apps/api` has pre-existing lint and type errors. Its gate scripts are named
-  `lint:legacy` and `typecheck:legacy` and are deliberately excluded from the
-  workspace gate until the port. Run them directly with
-  `pnpm --filter @docento/api typecheck:legacy`.
-- You cannot run a complete academy end to end yet.
+- **The frontends have not been rebuilt yet.** `apps/studio` and `apps/learn`
+  still call the legacy API's URLs, which the new API does not serve. A complete
+  academy cannot be run end to end from the browser today; the domain and the
+  HTTP surface beneath it are complete and tested.
 
 ## Layout
 
 ```
 apps/
-  api/           HTTP surface (legacy, being ported)
+  api/           HTTP surface. Validates, resolves context, invokes a domain operation.
   worker/        durable jobs, outbox delivery, scheduled maintenance
   studio/        staff and creator application
   learn/         multi-tenant learner application
@@ -148,9 +145,12 @@ it lives.
 
 | Debt                                                                | Why it exists                                                                                                    |
 | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `apps/api` excluded from the lint and typecheck gate                | Legacy app replaced during the port. Scripts renamed; the reason is in its `package.json` and in ROADMAP.md.     |
 | React Compiler rules downgraded to warnings in `studio` and `learn` | Real violations in code being replaced. Downgraded rather than disabled, so the work stays visible in every run. |
-| `apps/api` exempt from the Prisma-boundary rule                     | Same reason. The exemption is in `.dependency-cruiser.cjs` with a comment explaining when it is removed.         |
+
+Two carve-outs are gone: `apps/api` is in the lint and typecheck gate like every
+other package, and the Prisma-boundary rule no longer exempts it. Both were
+written with the condition for their removal, and removing them was part of
+finishing the port.
 
 ## Before you push
 

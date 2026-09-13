@@ -14,7 +14,11 @@ feature-gated edition. **Everything in this repository is the whole product.**
 
 ## Where we are
 
-Milestone A — see below for what it covers and how far along it is.
+Milestone A is complete. Milestone B is in progress: the domain layer, the
+contracts, the generated OpenAPI document, the SDK and the HTTP surface are
+done and tested. The two frontends have not been rebuilt onto them yet, and the
+storage, email and container work is outstanding. See below for what each
+milestone covers and how far along it is.
 
 ## Milestones
 
