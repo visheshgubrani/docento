@@ -85,6 +85,32 @@ export type {
   SnapshotQuestion,
   SubmittedAnswer,
 } from './assessment/grading.js'
+export {
+  ForbiddenAccess,
+  getQuizForLearner,
+  listAttempts,
+  startAttempt,
+  submitAttempt,
+  upsertQuestion,
+  upsertQuiz,
+  upsertSection,
+} from './assessment/attempts.js'
+export type {
+  AttemptResult,
+  AttemptSummary,
+  LearnerQuizView,
+} from './assessment/attempts.js'
+export {
+  getAssignmentForLearner,
+  gradeSubmission,
+  listSubmissions,
+  submitAssignment,
+  upsertAssignment,
+} from './assessment/assignments.js'
+export type {
+  AssignmentSummary,
+  SubmissionSummary,
+} from './assessment/assignments.js'
 
 // Tenancy
 //
