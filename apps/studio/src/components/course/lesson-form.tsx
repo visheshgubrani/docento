@@ -155,7 +155,13 @@ export function LessonForm({
         </Button>
         {lesson.contentType === 'QUIZ' ? (
           <span className="text-muted-foreground text-sm">
-            This lesson&apos;s quiz is authored on its own page.
+            The quiz itself is authored further down this page.
+          </span>
+        ) : null}
+
+        {lesson.contentType === 'ASSIGNMENT' ? (
+          <span className="text-muted-foreground text-sm">
+            The assignment brief is authored further down this page.
           </span>
         ) : null}
       </div>

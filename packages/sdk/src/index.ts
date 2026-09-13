@@ -36,6 +36,10 @@ export type { DocentoClientOptions } from './http'
 // description of the same thing.
 export type {
   AcademySummary,
+  AuthorAssignment,
+  AuthorQuiz,
+  AuthorQuizQuestion,
+  AuthorQuizSection,
   CatalogCourse,
   Certificate,
   CourseSummary,
