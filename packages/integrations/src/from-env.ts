@@ -68,6 +68,11 @@ export function createStorageFromEnv(
             ...(config.S3_ENDPOINT ? { endpoint: config.S3_ENDPOINT } : {}),
             accessKeyId: config.S3_ACCESS_KEY_ID ?? '',
             secretAccessKey: config.S3_SECRET_ACCESS_KEY ?? '',
+            /**
+             * Passed through only when set, so the adapter's own default is
+             * what applies otherwise.
+             */
+            ...(config.S3_FORCE_PATH_STYLE ? { forcePathStyle: true } : {}),
           },
         }
       : {}),

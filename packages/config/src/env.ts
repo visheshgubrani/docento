@@ -201,6 +201,16 @@ export const storageEnvSchema = z.object({
   S3_ACCESS_KEY_ID: z.string().optional(),
   S3_SECRET_ACCESS_KEY: z.string().optional(),
   S3_PUBLIC_BASE_URL: optionalUrl,
+  /**
+   * Address a bucket by path rather than by subdomain.
+   *
+   * MinIO and most self-hosted S3-compatible servers need this: they cannot
+   * serve `bucket.host` without wildcard DNS, so a client that assumes
+   * virtual-host addressing fails against every one of them. The option existed
+   * on the adapter and had no environment variable, which made MinIO unreachable
+   * from configuration even though `S3_ENDPOINT` invites it.
+   */
+  S3_FORCE_PATH_STYLE: flag(false),
 })
 
 /**
