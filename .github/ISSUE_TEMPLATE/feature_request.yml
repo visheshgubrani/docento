@@ -1,0 +1,63 @@
+name: Feature request
+description: Propose a capability the product does not have yet.
+labels: [enhancement, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before opening, check [ROADMAP.md](https://github.com/visheshgubrani/docento/blob/main/ROADMAP.md).
+        If it is already listed as deferred, say so below and make the case for
+        moving it up — that is a legitimate request, it just needs different
+        framing than a brand-new idea.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the situation you are in, not the solution you have in mind. The underlying need is what we are evaluating.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you do instead today
+      description: Workarounds, other tools, or "nothing — this is currently impossible".
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Who does this affect?
+      description: For example — every self-hoster, only multi-academy workspaces, only people using a custom frontend, only enterprise buyers.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: breaking
+    attributes:
+      label: Would this require a breaking change?
+      description: Data model, public API, or authorization changes are expensive to reverse, so we ask early.
+      options:
+        - 'No'
+        - 'Yes — data model'
+        - 'Yes — public API'
+        - 'Yes — authorization rules'
+        - Not sure
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Contribution
+      options:
+        - label: I am willing to work on this myself

@@ -3,7 +3,7 @@ import SectionHeading from "@/components/section-heading";
 import Features from "../features-verticle";
 import Image from "next/image";
 import { HiMiniUsers } from "react-icons/hi2";
-import { SiAuthy } from "react-icons/si";
+import { SiWebauthn } from "react-icons/si";
 import { SiGoogleanalytics } from "react-icons/si";
 
 const platformFeatures = [
@@ -21,7 +21,7 @@ const platformFeatures = [
     content:
       "Secure access with role-based permissions and fine-grained control over content, actions, and user roles.",
     image: "/images/authentication.png",
-    icon: <SiAuthy className="size-9 text-accent" />,
+    icon: <SiWebauthn className="size-9 text-accent" />,
   },
   {
     id: 3,

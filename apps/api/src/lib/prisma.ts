@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '../generated/prisma'
 import { logger } from '../utils/logger'
 
 const isQueryDebug = process.env.PRISMA_QUERY_DEBUG === 'true'

@@ -1,11 +1,11 @@
 ---
 title: Managed Authentication
-description: How to use HeadlessLMS's built-in authentication system for your project.
+description: How to use Docento's built-in authentication system for your project.
 ---
 
 # Managed Authentication
 
-If you are building a learning platform from scratch and don't want to worry about user identity, passwords, and tokens, **Managed Authentication** is the right choice. HeadlessLMS will handle user registration, secure sign-in, and password resets while exposing APIs for your frontend to consume.
+If you are building a learning platform from scratch and don't want to worry about user identity, passwords, and tokens, **Managed Authentication** is the right choice. Docento will handle user registration, secure sign-in, and password resets while exposing APIs for your frontend to consume.
 
 ## Setting up Managed Auth
 
@@ -70,7 +70,7 @@ Content-Type: application/json
 
 ### 3. Password Resets
 
-HeadlessLMS provides password reset flows out of the box.
+Docento provides password reset flows out of the box.
 
 *   **Request Reset:** `POST /v1/auth/forgot-password` with the user's email.
 *   **Complete Reset:** `POST /v1/auth/reset-password` with the reset token and new password.

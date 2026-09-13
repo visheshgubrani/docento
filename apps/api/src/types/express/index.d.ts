@@ -11,7 +11,7 @@ import type {
   Module,
   Course,
   Assignment,
-} from '@prisma/client'
+} from '../../generated/prisma'
 
 export type SafeManagedUser = Omit<ManagedUser, 'password'>
 

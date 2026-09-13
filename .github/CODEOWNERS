@@ -1,0 +1,12 @@
+# Default reviewers for every path.
+# Update the handle here when maintainership changes; see GOVERNANCE.md.
+*       @visheshgubrani
+
+# The licensing boundary and the authorization model are the two things that are
+# expensive to get wrong and easy to approve by accident. These paths need an
+# explicit maintainer decision, so they are called out separately.
+/packages/contracts/   @visheshgubrani
+/packages/sdk/         @visheshgubrani
+/docs/adr/             @visheshgubrani
+/LICENSE               @visheshgubrani
+/.dependency-cruiser.cjs @visheshgubrani

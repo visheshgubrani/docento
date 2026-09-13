@@ -1,0 +1,30 @@
+{
+  "name": "@docento/worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Docento background worker: durable jobs, outbox delivery, scheduled maintenance.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@docento/config": "workspace:*",
+    "@docento/domain": "workspace:*",
+    "@docento/integrations": "workspace:*"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/node": "^24.13.4",
+    "eslint": "^9.39.5",
+    "tsx": "^4.23.13",
+    "typescript": "catalog:",
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^3.2.4"
+  }
+}

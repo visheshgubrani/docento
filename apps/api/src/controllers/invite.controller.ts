@@ -1,4 +1,4 @@
-import { InvitationStatus } from '@prisma/client'
+import { InvitationStatus } from '../generated/prisma'
 import { Request, Response, NextFunction } from 'express'
 import crypto from 'crypto'
 

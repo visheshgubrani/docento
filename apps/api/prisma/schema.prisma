@@ -1,5 +1,9 @@
+// Output is explicit. apps/api and packages/domain are separate Prisma
+// schemas during the port, and without distinct output paths both generate into
+// the shared @prisma/client — whichever runs last silently breaks the other.
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {

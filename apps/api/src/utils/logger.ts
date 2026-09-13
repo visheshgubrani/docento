@@ -68,7 +68,7 @@ const configuredProviderLevel = normalizeLevel(
   process.env.LOG_PROVIDER_LEVEL,
   configuredLevel
 )
-const serviceName = process.env.LOG_SERVICE_NAME || 'headlesslms-server'
+const serviceName = process.env.LOG_SERVICE_NAME || 'docento-api'
 const environment = process.env.NODE_ENV || 'development'
 
 const nativeConsole = {

@@ -1,0 +1,47 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# Only these dependencies may run install scripts. Everything else is denied by
+# default, which is the point: an install script is arbitrary code execution at
+# install time, and the supply-chain attacks that matter all start there.
+#
+# The `false` entries are denied on purpose:
+#   core-js      — postinstall is a funding banner, no build output
+#   msw          — postinstall is a console message
+#   @scarf/scarf — postinstall reports usage back to a third party
+allowBuilds:
+  '@google/genai': true
+  '@parcel/watcher': true
+  '@prisma/client': true
+  '@prisma/engines': true
+  '@sentry/cli': true
+  bcrypt: true
+  core-js: false
+  esbuild: true
+  msw: false
+  prisma: true
+  protobufjs: true
+  '@scarf/scarf': false
+  sharp: true
+  unrs-resolver: true
+
+# Single source of truth for versions that must not drift between apps.
+# `better-auth` is pinned exactly because the staff and learner realms depend on
+# its table-config and adapter semantics (see docs/adr/0003-two-authentication-realms.md).
+catalog:
+  better-auth: 1.7.4
+  typescript: 5.9.3
+  zod: 4.6.2
+
+minimumReleaseAgeExclude:
+  - '@better-auth/core@1.7.4'
+  - '@better-auth/drizzle-adapter@1.7.4'
+  - '@better-auth/kysely-adapter@1.7.4'
+  - '@better-auth/memory-adapter@1.7.4'
+  - '@better-auth/mongo-adapter@1.7.4'
+  - '@better-auth/prisma-adapter@1.7.4'
+  - '@better-auth/telemetry@1.7.4'
+  - better-auth@1.7.4
+  - zod@4.6.2
+  - pg-boss@12.31.0

@@ -3,3 +3,5 @@ node_modules
 .env*
 !.env.example
 dist
+# Generated Prisma client (build output)
+src/generated

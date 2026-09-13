@@ -1,22 +1,40 @@
-name: learning-management
+name: docento
+
+# Postgres is the only required service.
+#
+# That is a deliberate constraint, not an accident: the difference between one
+# dependency and two is the difference between a five-minute install and an
+# afternoon of YAML. The job queue runs inside Postgres (see
+# docs/adr/0007-durable-jobs-on-postgres.md), uploads default to the local
+# filesystem (docs/adr/0008-local-first-media.md), and email defaults to the
+# console, so a complete install needs nothing here that is not below.
+#
+#   docker compose up -d
+#   pnpm install
+#   pnpm db:migrate
+#   pnpm dev
 
 services:
   postgres:
     image: postgres:18-alpine
     restart: unless-stopped
-    ports:
-      - '5450:5432' # 5432 is taken by vm-postgres-1
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: learning_dev
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-docento}
+    ports:
+      # 5433 on the host by default, so an existing local Postgres on 5432 does
+      # not collide.
+      - '${POSTGRES_PORT:-5433}:5432'
     volumes:
-      - learning_postgres_dev_data:/var/lib/postgresql
+      - docento_postgres:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres}']
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
 
 volumes:
-  learning_postgres_dev_data:
+  docento_postgres:
+    name: docento_postgres

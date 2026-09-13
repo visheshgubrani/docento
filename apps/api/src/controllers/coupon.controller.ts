@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
-import { CouponStatus, Prisma } from '@prisma/client'
+import { CouponStatus, Prisma } from '../generated/prisma'
 
 import { prisma } from '../lib/prisma'
 import ApiError from '../utils/ApiError'

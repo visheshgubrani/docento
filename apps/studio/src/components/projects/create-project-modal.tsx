@@ -155,11 +155,11 @@ export function CreateProjectModal({
                 className={`rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${errors.authMode ? 'border-destructive' : ''}`}
                 {...register('authMode')}
               >
-                <option value='MANAGED'>Managed (HeadlessLMS handles auth)</option>
+                <option value='MANAGED'>Managed (Docento handles auth)</option>
                 <option value='DELEGATED'>Delegated (your system manages auth)</option>
               </select>
               <p className='text-sm text-muted-foreground'>
-                Managed stores student credentials in HeadlessLMS. Delegated expects you to send authenticated users from your system.
+                Managed stores student credentials in Docento. Delegated expects you to send authenticated users from your system.
               </p>
               {errors.authMode && (
                 <p className='text-sm text-destructive'>{errors.authMode.message}</p>

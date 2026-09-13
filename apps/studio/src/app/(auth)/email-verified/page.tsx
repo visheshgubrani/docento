@@ -40,7 +40,7 @@ function EmailVerifiedPageContent() {
             <span className='relative size-10 shrink-0'>
               <Image
                 src='/docento-logo.svg'
-                alt='Edural Logo'
+                alt='Docento Logo'
                 fill
                 priority
                 className='object-contain'

@@ -94,7 +94,7 @@ const planOptions: Array<{
                 'Up to 100 monthly active learners',
                 'Basic course creation tools',
                 'Community support',
-                'Edural branding included',
+                'Docento branding included',
                 'Standard API access',
             ],
             isFree: true,
@@ -106,7 +106,7 @@ const planOptions: Array<{
             description: 'For teams rolling out production-ready learning products.',
             price: { monthly: '$25', annually: '$250' },
             features: [
-                'Remove Edural branding',
+                'Remove Docento branding',
                 'Advanced course types & drip content',
                 'Payments integration (Stripe, Razorpay)',
                 'Priority webhooks & higher rate limits',
@@ -241,7 +241,7 @@ export default function BillingSettingsPage() {
                 key: order.keyId,
                 amount: order.amount,
                 currency: 'INR',
-                name: 'Edural',
+                name: 'Docento',
                 description: plan
                     ? `${plan.name} (${frequency === 'annually' ? 'Annual' : 'Monthly'})`
                     : 'Plan checkout',

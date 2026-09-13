@@ -1,0 +1,31 @@
+{
+  "name": "docento",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hostable, AI-native course business platform with a first-class headless API.",
+  "license": "AGPL-3.0-only",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:generate": "pnpm --filter @docento/domain db:generate",
+    "db:migrate": "pnpm --filter @docento/domain db:migrate",
+    "db:deploy": "pnpm --filter @docento/domain db:deploy",
+    "db:studio": "pnpm --filter @docento/domain db:studio",
+    "boundaries": "dependency-cruiser --config .dependency-cruiser.cjs apps packages",
+    "db:seed": "pnpm --filter @docento/domain db:seed"
+  },
+  "devDependencies": {
+    "dependency-cruiser": "^18.2.0",
+    "prettier": "^3.6.2",
+    "turbo": "^2.10.12"
+  }
+}

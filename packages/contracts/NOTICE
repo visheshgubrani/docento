@@ -1,0 +1,9 @@
+Docento SDK
+Copyright 2026 the Docento contributors
+
+This product includes software developed as part of the Docento project
+(https://github.com/visheshgubrani/docento).
+
+The Docento application itself is licensed under AGPL-3.0-only. This package
+is licensed separately under Apache-2.0 so that it can be used in proprietary
+software, including by clients of the Docento API.

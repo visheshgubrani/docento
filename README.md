@@ -1,282 +1,169 @@
 # Docento
 
-**The modern open-source headless LMS** built in **TypeScript**. Give your customers full control over frontends, domains, branding and auth (managed or delegated) while you run the learning infrastructure, users, enrollments, progress, quizzes, API keys, analytics-ready events, and more.
+**A self-hostable, AI-native course business platform** — authoring, a learner
+experience, and a headless API — built in TypeScript.
 
-> Make learning a product, not a platform. Build beautiful frontends, we handle the hard bits.
-
----
-
-[![npm version](https://img.shields.io/badge/npm-10.9.3-blue)]() [![license](https://img.shields.io/badge/license-MIT-green)]()
-
-## Table of contents
-
-1. [Why Docento?](#why-docento)
-2. [Core concepts](#core-concepts)
-3. [Quickstart — Developer flow](#quickstart---developer-flow)
-4. [API surface (examples)](#api-surface-examples)
-5. [TypeScript client example](#typescript-client-example)
-6. [Auth modes: Managed vs Delegated](#auth-modes-managed-vs-delegated)
-7. [Branding & Custom Domains](#branding--custom-domains)
-8. [Security & API keys](#security--api-keys)
-9. [Events & Webhooks](#events--webhooks)
+The commercial model is hosting, managed infrastructure, and support. There is no
+proprietary edition: everything in this repository is the whole product.
 
 ---
 
-## Why Docento?
+## Status: pre-alpha
 
-- **Ship fast**: You own the UX — we expose stable APIs for everything else (users, courses, modules, lessons, quizzes, enrollments, progress).
-- **Multi-tenant**: Each customer is a `Project` with isolated data, API keys and settings.
-- **Flexible auth**: Managed users (we handle authentication) or delegated users (you authenticate, we store a reference).
-- **Branding-first**: Customers can attach domains, logos, and full-branding config while using the same backend.
-- **TypeScript everywhere**: Designed and implemented in TypeScript for DX and safety.
+Be aware of what you are cloning. **The foundation is complete and verified; the
+product is being built on top of it.**
+
+| | State |
+|---|---|
+| Monorepo, licensing, governance, CI | Done |
+| Database schema, authentication, authorization, jobs, rate limiting | Done, with tests |
+| The application itself (courses, lessons, quizzes, commerce) | **Not yet ported** |
+
+`apps/api` is the previous closed-source Express application. It still runs on its
+own Prisma schema and has not yet been migrated onto the packages below. The new
+foundation and the old application currently coexist, which means **you cannot
+run a complete academy end-to-end today.**
+
+What you *can* do right now is real and useful: install, migrate the database, run
+the worker, and run the test suite. That is what Milestone A was for. See
+[ROADMAP.md](./ROADMAP.md) for what is next and how far along it is.
+
+If you want a working LMS today, this is not it yet. If you want to help build
+one, the foundation is a good place to start.
 
 ---
 
-## Core concepts
+## Quickstart
 
-- **Project** — your customer's tenant. Contains courses, API keys, and end users.
-- **ApiKey** — project-scoped secrets for server-to-server interactions.
-- **EndUser** — the learner (managed or delegated).
-- **Course / Module / Lesson** — content hierarchy. Lessons can be VIDEO, TEXT, QUIZ, FILE.
-- **Enrollment** — a learner's enrollment into a course (progress tracked).
-- **Progress** — lesson-level progress and watch-durations.
-- **Quiz / Question / QuizAttempt / Answer** — assessment model for proctored/auto-scored quizzes.
-
----
-
-## Quickstart — Developer flow
-
-### 1) Clone & install
+Requirements: **Node 22+**, **pnpm 11+**, and **Docker** (or your own Postgres).
 
 ```bash
 git clone https://github.com/visheshgubrani/docento.git
 cd docento
-npm install        # or pnpm / yarn
+pnpm install
+
+# Postgres is the only required service.
+docker compose up -d
+
+# Create your local environment, then generate the secrets it needs.
+cp packages/domain/.env.example packages/domain/.env   # then fill in the values
+openssl rand -base64 48   # STAFF_AUTH_SECRET
+openssl rand -base64 48   # LEARNER_AUTH_SECRET
+openssl rand -hex 32      # ENCRYPTION_KEY
+
+pnpm db:migrate   # apply the schema
+pnpm test         # 75 tests against a real Postgres
+pnpm boundaries   # architecture rules
+pnpm dev          # start the API, worker, and frontends
 ```
 
-### 2) Environment
-
-Create a `.env`:
-
-```
-DATABASE_URL=postgresql://user:pass@localhost:5432/docento
-JWT_SECRET=some-very-long-secret
-PORT=4000
-CLIENT_URL=http://localhost:5173
-EMAIL_PROVIDER=resend
-RESEND_API_KEY=re_xxxxxxxxx
-RESEND_FROM_EMAIL=onboarding@resend.dev
-LOG_LEVEL=info
-LOG_PROVIDER_URL=
-LOG_PROVIDER_TOKEN=
-LOG_PROVIDER_FORMAT=ndjson
-LOG_PROVIDER_HEADERS={"x-dataset":"lms-server"}
-```
-
-Replace `re_xxxxxxxxx` with your real Resend API key.
-
-Structured logs are emitted as JSON to stdout by default. To forward them to a log provider, point `LOG_PROVIDER_URL` at the provider's HTTP ingest endpoint, optionally set `LOG_PROVIDER_TOKEN`, and use `LOG_PROVIDER_HEADERS` for any provider-specific headers. Requests now carry and return an `x-request-id`, and the same ID is attached to all logs produced while that request is in flight.
-
-### 3) Migrate & run (Prisma + TS)
-
-```bash
-npm prisma migrate dev --name init
-npm dev          # runs TypeScript app with hot reload
-```
-
-### 4) Create a Project & API key (example using curl)
-
-```bash
-curl -X POST http://localhost:4000/v1/projects \
-  -H "Authorization: Bearer lms_admin_token" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Acme Academy","slug":"acme","authMode":"MANAGED"}'
-```
-
-Create an API key for the project:
-
-```bash
-curl -X POST http://localhost:4000/v1/projects/acme/api-keys \
-  -H "Authorization: Bearer lms_admin_token" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Server Key"}'
-```
+Nothing else is required. No Redis, no object storage, no paid API key. That is a
+deliberate constraint rather than an accident — the difference between one
+dependency and two is the difference between a five-minute install and an
+afternoon of YAML.
 
 ---
 
-## API surface (examples)
+## What Docento is trying to be
 
-> The API is RESTful and JSON-first. All endpoints are namespaced by project when relevant.
+Three audiences, all first-class:
 
-### Project-level
+1. **Operators** who self-host and run an academy on their own infrastructure.
+2. **API consumers** who want their own frontend and only the backend.
+3. **Learners**, who interact with an academy and never see the platform.
 
-- `POST /v1/projects` — create a project (tenant)
-- `GET  /v1/projects/:projectId` — fetch project metadata
-- `POST /v1/projects/:projectId/api-keys` — create API key
+Four decisions shape everything else, and each has a written record of *why* in
+[`docs/adr/`](./docs/adr/):
 
-### Users & Auth
+- **A workspace contains academies.** One business, several brands, without
+  duplicating learners, keys, or billing.
+  [ADR 2](./docs/adr/0002-workspace-and-academy-tenancy.md)
+- **Staff and learners are separate authentication realms with separate tables.**
+  A learner account belongs to exactly one academy, so two academies can hold the
+  same email address with independent credentials — and isolation is a property
+  of the schema rather than of remembering to add a filter.
+  [ADR 3](./docs/adr/0003-two-authentication-realms.md)
+- **Published releases are immutable.** Authors edit a draft; learners follow a
+  release. A published quiz change cannot rewrite an attempt already in progress.
+  [ADR 5](./docs/adr/0005-immutable-published-releases.md)
+- **Permission and learning are separate.** Access is the union of live grants;
+  enrollment records learning. A refund revokes one grant and never erases
+  someone's progress. [ADR 9](./docs/adr/0009-commerce-separation.md)
 
-- `POST /v1/projects/:projectId/end-users` — create an end user (managed or delegated reference)
-- `POST /v1/projects/:projectId/auth/managed/login` — managed user login (returns JWT)
-- `POST /v1/projects/:projectId/auth/delegated/verify` — create delegated reference if you handle login
-
-### Course & Content
-
-- `POST /v1/projects/:projectId/courses` — create course
-- `POST /v1/projects/:projectId/courses/:courseId/modules` — create module
-- `POST /v1/projects/:projectId/modules/:moduleId/lessons` — create lesson (video/text/quiz/file)
-- `GET  /v1/projects/:projectId/courses/:courseId` — get public course (for custom frontends)
-
-### Enrollment & Progress
-
-- `POST /v1/projects/:projectId/courses/:courseId/enrollments` — enroll a user
-- `PATCH /v1/projects/:projectId/lessons/:lessonId/progress` — update progress
-- `GET   /v1/projects/:projectId/end-users/:endUserId/progress` — pull user progress
-
-### Quizzes
-
-- `POST /v1/projects/:projectId/quizzes/:quizId/attempts` — start/submit an attempt
-- `GET  /v1/projects/:projectId/quizzes/:quizId/attempts/:attemptId` — fetch result
+[ARCHITECTURE.md](./ARCHITECTURE.md) is the full picture.
 
 ---
 
-## TypeScript client example
+## Repository layout
 
-Below is a minimal example showing how a customer frontend/backend might call your API using a server API key.
-
-```ts
-// lms-client.ts — small convenience wrapper
-import axios from 'axios'
-
-export class LMSClient {
-  constructor(private baseUrl: string, private apiKey: string) {}
-
-  private headers() {
-    return { Authorization: `Bearer ${this.apiKey}` }
-  }
-
-  async createEnrollment(
-    projectSlug: string,
-    courseId: string,
-    endUserId: string
-  ) {
-    const url = `${this.baseUrl}/v1/projects/${projectSlug}/courses/${courseId}/enrollments`
-    const { data } = await axios.post(
-      url,
-      { endUserId },
-      { headers: this.headers() }
-    )
-    return data
-  }
-
-  async updateProgress(
-    projectSlug: string,
-    lessonId: string,
-    endUserId: string,
-    payload: { watchedDuration: number; isCompleted?: boolean }
-  ) {
-    const url = `${this.baseUrl}/v1/projects/${projectSlug}/lessons/${lessonId}/progress`
-    const { data } = await axios.patch(
-      url,
-      { endUserId, ...payload },
-      { headers: this.headers() }
-    )
-    return data
-  }
-}
+```
+apps/
+  api/           HTTP surface (legacy, being ported)
+  worker/        durable jobs, outbox delivery, scheduled maintenance
+  studio/        staff and creator application
+  learn/         multi-tenant learner application
+  docs/          documentation site
+packages/
+  domain/        business rules, authorization, Prisma schema, migrations
+  contracts/     Apache-2.0. Zod schemas — the public API's source of truth
+  sdk/           Apache-2.0. Typed client, derived from contracts
+  integrations/  jobs today; AI, media, storage, payments, email next
+  config/        validated environment and the shared ESLint preset
+docs/adr/        architecture decision records
 ```
 
-Usage:
+**Two rules matter more than the rest, and CI enforces both:**
 
-```ts
-const client = new LMSClient(
-  'https://api.yourlms.com',
-  process.env.PROJECT_API_KEY!
-)
-await client.createEnrollment('acme', 'course_cuid', 'enduser_cuid')
-```
+- Business rules live in `packages/domain` and nowhere else. No frontend talks to
+  Prisma; no controller re-implements a pricing or authorization rule.
+  `pnpm boundaries` fails the build otherwise.
+- An Apache-2.0 package must never import an AGPL-3.0 package. Dependency
+  direction is one-way, or the permissive licence on the SDK becomes a lie.
 
 ---
 
-## Auth modes: Managed vs Delegated
+## Licensing
 
-- **Managed** — Docento manages credentials for learners. Great when you want our auth, password resets, magic links, and hosted emails.
+Docento is not uniformly licensed, and that is deliberate.
 
-  - We store `ManagedUser.password` and provide login endpoints.
-  - End-users appear in `EndUser` + `ManagedUser`.
+| Path | License |
+| --- | --- |
+| `apps/*`, `packages/domain`, `packages/integrations`, `packages/config` | AGPL-3.0-only |
+| `packages/contracts`, `packages/sdk` | Apache-2.0 |
 
-- **Delegated** — Your system remains the source of truth. We store a minimal `DelegatedUser` reference (external id / metadata). Use when you already have an identity provider (Auth0, Cognito, Firebase, custom SSO).
+The application is AGPL so that anyone offering Docento as a network service
+must publish their modifications. The SDK and its contracts are Apache-2.0 so
+they can be used in proprietary software, including by companies that could not
+otherwise adopt the project.
 
-  - We provide endpoints to create the `EndUser` with `externalId`, and you call our APIs with server keys or signed tokens.
-
-Both modes can co-exist per `Project`. Switch per project via `project.authMode` (`MANAGED` | `DELEGATED`).
-
----
-
-## Branding & Custom Domains
-
-Customers expect their site to look like their brand. Docento offers:
-
-- **Brand settings** per project: `name`, `logoUrl`, `primaryColor`, `font`, `legal`, `supportEmail`.
-- **Custom domain** mapping: verify DNS TXT, add `project.domain = "learn.acme.com"`, and we issue TLS.
-- **Public course pages** that can be embedded or proxied via the customer's domain.
-
-Example flow:
-
-1. Customer requests a custom domain in dashboard: `learn.acme.com`.
-2. We return a DNS verification token (TXT) and a CNAME target.
-3. After verification, we automatically provision TLS and update project config.
+Because contributions are accepted under the
+[Developer Certificate of Origin](https://developercertificate.org/) and **not** a
+CLA, the project cannot be relicensed to a proprietary licence later. That is a
+deliberate, permanent commitment — see [GOVERNANCE.md](./GOVERNANCE.md).
 
 ---
 
-## Security & API keys
+## Contributing
 
-- **Server keys (ApiKey)** — Keep them secret. Use them for backend-to-backend operations (create enrollments, manage content).
-- **Short-lived tokens** — We recommend issuing short-lived user tokens for frontends (JWTs signed by the platform).
-- **Scopes & least privilege** — Plan to support scoped API keys (read-only, content-only, billing) per project.
-- **Rate limiting & monitoring** — Per-key rate limits and last-used tracking are included in `ApiKey.lastUsedAt` for observability.
+Read [CONTRIBUTING.md](./CONTRIBUTING.md) first. The short version:
 
----
+- Commits must be signed off (`git commit -s`).
+- Open an issue before writing code for anything that changes the data model,
+  the public API, or the authorization model.
+- Add tests with your change. Authorization and tenancy changes need a test that
+  proves the *denial* case, not only the permitted one.
 
-## Events & Webhooks
-
-We emit events for: `enrollment.created`, `progress.updated`, `quiz.attempt.completed`, `project.domain.verified`, etc. Webhooks allow customers to:
-
-- Sync events into analytics
-- Trigger LMS-driven automations
-- Integrate with CRMs / billing / Zapier
-
-Example webhook payload:
-
-```json
-{
-  "event": "enrollment.created",
-  "projectId": "cuid_xyz",
-  "payload": {
-    "courseId": "c123",
-    "endUserId": "u456",
-    "enrolledAt": "2025-10-07T00:00:00Z"
-  }
-}
-```
+Security issues: please follow [SECURITY.md](./SECURITY.md) and report privately.
 
 ---
 
-## Example business flows
+## Documentation
 
-- **SaaS creator sells courses**: uses Projects to separate customers; each customer uses custom domain and brand; payments handled by customer (we’re headless).
-- **Marketplace**: platform creates many Projects and issues API keys so sellers can plug in their own frontends.
-- **White-label training**: enterprise delegates auth (SSO) and uses delegated users to keep identity in-house.
-
----
-
-## Roadmap / TODO (ideas you can expose)
-
-- Scoped API keys and policies (read-only, content-only)
-- Fine-grained webhooks + reliable delivery dashboard
-- Built-in payment integrations (optional — stripe/payments adapters)
-- Analytics dashboard / cohort reporting
-- GraphQL gateway as alternative API surface
-- SDKs for Go / Python / Java
-
----
+| To understand | Read |
+| --- | --- |
+| How the system is put together | [ARCHITECTURE.md](./ARCHITECTURE.md) |
+| Why a decision was made | [`docs/adr/`](./docs/adr/) |
+| What is being built and when | [ROADMAP.md](./ROADMAP.md) |
+| How decisions get made | [GOVERNANCE.md](./GOVERNANCE.md) |
+| Contributing | [CONTRIBUTING.md](./CONTRIBUTING.md) |
+| Reporting a vulnerability | [SECURITY.md](./SECURITY.md) |

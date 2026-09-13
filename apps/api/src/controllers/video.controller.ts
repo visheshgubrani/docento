@@ -3,7 +3,7 @@ import { z } from 'zod'
 import ApiError from '../utils/ApiError'
 import { prisma } from '../lib/prisma'
 import ApiResponse from '../utils/ApiResponse'
-import { Course, Lesson, Module } from '@prisma/client'
+import { Course, Lesson, Module } from '../generated/prisma'
 import {
   generateUploadToken,
   getVideoDetails,

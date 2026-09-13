@@ -1,5 +1,18 @@
-import { withSentryConfig } from '@sentry/nextjs';
+import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
+
+/**
+ * Image hosts are deployment-specific, so they come from the environment rather
+ * than being committed. A hardcoded host here silently breaks `next/image` for
+ * every deployment that is not the one it was written for.
+ *
+ * Set NEXT_PUBLIC_IMAGE_HOSTS to a comma-separated list, e.g.
+ *   NEXT_PUBLIC_IMAGE_HOSTS="cdn.example.com,media.example.com"
+ */
+const imageHosts = (process.env.NEXT_PUBLIC_IMAGE_HOSTS ?? '')
+  .split(',')
+  .map((host) => host.trim())
+  .filter(Boolean)
 
 const nextConfig: NextConfig = {
   output: 'standalone',
@@ -7,51 +20,47 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'thumbnail.edurel.xyz',
-      },
-    ],
+    remotePatterns: imageHosts.map((hostname) => ({
+      protocol: 'https' as const,
+      hostname,
+    })),
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
   },
 }
 
-export default withSentryConfig(nextConfig, {
-  // For all available options, see:
-  // https://www.npmjs.com/package/@sentry/webpack-plugin#options
+/**
+ * Sentry is optional and must never be configured with someone else's project.
+ *
+ * Source-map upload needs an org, a project, and an auth token. When those are
+ * absent — which is the normal case for a self-hoster and for a contributor —
+ * the plain config is exported so the build succeeds with no Sentry at all.
+ * Runtime error reporting still works if only SENTRY_DSN is set, because the
+ * SDK reads that directly.
+ */
+const sentryOrg = process.env.SENTRY_ORG
+const sentryProject = process.env.SENTRY_PROJECT
+const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN
 
-  org: "lms-bk",
+const sentryConfigured = Boolean(sentryOrg && sentryProject && sentryAuthToken)
 
-  project: "javascript-nextjs",
+export default sentryConfigured
+  ? withSentryConfig(nextConfig, {
+      org: sentryOrg,
+      project: sentryProject,
+      authToken: sentryAuthToken,
 
-  // Only print logs for uploading source maps in CI
-  silent: !process.env.CI,
+      // Only print logs for uploading source maps in CI.
+      silent: !process.env.CI,
 
-  // For all available options, see:
-  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+      // A larger upload set gives better stack traces at the cost of build time.
+      widenClientFileUpload: true,
 
-  // Upload a larger set of source maps for prettier stack traces (increases build time)
-  widenClientFileUpload: true,
-
-  // Uncomment to route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
-  // This can increase your server load as well as your hosting bill.
-  // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
-  // side errors will fail.
-  // tunnelRoute: "/monitoring",
-
-  webpack: {
-    // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
-    // See the following for more information:
-    // https://docs.sentry.io/product/crons/
-    // https://vercel.com/docs/cron-jobs
-    automaticVercelMonitors: true,
-
-    // Tree-shaking options for reducing bundle size
-    treeshake: {
-      // Automatically tree-shake Sentry logger statements to reduce bundle size
-      removeDebugLogging: true,
-    },
-  },
-});
+      webpack: {
+        // Sentry's own debug logging is not useful in a shipped bundle.
+        treeshake: {
+          removeDebugLogging: true,
+        },
+      },
+    })
+  : nextConfig

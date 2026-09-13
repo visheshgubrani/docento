@@ -1,21 +1,21 @@
 ---
 title: Delegated Authentication
-description: Integrating HeadlessLMS with Auth0, Clerk, Firebase, or your custom SSO.
+description: Integrating Docento with Auth0, Clerk, Firebase, or your custom SSO.
 ---
 
 # Delegated Authentication
 
 **Delegated Authentication** allows you to bring your own users. If you already have an application with authentication, you don't want your users to create a separate password to access your learning content. 
 
-In Delegated mode, HeadlessLMS stores a minimal reference to your user (an "EndUser) and trusts your backend to vouch for their identity.
+In Delegated mode, Docento stores a minimal reference to your user (an "EndUser) and trusts your backend to vouch for their identity.
 
 ## How it works
 
 1. A user logs into your main application using your existing identity provider (Auth0, Clerk, etc.).
 2. The user navigates to your Learning Management System frontend.
 3. Your **Frontend** requests an LMS token from your **Backend**.
-4. Your **Backend** securely calls the HeadlessLMS API `POST /v1/delegated/login` with the user's unique ID.
-5. HeadlessLMS creates the user if they don't exist, and returns a short-lived `accessToken`.
+4. Your **Backend** securely calls the Docento API `POST /v1/delegated/login` with the user's unique ID.
+5. Docento creates the user if they don't exist, and returns a short-lived `accessToken`.
 6. Your backend passes this token to your frontend, replacing the need for an LMS password.
 
 ## Implementing the Handshake
@@ -58,11 +58,11 @@ The `userId` can be any string that uniquely identifies the user in your databas
 
 ### 2. Provide Token to Frontend
 
-Take the `accessToken` returned by HeadlessLMS and send it back to your frontend application. 
+Take the `accessToken` returned by Docento and send it back to your frontend application. 
 
 ### 3. Consume LMS APIs
 
-Your frontend can now use this token as a Bearer Token in the `Authorization` header to talk directly to HeadlessLMS endpoints without routing traffic through your backend!
+Your frontend can now use this token as a Bearer Token in the `Authorization` header to talk directly to Docento endpoints without routing traffic through your backend!
 
 ```http
 GET /v1/auth/me

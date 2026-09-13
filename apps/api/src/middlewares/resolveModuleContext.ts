@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { Course, Module } from '@prisma/client'
+import { Course, Module } from '../generated/prisma'
 import { prisma } from '../lib/prisma'
 import ApiError from '../utils/ApiError'
 

@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 
+import { sanitizeLessonHtml } from "@/lib/sanitize-html";
+
 type TipTapMark = {
   type?: string;
   attrs?: Record<string, unknown>;
@@ -120,14 +122,6 @@ function looksLikeHtml(value: string) {
   return /<\/?[a-z][\s\S]*>/i.test(value);
 }
 
-function sanitizeRawHtml(value: string) {
-  return value
-    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, "")
-    .replace(/\son[a-z]+\s*=\s*"[^"]*"/gi, "")
-    .replace(/\son[a-z]+\s*=\s*'[^']*'/gi, "")
-    .replace(/\s(href|src)\s*=\s*(['"])\s*javascript:[\s\S]*?\2/gi, ' $1="#"');
-}
 
 function applyMarks(text: string, marks: TipTapMark[] | undefined): string {
   if (!marks?.length) return text;
@@ -223,7 +217,7 @@ export function TextLessonContent({ content, fallback }: TextLessonContentProps)
 
   const legacyHtml = useMemo(() => {
     if (!normalizedContent || parsed || !looksLikeHtml(normalizedContent)) return "";
-    return sanitizeRawHtml(normalizedContent);
+    return sanitizeLessonHtml(normalizedContent);
   }, [normalizedContent, parsed]);
 
   if (parsed) return <article dangerouslySetInnerHTML={{ __html: html }} />;

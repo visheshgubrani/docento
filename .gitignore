@@ -138,4 +138,14 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-# Prisma migrations
+# Turborepo
+.turbo
+
+# Local tool caches
+.cache
+
+# Dependencies resolve through pnpm only. A second lockfile makes two install
+# paths disagree about resolved versions, so neither npm nor yarn lockfiles
+# may be committed.
+package-lock.json
+yarn.lock

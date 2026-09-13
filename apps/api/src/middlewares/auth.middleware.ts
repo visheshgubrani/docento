@@ -5,7 +5,7 @@ import ApiError from '../utils/ApiError'
 import crypto from 'crypto'
 import { prisma } from '../lib/prisma'
 import jwt from 'jsonwebtoken'
-import { Project, ProjectMember } from '@prisma/client'
+import { Project, ProjectMember } from '../generated/prisma'
 import { applyApiKeyRateLimit } from './rate-limit.middleware'
 
 /**
@@ -90,6 +90,27 @@ const extractApiKey = (req: Request) => {
   )
 }
 
+/**
+ * Publishable keys are public: they identify an academy in a browser and are
+ * shipped in client bundles. They are read-only by construction.
+ *
+ * This was previously a comment ("Public/Read-Only") with nothing enforcing it,
+ * which meant a publishable key authorized every `/:projectId` route that used
+ * `authorizeProjectAccess` — including end-user create, update, and delete. The
+ * check lives here, at the one place such a key is resolved, so a new route
+ * cannot forget it. See ARCHITECTURE.md, "Authorization".
+ */
+const PUBLISHABLE_ALLOWED_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
+
+const isPublishableKey = (key: string | undefined): boolean =>
+  typeof key === 'string' && key.trim().startsWith('pk_')
+
+const publishableReadOnlyError = (method: string) =>
+  new ApiError(
+    403,
+    `Publishable keys are read-only; ${method} is not permitted with one. Use a secret key from a server, or a learner session.`
+  )
+
 const resolveApiKey = async (
   providedKey: string,
   allowPublishable: boolean
@@ -107,6 +128,7 @@ const resolveApiKey = async (
       return {
         project: projectFromPublishable,
         apiKeyAuth: { type: 'publishable' as const },
+        publishable: true as const,
       }
     }
   }
@@ -220,6 +242,13 @@ export const requireApiKey = async (
 
     if (!key || !project || !apiKeyAuth) {
       return next(new ApiError(401, 'Unauthorized: Invalid API key.'))
+    }
+
+    if (
+      apiKeyAuth.type === 'publishable' &&
+      !PUBLISHABLE_ALLOWED_METHODS.has(req.method.toUpperCase())
+    ) {
+      return next(publishableReadOnlyError(req.method.toUpperCase()))
     }
 
     req.project = project
@@ -401,6 +430,11 @@ export const authorizeProjectAccess = async (
         })
 
         if (projectFromPublishable) {
+          if (!PUBLISHABLE_ALLOWED_METHODS.has(req.method.toUpperCase())) {
+            recordTiming()
+            return next(publishableReadOnlyError(req.method.toUpperCase()))
+          }
+
           req.project = projectFromPublishable
           req.user = undefined // 🔒 CRITICAL: Ensure no user is attached!
           req.apiKeyAuth = { type: 'publishable' }

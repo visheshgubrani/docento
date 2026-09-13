@@ -1,0 +1,1119 @@
+// Docento database schema.
+//
+// This is a fresh baseline (docs/adr/0010-fresh-schema-baseline.md). It is not
+// derived from the closed-source product's migrations and carries no
+// compatibility obligation to them.
+//
+// Reading order matches the architecture:
+//   1. Tenancy        — workspace contains academies       (ADR 0002)
+//   2. Staff realm    — global identity, spans workspaces  (ADR 0003)
+//   3. Learner realm  — identity scoped to one academy     (ADR 0003)
+//   4. Authorization  — roles and explicit assignments
+//   5. Content        — draft curriculum + published releases (ADR 0005)
+//   6. Learning       — enrollment, progress, assessment, certificates
+//   7. Commerce       — offers, orders, grants, enrollments   (ADR 0009)
+//   8. Media          — provider-neutral assets               (ADR 0008)
+//   9. AI             — connections, jobs, usage
+//  10. Webhooks       — endpoints, outbound delivery, inbound dedupe
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===========================================================================
+// 1. Tenancy
+// ===========================================================================
+
+/// The tenant and isolation boundary: staff, roles, provider connections,
+/// operational settings, and the future managed-service contract.
+/// Mapped onto Better Auth's organization plugin.
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  logo      String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members   Member[]
+  invitations Invitation[]
+  academies Academy[]
+
+  serviceKeys        ServiceKey[]
+  staffAssignments   StaffAssignment[]
+  aiConnections      AiProviderConnection[]
+  paymentConnections PaymentConnection[]
+  webhookEndpoints   WebhookEndpoint[]
+  mediaAssets        MediaAsset[]
+  aiJobs             AiJob[]
+  aiUsage            AiUsage[]
+
+  @@map("workspace")
+}
+
+/// A student-facing property inside a workspace: brand, domains, learner
+/// namespace, catalog, and learning records. A workspace may have several,
+/// which is what makes multi-brand operation possible without duplicating
+/// learners or billing.
+model Academy {
+  id          String   @id @default(cuid())
+  workspaceId String
+  name        String
+  slug        String
+  logo        String?
+  /// Typed by the branding contract in packages/contracts.
+  branding    Json?
+  /// MANAGED | DELEGATED | HYBRID
+  authMode    String   @default("MANAGED")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  domains         AcademyDomain[]
+  publishableKeys AcademyPublishableKey[]
+  courses         Course[]
+  learners        Learner[]
+  learnerSessions LearnerSession[]
+  learnerAccounts LearnerAccount[]
+  learnerVerifications LearnerVerification[]
+  offers          Offer[]
+  orders          Order[]
+  accessGrants    AccessGrant[]
+  enrollments     Enrollment[]
+  certificates    Certificate[]
+
+  @@unique([workspaceId, slug])
+  @@index([workspaceId])
+  @@map("academy")
+}
+
+/// A verified hostname serving an academy. Academy context is resolved from
+/// this table, and an unknown host fails closed rather than defaulting.
+model AcademyDomain {
+  id         String    @id @default(cuid())
+  academyId  String
+  hostname   String    @unique
+  isPrimary  Boolean   @default(false)
+  /// Null until DNS ownership is proven. Unverified domains resolve nothing.
+  verifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  academy Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  @@index([academyId])
+  @@map("academy_domain")
+}
+
+/// Public identifier for an academy, usable from a browser. Not a secret, not
+/// an authenticator, and grants no access to paid content.
+model AcademyPublishableKey {
+  id        String    @id @default(cuid())
+  academyId String
+  /// `pk_live_…` / `pk_test_…`
+  key       String    @unique
+  name      String
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  academy Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  @@index([academyId])
+  @@map("academy_publishable_key")
+}
+
+// ===========================================================================
+// 2. Staff realm — global identity, organization membership
+// ===========================================================================
+
+/// Staff identity spans workspaces. Deliberately a separate table from
+/// `Learner` so that equal email addresses can never merge the two.
+model StaffUser {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  banned        Boolean?  @default(false)
+  banReason     String?
+  banExpires    DateTime?
+
+  sessions    StaffSession[]
+  accounts    StaffAccount[]
+  memberships Member[]
+  grantsMade  StaffAssignment[] @relation("AssignmentGrantedBy")
+
+  @@map("staff_user")
+}
+
+model StaffSession {
+  id     String @id
+  token  String @unique
+  userId String
+
+  expiresAt        DateTime
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  ipAddress        String?
+  userAgent        String?
+  impersonatedBy   String?
+  /// Written by Better Auth's organization plugin to record which workspace the
+  /// staff session is currently acting in.
+  activeOrganizationId String?
+  activeWorkspaceId String?
+
+  user StaffUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("staff_session")
+}
+
+model StaffAccount {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user StaffUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("staff_account")
+}
+
+model StaffVerification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  @@index([identifier])
+  @@map("staff_verification")
+}
+
+/// Workspace membership. Roles are workspace-scoped only; per-academy and
+/// per-course access is expressed by StaffAssignment.
+model Member {
+  id          String   @id @default(cuid())
+  workspaceId String
+  userId      String
+  /// owner | admin — Better Auth organization roles
+  role        String   @default("admin")
+  createdAt   DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      StaffUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignments StaffAssignment[]
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+  @@map("member")
+}
+
+model Invitation {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  email        String
+  role         String    @default("admin")
+  status       String    @default("pending")
+  expiresAt    DateTime
+  inviterId    String
+  createdAt    DateTime  @default(now())
+  respondedAt  DateTime?
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, email])
+  @@index([workspaceId, status])
+  @@map("invitation")
+}
+
+// ===========================================================================
+// 3. Learner realm — identity scoped to exactly one academy
+// ===========================================================================
+
+/// A learner account. Scoped to one academy by construction: `email` is unique
+/// per academy, never globally, so two academies may independently hold the
+/// same address.
+model Learner {
+  id            String   @id
+  academyId     String
+  name          String
+  email         String
+  emailVerified Boolean  @default(false)
+  image         String?
+  /// ACTIVE | BANNED
+  status        String   @default("ACTIVE")
+  /// External identity for delegated (bring-your-own-IdP) authentication.
+  externalId    String?
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  academy Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  sessions    LearnerSession[]
+  accounts    LearnerAccount[]
+  enrollments Enrollment[]
+  orders      Order[]
+  accessGrants AccessGrant[]
+  attempts    QuizAttempt[]
+  submissions AssignmentSubmission[]
+  certificates Certificate[]
+
+  @@unique([academyId, email])
+  @@unique([academyId, externalId])
+  @@index([academyId])
+  @@map("learner")
+}
+
+/// Sessions carry `academyId` so a token issued by one academy cannot resolve
+/// in another, regardless of how a query is written.
+model LearnerSession {
+  id        String   @id
+  academyId String
+  token     String   @unique
+  learnerId String
+
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  ipAddress  String?
+  userAgent  String?
+
+  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  academy Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  @@index([academyId])
+  @@index([learnerId])
+  @@map("learner_session")
+}
+
+model LearnerAccount {
+  id                    String    @id
+  academyId             String
+  accountId             String
+  providerId            String
+  learnerId             String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  academy Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  @@index([academyId])
+  @@index([learnerId])
+  @@map("learner_account")
+}
+
+/// Verification records are academy-scoped too, so a password-reset token
+/// minted for one academy cannot be replayed against another.
+model LearnerVerification {
+  id         String   @id
+  academyId  String
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+
+  academy Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  @@unique([academyId, identifier, value])
+  @@index([academyId, identifier])
+  @@map("learner_verification")
+}
+
+// ===========================================================================
+// 4. Authorization
+// ===========================================================================
+
+/// Scoped staff grants. Workspace roles cannot express "this instructor may
+/// author and grade these two courses", so access below the workspace level is
+/// an explicit assignment rather than a role.
+model StaffAssignment {
+  id          String   @id @default(cuid())
+  workspaceId String
+  memberId    String
+  /// ACADEMY | COURSE
+  scope       String
+  academyId   String?
+  courseId    String?
+  /// INSTRUCTOR | GRADER
+  role        String
+  grantedById String
+  grantedAt   DateTime @default(now())
+  revokedAt   DateTime?
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  member    Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  grantedBy StaffUser @relation("AssignmentGrantedBy", fields: [grantedById], references: [id])
+
+  @@index([workspaceId])
+  @@index([memberId])
+  @@index([courseId])
+  @@index([academyId])
+  @@map("staff_assignment")
+}
+
+/// A scoped credential for server-to-server use. Never authenticates a browser,
+/// and never implies a staff identity.
+model ServiceKey {
+  id          String    @id @default(cuid())
+  workspaceId String
+  /// Optional restriction to a single academy.
+  academyId   String?
+  name        String
+  /// Display prefix, e.g. `sk_live_`
+  prefix      String
+  /// Last four characters, so a key is identifiable after creation.
+  last4       String
+  /// SHA-256 of the full key. The key itself is shown once and never stored.
+  hashedKey   String    @unique
+  scopes      String[]
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  createdById String
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("service_key")
+}
+
+// ===========================================================================
+// 5. Content — draft curriculum and immutable published releases
+// ===========================================================================
+
+model Course {
+  id          String   @id @default(cuid())
+  academyId   String
+  title       String
+  slug        String
+  description String?
+  thumbnail   String?
+  /// DRAFT | PUBLISHED | ARCHIVED
+  status      String   @default("DRAFT")
+  /// Course this was copied from, for provenance when duplicating across
+  /// academies. Copies never carry learners, orders, or progress.
+  copiedFromCourseId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  academy Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+
+  modules   Module[]
+  releases  CourseRelease[]
+  offers    Offer[]
+  enrollments Enrollment[]
+  accessGrants AccessGrant[]
+  certificates Certificate[]
+
+  @@unique([academyId, slug])
+  @@index([academyId, status])
+  @@map("course")
+}
+
+/// An immutable published snapshot. Publishing is atomic: learners see a
+/// release, never a half-edited draft, and a release is never mutated.
+model CourseRelease {
+  id            String   @id @default(cuid())
+  courseId      String
+  version       Int
+  /// Full curriculum snapshot, so a release cannot drift with its draft.
+  snapshot      Json
+  publishedAt   DateTime @default(now())
+  publishedById String
+  /// Set when a later release supersedes this one.
+  supersededAt  DateTime?
+
+  course  Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons ReleaseLesson[]
+
+  @@unique([courseId, version])
+  @@index([courseId, publishedAt])
+  @@map("course_release")
+}
+
+/// One row per lesson in a release. `lessonId` preserves the stable identity
+/// that progress records point at across releases.
+model ReleaseLesson {
+  id         String @id @default(cuid())
+  releaseId  String
+  lessonId   String
+  title      String
+  /// VIDEO | TEXT | FILE | QUIZ | ASSIGNMENT | EMBED
+  contentType String
+  position   Int
+  isRequired Boolean @default(true)
+  /// Server-side completion rule, evaluated from progress. Client playback
+  /// reports are input, never proof.
+  completionRule Json?
+
+  release CourseRelease @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+
+  @@unique([releaseId, lessonId])
+  @@index([releaseId, position])
+  @@map("release_lesson")
+}
+
+/// Editable draft module.
+model Module {
+  id        String   @id @default(cuid())
+  courseId  String
+  title     String
+  summary   String?
+  position  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+
+  @@index([courseId, position])
+  @@map("module")
+}
+
+/// Editable draft lesson. Identity is stable across releases so that progress
+/// survives republication.
+model Lesson {
+  id        String   @id @default(cuid())
+  moduleId  String
+  title     String
+  summary   String?
+  /// VIDEO | TEXT | FILE | QUIZ | ASSIGNMENT | EMBED
+  contentType String
+  position  Int
+  isFree    Boolean  @default(false)
+  /// Rich text for TEXT lessons.
+  body      String?
+  /// Provider-neutral media reference; see MediaAsset.
+  mediaAssetId String?
+  /// External embed URL for EMBED lessons.
+  embedUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  quiz   Quiz?
+  assignment Assignment?
+
+  @@index([moduleId, position])
+  @@map("lesson")
+}
+
+model Quiz {
+  id             String  @id @default(cuid())
+  lessonId       String  @unique
+  title          String
+  description    String?
+  passingPercent Int     @default(70)
+  maxAttempts    Int?
+  timeLimitMinutes Int?
+  /// Exam-style assessment support, carried over deliberately.
+  isMockTest         Boolean @default(false)
+  opensAt            DateTime?
+  closesAt           DateTime?
+  negativeMarking    Boolean @default(false)
+  defaultNegativeMark Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lesson    Lesson         @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  sections  QuizSection[]
+  questions Question[]
+  attempts  QuizAttempt[]
+
+  @@map("quiz")
+}
+
+model QuizSection {
+  id      String @id @default(cuid())
+  quizId  String
+  title   String
+  position Int
+
+  quiz      Quiz       @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  questions Question[]
+
+  @@index([quizId, position])
+  @@map("quiz_section")
+}
+
+model Question {
+  id           String  @id @default(cuid())
+  quizId       String
+  sectionId    String?
+  prompt       String
+  /// MULTIPLE_CHOICE | MULTI_SELECT | TRUE_FALSE | SHORT_ANSWER | INTEGER
+  questionType String
+  options      Json?
+  /// Never leaves the server on a learner-facing response.
+  correctAnswer  String
+  correctAnswers String[]
+  explanation    String?
+  points         Int     @default(1)
+  negativePoints Float   @default(0)
+  partialMarking Boolean @default(false)
+  position       Int
+  /// MANUAL | AI_GENERATED | IMPORTED
+  source         String  @default("MANUAL")
+  /// DRAFT | APPROVED — AI output is reviewed before it can be published.
+  reviewStatus   String  @default("DRAFT")
+  createdAt      DateTime @default(now())
+
+  quiz    Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  section QuizSection? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  answers QuizAnswer[]
+
+  @@index([quizId, position])
+  @@map("question")
+}
+
+model Assignment {
+  id          String    @id @default(cuid())
+  lessonId    String    @unique
+  title       String
+  instructions String?
+  dueAt       DateTime?
+  totalPoints Int       @default(100)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  lesson      Lesson                 @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  submissions AssignmentSubmission[]
+
+  @@map("assignment")
+}
+
+// ===========================================================================
+// 6. Learning — enrollment, progress, assessment, certificates
+// ===========================================================================
+
+/// The learning relationship. Records learning, not permission: permission is
+/// the union of live AccessGrants.
+model Enrollment {
+  id          String    @id @default(cuid())
+  academyId   String
+  courseId    String
+  learnerId   String
+  enrolledAt  DateTime  @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  academy Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  lessonProgress LessonProgress[]
+
+  @@unique([courseId, learnerId])
+  @@index([academyId])
+  @@index([learnerId])
+  @@map("enrollment")
+}
+
+model LessonProgress {
+  id           String    @id @default(cuid())
+  enrollmentId String
+  lessonId     String
+  isCompleted  Boolean   @default(false)
+  /// Resume position, so a learner returns where they stopped.
+  positionSeconds Int    @default(0)
+  watchedSeconds  Int    @default(0)
+  completedAt  DateTime?
+  lastSeenAt   DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, lessonId])
+  @@map("lesson_progress")
+}
+
+/// An attempt against a snapshot of the quiz as it was when the attempt began,
+/// so a later published edit cannot rewrite a graded attempt.
+model QuizAttempt {
+  id            String    @id @default(cuid())
+  quizId        String
+  learnerId     String
+  attemptNumber Int
+  /// Grading rules and correct answers as of attempt start.
+  gradingSnapshot Json
+  score          Float    @default(0)
+  totalPoints    Int      @default(0)
+  passed         Boolean  @default(false)
+  startedAt      DateTime @default(now())
+  submittedAt    DateTime?
+  timeSpentSeconds Int?
+
+  quiz    Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  learner Learner      @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  answers QuizAnswer[]
+
+  @@unique([quizId, learnerId, attemptNumber])
+  @@index([learnerId])
+  @@map("quiz_attempt")
+}
+
+model QuizAnswer {
+  id          String   @id @default(cuid())
+  attemptId   String
+  questionId  String
+  answer      String
+  answers     String[]
+  isCorrect   Boolean  @default(false)
+  pointsEarned Float   @default(0)
+  answeredAt  DateTime @default(now())
+
+  attempt  QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([attemptId, questionId])
+  @@map("quiz_answer")
+}
+
+model AssignmentSubmission {
+  id           String    @id @default(cuid())
+  assignmentId String
+  learnerId    String
+  content      String?
+  fileUrl      String?
+  grade        Float?
+  feedback     String?
+  gradedAt     DateTime?
+  gradedById   String?
+  submittedAt  DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  learner    Learner    @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, learnerId])
+  @@map("assignment_submission")
+}
+
+/// A durable issuance record. Revocation is explicit and auditable; the public
+/// verification view exposes minimal information and never the learner email.
+model Certificate {
+  id             String    @id @default(cuid())
+  academyId      String
+  courseId       String
+  learnerId      String
+  /// Public, unguessable verification identifier.
+  verificationId String    @unique
+  title          String
+  recipientName  String
+  /// Evidence the certificate was earned against.
+  completionEvidence Json
+  issuedAt       DateTime  @default(now())
+  revokedAt      DateTime?
+  revocationReason String?
+
+  academy Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, learnerId])
+  @@index([academyId])
+  @@map("certificate")
+}
+
+// ===========================================================================
+// 7. Commerce
+// ===========================================================================
+
+/// What is for sale, at what price, on what terms. Mutable: this is the current
+/// price. Historical amounts live on the Order.
+model Offer {
+  id          String  @id @default(cuid())
+  academyId   String
+  courseId    String
+  /// Integer minor units. Never floating point.
+  amountMinor Int
+  currency    String  @default("USD")
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  academy Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  orders  Order[]
+
+  @@unique([courseId, currency])
+  @@index([academyId])
+  @@map("offer")
+}
+
+/// Financial history. Price, discount, and currency are snapshotted here so a
+/// later change to an Offer never changes what an order meant.
+model Order {
+  id               String   @id @default(cuid())
+  academyId        String
+  learnerId        String
+  offerId          String?
+  courseId         String
+  /// Amounts in integer minor units, snapshotted at purchase.
+  subtotalMinor    Int
+  discountMinor    Int      @default(0)
+  totalMinor       Int
+  currency         String
+  couponCode       String?
+  /// PENDING | PAID | FAILED | CANCELLED | REFUNDED | PARTIALLY_REFUNDED
+  status           String   @default("PENDING")
+  /// Client-supplied key that makes checkout retry-safe.
+  idempotencyKey   String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  academy Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  offer   Offer?  @relation(fields: [offerId], references: [id], onDelete: SetNull)
+
+  payments Payment[]
+  grants   AccessGrant[]
+
+  @@unique([academyId, idempotencyKey])
+  @@index([academyId, status])
+  @@index([learnerId])
+  @@map("order")
+}
+
+model Payment {
+  id           String   @id @default(cuid())
+  orderId      String
+  /// stripe | razorpay
+  provider     String
+  /// Provider-side reference, unique per connection.
+  providerRef  String
+  amountMinor  Int
+  currency     String
+  status       String
+  /// Raw provider payload, retained for reconciliation and audit.
+  raw          Json?
+  confirmedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  refunds Refund[]
+
+  @@unique([provider, providerRef])
+  @@index([orderId])
+  @@map("payment")
+}
+
+model Refund {
+  id          String   @id @default(cuid())
+  paymentId   String
+  amountMinor Int
+  currency    String
+  /// true when this refund covers the whole payment.
+  isFull      Boolean  @default(false)
+  reason      String?
+  createdAt   DateTime @default(now())
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@map("refund")
+}
+
+/// Why a learner may access a course. Independent grants compose: revoking the
+/// grant from a refund must not disturb an instructor's grant, and must never
+/// erase learning history.
+model AccessGrant {
+  id         String    @id @default(cuid())
+  academyId  String
+  courseId   String
+  learnerId  String
+  /// PURCHASE | MANUAL | COUPON | IMPORT | SEAT
+  source     String
+  /// The order, invitation, or actor that produced this grant.
+  sourceId   String?
+  grantedAt  DateTime  @default(now())
+  expiresAt  DateTime?
+  revokedAt  DateTime?
+  revokedReason String?
+
+  academy Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  order   Order?  @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@index([academyId, courseId, learnerId])
+  @@index([learnerId])
+  @@map("access_grant")
+}
+
+model PaymentConnection {
+  id              String   @id @default(cuid())
+  workspaceId     String
+  /// stripe | razorpay
+  provider        String
+  mode            String   @default("TEST")
+  /// Encrypted with ENCRYPTION_KEY. Never returned by the API.
+  credentials     String
+  webhookSecret   String?
+  isDefault       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, provider, mode])
+  @@map("payment_connection")
+}
+
+// ===========================================================================
+// 8. Media
+// ===========================================================================
+
+/// Workspace-owned media, referenced by lessons in any academy. The provider is
+/// recorded per asset, so changing a workspace default never rewrites how an
+/// existing asset is served.
+model MediaAsset {
+  id              String   @id @default(cuid())
+  workspaceId     String
+  /// local | s3 | openvod | external
+  provider        String
+  providerAssetId String?
+  /// PROCESSING | READY | FAILED | DELETED
+  status          String   @default("PROCESSING")
+  title           String?
+  originalFilename String?
+  mimeType        String?
+  sizeBytes       BigInt?
+  durationSeconds Int?
+  playbackUrl     String?
+  thumbnailUrl    String?
+  /// References from courses; an asset is only removable when this reaches zero.
+  referenceCount  Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  workspace Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  captions  MediaCaption[]
+
+  @@unique([provider, providerAssetId])
+  @@index([workspaceId, status])
+  @@map("media_asset")
+}
+
+model MediaCaption {
+  id        String @id @default(cuid())
+  assetId   String
+  language  String
+  label     String?
+  /// WebVTT.
+  body      String?
+  status    String @default("PROCESSING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  asset MediaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([assetId, language])
+  @@map("media_caption")
+}
+
+// ===========================================================================
+// 9. AI
+// ===========================================================================
+
+/// A configured provider. Capabilities are recorded per model because an
+/// OpenAI-compatible endpoint is not necessarily compatible in structured
+/// output, tools, vision, or usage reporting.
+model AiProviderConnection {
+  id          String   @id @default(cuid())
+  workspaceId String
+  /// openai-compatible | anthropic
+  provider    String
+  baseUrl     String?
+  /// Encrypted with ENCRYPTION_KEY. Absent for endpoints needing no credential,
+  /// such as a local inference server.
+  encryptedApiKey String?
+  defaultModel    String?
+  /// Capability map: text, structured, vision, tools, embeddings.
+  capabilities    Json?
+  isDefault       Boolean  @default(false)
+  enabled         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("ai_provider_connection")
+}
+
+/// A durable generation job. Generation never holds an HTTP request open, and
+/// step results are stored so a retry resumes rather than restarting.
+model AiJob {
+  id          String   @id @default(cuid())
+  workspaceId String
+  academyId   String?
+  /// COURSE_OUTLINE | LESSON_DRAFT | QUIZ_DRAFT | TUTOR_REPLY | SUMMARY
+  type        String
+  /// QUEUED | RUNNING | SUCCEEDED | FAILED | CANCELLED
+  status      String   @default("QUEUED")
+  input       Json
+  /// Completed steps, so a resumed job does not repeat them.
+  steps       Json?
+  result      Json?
+  error       String?
+  progress    Int      @default(0)
+  attempts    Int      @default(0)
+  /// Set when a kill switch or an operator cancels the job.
+  cancelledAt DateTime?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  startedAt   DateTime?
+  finishedAt  DateTime?
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  usage     AiUsage[]
+
+  @@index([workspaceId, status])
+  @@map("ai_job")
+}
+
+/// Token and cost accounting. Unknown cost is recorded as unknown rather than
+/// guessed.
+model AiUsage {
+  id          String   @id @default(cuid())
+  workspaceId String
+  jobId       String?
+  provider    String
+  model       String
+  inputTokens  Int?
+  outputTokens Int?
+  costMicros   Int?
+  createdAt    DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  job       AiJob?    @relation(fields: [jobId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, createdAt])
+  @@map("ai_usage")
+}
+
+// ===========================================================================
+// 10. Webhooks
+// ===========================================================================
+
+model WebhookEndpoint {
+  id          String   @id @default(cuid())
+  workspaceId String
+  url         String
+  /// Rotatable signing secret.
+  secret      String
+  events      String[]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace  Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  deliveries WebhookDelivery[]
+
+  @@index([workspaceId])
+  @@map("webhook_endpoint")
+}
+
+/// Outbound delivery record. External effects are retryable delivery with
+/// idempotent effects, never an exactly-once promise.
+model WebhookDelivery {
+  id            String    @id @default(cuid())
+  endpointId    String
+  event         String
+  payload       Json
+  /// PENDING | DELIVERED | FAILED | DISCARDED
+  status        String    @default("PENDING")
+  attempts      Int       @default(0)
+  responseStatus Int?
+  /// Bounded capture, so a hostile or chatty endpoint cannot fill the database.
+  responseBody  String?
+  nextAttemptAt DateTime?
+  deliveredAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  endpoint WebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+
+  @@index([status, nextAttemptAt])
+  @@index([endpointId, createdAt])
+  @@map("webhook_delivery")
+}
+
+/// Inbound provider callbacks, deduplicated on (provider, connection, event id).
+/// Providers retry and do not guarantee ordering; the unique key is what makes
+/// a duplicate delivery a no-op instead of a second business effect.
+model InboundEvent {
+  id           String   @id @default(cuid())
+  provider     String
+  connectionId String
+  eventId      String
+  eventType    String?
+  payload      Json
+  processedAt  DateTime?
+  error        String?
+  receivedAt   DateTime @default(now())
+
+  @@unique([provider, connectionId, eventId])
+  @@index([processedAt])
+  @@map("inbound_event")
+}
+
+// ===========================================================================
+// 11. Rate limiting
+// ===========================================================================
+
+/// Fixed-window counters shared through Postgres.
+///
+/// In-process counters (the default in most rate-limit middleware) are
+/// per-replica: behind two API instances the effective limit doubles, and login
+/// brute-force protection becomes close to meaningless. A shared store is
+/// therefore a correctness requirement, not an optimisation, and Postgres is
+/// used so a self-hosted install still needs exactly one stateful service.
+model RateLimitCounter {
+  /// Caller-chosen identity, e.g. `sign-in:1.2.3.4`.
+  key         String   @id
+  windowStart DateTime
+  count       Int      @default(0)
+  expiresAt   DateTime
+
+  @@index([expiresAt])
+  @@map("rate_limit_counter")
+}

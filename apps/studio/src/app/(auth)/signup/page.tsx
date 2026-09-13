@@ -163,7 +163,7 @@ function SignupPageContent() {
                   <span className='relative shrink-0 size-10'>
                     <Image
                       src='/docento-logo.svg'
-                      alt='Edural Logo'
+                      alt='Docento Logo'
                       fill
                       priority
                       className='object-contain'
@@ -369,7 +369,7 @@ function SignupPageContent() {
             </div>
             {/* Terms */}
             <div className='mt-6 flex justify-between gap-2 items-center text-center text-sm/6'>
-              <p className='text-foreground/80'>&copy; 2026 Edural.</p>
+              <p className='text-foreground/80'>&copy; 2026 Docento.</p>
               <div className='flex gap-2'>
                 <span className='text-foreground/80'>•</span>
                 <Link

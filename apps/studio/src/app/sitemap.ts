@@ -5,8 +5,8 @@ import { headers } from "next/headers";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const allPosts = await getBlogPosts();
   const headersList = headers();
-  let domain = (await headersList).get("host") as string;
-  let protocol = "https";
+  const domain = (await headersList).get("host") as string;
+  const protocol = "https";
 
   return [
     {

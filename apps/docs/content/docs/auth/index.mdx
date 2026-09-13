@@ -1,14 +1,14 @@
 ---
 title: Authentication Modes
-description: Learn about Managed vs. Delegated authentication in HeadlessLMS.
+description: Learn about Managed vs. Delegated authentication in Docento.
 ---
 
 # Authentication Modes
 
-HeadlessLMS provides maximum flexibility when it comes to integrating with your product's user base. Since every use case is unique, we offer two distinct modes for managing user identity and authentication for a project:
+Docento provides maximum flexibility when it comes to integrating with your product's user base. Since every use case is unique, we offer two distinct modes for managing user identity and authentication for a project:
 
-1. **Managed Authentication:** HeadlessLMS is the primary authority. We manage users, passwords, secure sessions, password resets, and issue JWT tokens for video playback and API access.
-2. **Delegated Authentication:** Your system remains the absolute source of truth (e.g., Auth0, Firebase, custom SSO). Whenever a user in your system accesses the LMS, your backend creates a short-lived handshake with HeadlessLMS.
+1. **Managed Authentication:** Docento is the primary authority. We manage users, passwords, secure sessions, password resets, and issue JWT tokens for video playback and API access.
+2. **Delegated Authentication:** Your system remains the absolute source of truth (e.g., Auth0, Firebase, custom SSO). Whenever a user in your system accesses the LMS, your backend creates a short-lived handshake with Docento.
 
 These modes are configured on a **per-project basis**. You can have one project using Managed Auth and another using Delegated Auth on the same instance.
 
@@ -20,7 +20,7 @@ Choosing between managed and delegated auth depends entirely on whether your lea
 - You are building a standalone course platform from scratch.
 - You do not want to build your own user and password management system.
 - You want the LMS platform to handle "Forgot Password" or "Sign Up" flows natively.
-- HeadlessLMS is the primary or only tool these users log into.
+- Docento is the primary or only tool these users log into.
 
 ### Choose Delegated Auth If:
 - You have an existing web or mobile app where users are already logging in.

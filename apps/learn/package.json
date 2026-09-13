@@ -1,12 +1,15 @@
 {
-  "name": "dog",
+  "name": "@docento/learn",
   "version": "0.1.0",
   "private": true,
+  "license": "AGPL-3.0-only",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@base-ui/react": "^1.1.0",
@@ -14,6 +17,7 @@
     "@react-pdf/renderer": "^4.3.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "isomorphic-dompurify": "^4.2.0",
     "lucide-react": "^0.563.0",
     "motion": "^12.34.0",
     "next": "16.1.6",
@@ -37,6 +41,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "catalog:",
+    "vitest": "^3.2.7"
   }
 }

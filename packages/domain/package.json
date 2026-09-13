@@ -1,0 +1,45 @@
+{
+  "name": "@docento/domain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Docento business rules, authorization, transactions, and database schema.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./auth/staff": "./src/auth/staff.ts",
+    "./auth/learner": "./src/auth/learner.ts",
+    "./authorization": "./src/authorization/can.ts",
+    "./db": "./src/db.ts",
+    "./rate-limit": "./src/rate-limit/index.ts"
+  },
+  "scripts": {
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset --force",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "db:seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@docento/config": "workspace:*",
+    "@prisma/client": "^6.19.3",
+    "better-auth": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/node": "^24.13.4",
+    "eslint": "^9.39.5",
+    "prisma": "^6.19.3",
+    "tsx": "^4.23.13",
+    "typescript": "catalog:",
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^3.2.4"
+  }
+}

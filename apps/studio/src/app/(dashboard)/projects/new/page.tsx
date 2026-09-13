@@ -156,7 +156,7 @@ export default function NewProjectPage() {
                         {...register("authMode")}
                     >
                         <option value="MANAGED">
-                            Managed (HeadlessLMS handles auth)
+                            Managed (Docento handles auth)
                         </option>
                         <option value="DELEGATED">
                             Delegated (your system manages auth)
@@ -170,7 +170,7 @@ export default function NewProjectPage() {
                         <strong className="text-foreground/70 font-medium">
                             Managed:
                         </strong>{" "}
-                        HeadlessLMS stores and manages student credentials.{" "}
+                        Docento stores and manages student credentials.{" "}
                         <br />
                         <strong className="text-foreground/70 font-medium">
                             Delegated:

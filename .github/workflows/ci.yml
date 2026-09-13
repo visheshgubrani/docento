@@ -2,58 +2,102 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build-server:
-    name: Build Server
+  # The architecture rules. A separate job so a boundary violation is reported as
+  # its own failure rather than being buried in a general test run.
+  boundaries:
+    name: Architecture boundaries
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Check dependency rules
+        run: pnpm boundaries
 
-      - name: Install server dependencies
-        working-directory: ./server
-        run: npm install
-
-      - name: Build server
-        working-directory: ./server
-        run: npm run build
-
-  build-client:
-    name: Build Client
+  verify:
+    name: Lint, typecheck, test
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - name: Install client dependencies
-        working-directory: ./client
-        run: pnpm install --frozen-lockfile
-
-      - name: Build client
-        working-directory: ./client
-        run: pnpm run build
+    services:
+      postgres:
+        image: postgres:18-alpine
         env:
-          NEXT_PUBLIC_API_BASE_URL: http://localhost:4000/api/v1
-          NEXT_PUBLIC_AUTH_BASE_URL: http://localhost:4000/api/auth
-          NEXT_PUBLIC_FRONTEND_URL: http://localhost:3000
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: docento_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      # Integration tests run against a real Postgres. The isolation guarantees
+      # are database properties — unique indexes and atomic statements — and a
+      # mocked client would not exercise any of them.
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/docento_test?schema=public
+      APP_URL: http://localhost:3000
+      STAFF_AUTH_SECRET: ci-staff-secret-not-a-real-secret-000000000000
+      LEARNER_AUTH_SECRET: ci-learner-secret-not-a-real-secret-000000000
+      ENCRYPTION_KEY: '0000000000000000000000000000000000000000000000000000000000000000'
+      EMAIL_PROVIDER: console
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm db:generate
+
+      - name: Apply database migrations
+        run: pnpm db:deploy
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/docento?schema=public
+      APP_URL: http://localhost:3000
+      STAFF_AUTH_SECRET: build-staff-secret-not-a-real-secret-00000000000
+      LEARNER_AUTH_SECRET: build-learner-secret-not-a-real-secret-000000000
+      ENCRYPTION_KEY: '0000000000000000000000000000000000000000000000000000000000000000'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client
+        run: pnpm db:generate
+      - run: pnpm build
