@@ -28,6 +28,7 @@
 
 import { prisma } from '../db'
 import type { Principal } from '../authorization/principal'
+import { completeLesson } from '../learning/enrollment'
 import {
   ConflictError,
   DomainRuleError,
@@ -623,14 +624,46 @@ export async function submitAttempt(
 
   const quiz = await prisma.quiz.findUniqueOrThrow({
     where: { id: attempt.quizId },
-    select: { passingPercent: true },
+    select: { passingPercent: true, lessonId: true },
   })
 
-  await finaliseAttempt(
+  const finalised = await finaliseAttempt(
     input.attemptId,
     attempt.gradingSnapshot,
     quiz.passingPercent,
   )
+
+  /**
+   * A passed quiz completes its lesson.
+   *
+   * ## Why this lives here rather than in the route
+   *
+   * It is the completion rule for a quiz lesson, and the route is not the only
+   * caller — a worker grading an expired attempt would have to remember it too,
+   * and the one that forgot would produce a learner whose quiz says "passed" and
+   * whose course says "1 of 2 required lessons are done". That is exactly the
+   * state this was written after finding: nothing in the domain completed a quiz
+   * lesson, so a course with a quiz could never be finished and its certificate
+   * could never be issued.
+   *
+   * `completeLesson` rather than a direct write, because it owns the rest of the
+   * consequences: the enrolment's `completedAt`, and the withdrawal of
+   * completion when the release grows.
+   */
+  if (finalised.passed) {
+    await completeLesson(
+      {
+        kind: 'learner',
+        learnerId: input.learnerId,
+        academyId: input.academyId,
+      },
+      {
+        academyId: input.academyId,
+        learnerId: input.learnerId,
+        lessonId: quiz.lessonId,
+      },
+    )
+  }
 
   return buildResult(input.attemptId, input.learnerId)
 }
