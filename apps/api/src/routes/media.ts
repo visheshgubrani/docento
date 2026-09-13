@@ -3,10 +3,12 @@ import { Hono } from 'hono'
 import type { StorageAdapter } from '@docento/integrations'
 import {
   NotFoundError,
+  authorizeMediaServe,
+  resolveAcademyById,
   resolvePendingAssetByKey,
-  resolveServableAsset,
 } from '@docento/domain'
 
+import { resolvePrincipal } from '../auth/principal.js'
 import { handleError } from '../middleware/respond.js'
 
 /**
@@ -24,8 +26,8 @@ import { handleError } from '../middleware/respond.js'
  *
  * What they are not is unchecked. Both go through a domain operation for the
  * part that is a business rule: upload confirms the key the client was given,
- * and serving resolves the asset through `resolveServableAsset`, which is scoped
- * to the academy and refuses a soft-deleted or not-yet-ready row.
+ * and serving goes through `authorizeMediaServe`, which decides whether this
+ * caller is entitled to these bytes before any are read.
  *
  * ## Why the upload key is verified rather than trusted
  *
@@ -39,6 +41,70 @@ import { handleError } from '../middleware/respond.js'
 
 type MediaContext = {
   storage: StorageAdapter
+}
+
+/**
+ * The largest body this route will read, when nothing says otherwise.
+ *
+ * A cap is not the same as a quota: it exists so a single request cannot fill
+ * the disk or hold a connection open for an unbounded stream, and it is
+ * deliberately generous because the default storage is a self-hoster's own
+ * filesystem and a lecture recording is legitimately large. `MEDIA_MAX_UPLOAD_BYTES`
+ * lowers it for a deployment that wants a real limit.
+ */
+const DEFAULT_MAX_UPLOAD_BYTES = 2 * 1024 * 1024 * 1024
+
+function maxUploadBytes(): number {
+  const configured = Number(process.env.MEDIA_MAX_UPLOAD_BYTES)
+
+  return Number.isFinite(configured) && configured > 0
+    ? configured
+    : DEFAULT_MAX_UPLOAD_BYTES
+}
+
+/**
+ * Raised from inside a stream, so the route can answer `413` rather than `500`.
+ *
+ * A `class` rather than a flag, because the failure surfaces from whichever
+ * adapter was consuming the stream — `storage.put` is the thing that observes
+ * it — and `instanceof` is what keeps it distinguishable from a genuine
+ * storage fault once it has travelled back through that call.
+ */
+class UploadTooLargeError extends Error {}
+
+/**
+ * A body that fails once it exceeds `limit`.
+ *
+ * The bytes are counted as they arrive rather than trusted from
+ * `content-length`, because that header is a claim: a client that omits it, or
+ * lies about it, would otherwise stream without bound and fill the disk the cap
+ * exists to protect.
+ *
+ * The stream is failed rather than truncated. A truncated write that reported
+ * success would leave a file that plays until it does not — and the operator
+ * would have no reason to re-upload it, which is a worse failure than one that
+ * visibly did not work.
+ */
+function bodyLimitedTo(
+  body: ReadableStream<Uint8Array>,
+  limit: number,
+): ReadableStream<Uint8Array> {
+  let seen = 0
+
+  return body.pipeThrough(
+    new TransformStream<Uint8Array, Uint8Array>({
+      transform(chunk, controller) {
+        seen += chunk.byteLength
+
+        if (seen > limit) {
+          controller.error(new UploadTooLargeError())
+          return
+        }
+
+        controller.enqueue(chunk)
+      },
+    }),
+  )
 }
 
 /**
@@ -98,7 +164,18 @@ export function createMediaRoutes(options: MediaContext): Hono {
    */
   routes.put('/media/upload/:key{.+}', async (c) => {
     try {
-      const key = decodeURIComponent(c.req.param('key'))
+      /**
+       * Not decoded again.
+       *
+       * Hono has already decoded the path parameter, and calling
+       * `decodeURIComponent` a second time is not a no-op: a filename
+       * containing a literal `%` — `100%.mp4` — throws `URIError` and becomes a
+       * `500`, and a double-encoded `%2e%2e%2f` survives a second pass, so the
+       * key this route *verifies* stops being the key it *writes*. The adapter
+       * would still refuse an escape, but a check that examines a different
+       * string from the one it guards is not a check.
+       */
+      const key = c.req.param('key')
 
       const [workspaceId, assetId] = key.split('/')
 
@@ -150,16 +227,55 @@ export function createMediaRoutes(options: MediaContext): Hono {
         )
       }
 
+      const limit = maxUploadBytes()
+
+      /**
+       * A declared length above the cap is refused before a byte is read.
+       *
+       * `content-length` is a claim and not evidence, so this is the cheap
+       * rejection rather than the guard — the counter below is the guard. Both
+       * exist because the common case is an honest client with an oversized
+       * file, and refusing it after streaming two gigabytes wastes exactly the
+       * thing the cap protects.
+       */
+      const declared = Number(c.req.header('content-length') ?? '')
+
+      if (Number.isFinite(declared) && declared > limit) {
+        return c.json(
+          {
+            success: false,
+            error: {
+              code: 'validation_failed' as const,
+              message: `The upload is larger than this deployment accepts (${limit} bytes).`,
+            },
+          },
+          413,
+        )
+      }
+
       await options.storage.put(
         {
           key,
           contentType: asset.mimeType ?? 'application/octet-stream',
         },
-        body,
+        bodyLimitedTo(body, limit),
       )
 
       return c.json({ success: true, data: { ok: true } }, 200)
     } catch (error) {
+      if (error instanceof UploadTooLargeError) {
+        return c.json(
+          {
+            success: false,
+            error: {
+              code: 'validation_failed' as const,
+              message: `The upload is larger than this deployment accepts (${maxUploadBytes()} bytes).`,
+            },
+          },
+          413,
+        )
+      }
+
       return handleError(c, error)
     }
   })
@@ -167,24 +283,39 @@ export function createMediaRoutes(options: MediaContext): Hono {
   /**
    * Serve the bytes for an asset.
    *
-   * ## Why there is no authorization call in this handler
+   * ## Who may have them
    *
-   * There is, and it is the resolution below: `resolveServableAsset` is scoped to
-   * the academy in the path, refuses a soft-deleted or unfinished asset, and
-   * returns nothing for an unknown id. On top of that the route requires the
-   * academy to resolve for this request at all — an academy that does not resolve
-   * serves no bytes, which is the same fail-closed rule the rest of the public
-   * surface follows.
+   * `authorizeMediaServe` decides, and it decides before a byte is read: the
+   * caller must reach the academy (`media:serve`) and, when they are a learner,
+   * must currently have access to a course whose published release uses this
+   * asset. That second half is the one that matters — `media:serve` is granted
+   * academy-wide, so the check alone would hand a learner every video in the
+   * academy, including the ones they never enrolled in.
    *
-   * What it deliberately does not do is distinguish "not yours" from "does not
-   * exist". Both are a 404.
+   * ## Why the academy comes from the path
+   *
+   * A `<video>` element issues a plain GET. It sends no `x-academy-slug`, and
+   * behind a proxy the `Host` the API sees is the API's own, so neither input
+   * the JSON API resolves an academy from is available here. The path segment
+   * *selects* which academy the request is about — exactly as a hostname does —
+   * and the caller is still resolved from their session, so naming an academy
+   * grants nothing.
+   *
+   * A refusal and an unknown id are the same `404`, so the endpoint cannot be
+   * used to test whether an academy holds a given asset.
    */
   routes.get('/media/:academyId/:assetId', async (c) => {
     try {
       const academyId = c.req.param('academyId')
       const assetId = c.req.param('assetId')
 
-      const asset = await resolveServableAsset({ academyId, assetId })
+      const academy = await resolveAcademyById(academyId)
+
+      const principal = await resolvePrincipal(c, academy)
+
+      const asset = academy
+        ? await authorizeMediaServe({ principal, academyId: academy.id, assetId })
+        : null
 
       if (!asset) {
         return handleError(c, new NotFoundError('media asset', assetId))
@@ -196,6 +327,16 @@ export function createMediaRoutes(options: MediaContext): Hono {
         key: asset.storageKey,
         ...(range ? { range } : {}),
       })
+
+      /**
+       * `206` only when the response really is a range.
+       *
+       * A provider that cannot do ranges returns the whole object, and
+       * answering `206` with a `Content-Range` for it tells a player it may seek
+       * within something it cannot — so the status follows what came back
+       * rather than what was asked for.
+       */
+      const partial = range !== undefined && object.acceptsRanges
 
       /**
        * `Accept-Ranges` is reported from what the provider can actually do,
@@ -225,14 +366,14 @@ export function createMediaRoutes(options: MediaContext): Hono {
         headers['content-length'] = String(object.size)
       }
 
-      if (range && object.size !== null) {
+      if (partial && object.size !== null && range) {
         headers['content-range'] = `bytes ${range.start}-${
           range.end ?? range.start + object.size - 1
         }/*`
       }
 
       return new Response(object.body, {
-        status: range ? 206 : 200,
+        status: partial ? 206 : 200,
         headers,
       })
     } catch (error) {

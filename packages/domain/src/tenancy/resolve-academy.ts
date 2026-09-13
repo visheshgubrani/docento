@@ -157,6 +157,33 @@ export async function resolveAcademy(
 }
 
 /**
+ * Resolve an academy by its id.
+ *
+ * ## Why this exists alongside host and slug resolution
+ *
+ * A byte request cannot carry the context the JSON API relies on. A browser's
+ * `<video>` element issues a plain GET with no custom headers, so the
+ * `x-academy-slug` the frontends send on every fetch is not there to send — and
+ * behind a proxy the `Host` the API sees is the API's own. Both of the usual
+ * inputs are therefore unavailable, and the academy has to come from the path.
+ *
+ * That is a *selection*, not an entitlement: it says which academy a request is
+ * about, exactly as a hostname does. Who the caller is, and whether they may
+ * have these bytes, is decided separately — see `authorizeMediaServe`.
+ *
+ * Returns `null` rather than throwing, so the route answers `404` and reveals
+ * nothing about which ids exist.
+ */
+export async function resolveAcademyById(
+  academyId: string,
+): Promise<ResolvedAcademy | null> {
+  return prisma.academy.findUnique({
+    where: { id: academyId },
+    select: RESOLVED_ACADEMY_FIELDS,
+  })
+}
+
+/**
  * Resolve, or throw the same not-found an unauthorized caller would see.
  *
  * A resolver failure is not an authorization failure — `can()` is never

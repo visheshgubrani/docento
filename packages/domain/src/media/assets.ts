@@ -31,6 +31,8 @@
 import { prisma } from '../db'
 import { assertCan, assertFound, DomainRuleError } from '../shared/errors'
 import type { Principal } from '../authorization/principal'
+import { can } from '../authorization/can'
+import { hasAccess } from '../learning/enrollment'
 
 /** The statuses the schema records. */
 export const MEDIA_STATUSES = [
@@ -387,18 +389,24 @@ export async function listMediaAssets(
 }
 
 /**
- * The asset a serve request names, resolved for a *public* read.
+ * The asset a serve request names, as a row that has bytes.
  *
  * ## Why this one does not call `can()`
  *
- * It is the catalogue's counterpart for bytes: a free-preview lesson's poster or
- * its own media has to reach a visitor who has not signed in, and there is no
- * principal to check. What makes that safe is not a permission check but the
- * predicate — this returns only assets in the named academy, and the caller is
- * responsible for having established that the asset is reachable without
- * entitlement. The route enforces that by serving bytes only for `media:serve`,
- * which a learner holds for their own academy and an anonymous visitor holds for
- * a free lesson.
+ * It answers "does this asset exist, here, with bytes?" and nothing else. That
+ * is deliberately not the same question as "may this caller have them", and the
+ * two are separated so no caller can answer the second by accident:
+ * `authorizeMediaServe` is the one that decides, and it calls this after it has
+ * decided.
+ *
+ * An earlier version of this comment claimed the route compensated by serving
+ * "only for `media:serve`, which a learner holds for their own academy and an
+ * anonymous visitor holds for a free lesson". Neither half was true. `can()`
+ * was never consulted on this path, and no anonymous media path exists to hold
+ * anything — the public catalogue deliberately omits `mediaAssetId`, so there
+ * was never a visitor to serve. The claim is recorded here because the shape of
+ * the mistake is instructive: a comment asserting an authorization property
+ * that no code implemented read as a guarantee for as long as nobody checked.
  *
  * Returning `null` rather than throwing, so the route can answer a `404` and
  * reveal nothing about which ids exist.
@@ -444,6 +452,127 @@ export async function resolveServableAsset(input: {
     mimeType: asset.mimeType,
     status: 'READY',
   }
+}
+
+/** The asset fields a serve decision needs once it has said yes. */
+export type ServableAsset = NonNullable<
+  Awaited<ReturnType<typeof resolveServableAsset>>
+>
+
+/**
+ * The asset a caller is entitled to the bytes of, or `null`.
+ *
+ * ## Why this is a domain question and not a route check
+ *
+ * "May this person watch this video" is the same rule everywhere it is asked:
+ * the route asks it now, and a signed-URL endpoint, a player manifest, or a
+ * worker validating a caption fetch would each ask it later. A route-level
+ * `can()` call would be a second place for the rule to live, and the second
+ * place is the one that drifts.
+ *
+ * ## The two decisions, and why one is not enough
+ *
+ * `media:serve` names an academy, so `can()` answers the tenant question: a
+ * learner of one academy cannot reach another's bytes, and an anonymous caller
+ * is refused outright.
+ *
+ * For a learner that is necessary and not sufficient. A learner holds
+ * `media:serve` for their whole academy, so `can()` alone would let anyone who
+ * signed up at an academy fetch every asset in it — including the videos of
+ * courses they never enrolled in, and courses whose access they have lost.
+ * ADR 0008 is explicit that access is checked *at play time against
+ * enrollment*, so the second decision asks whether a course that actually uses
+ * this asset is one they may currently open.
+ *
+ * A staff member or service key does not need the second decision: the academy
+ * boundary is the right bar for the people who run it, and `media:delete` and
+ * `media:read` already work that way.
+ *
+ * ## Why `null` and not a thrown refusal
+ *
+ * The route turns this into the same `404` an unknown id gets. Distinguishing
+ * "not yours" from "does not exist" would make the endpoint a way to test
+ * whether an academy has a given asset, which is the thing a shared URL would
+ * otherwise tell nobody.
+ */
+export async function authorizeMediaServe(input: {
+  principal: Principal
+  academyId: string
+  assetId: string
+}): Promise<ServableAsset | null> {
+  const entitledToAcademy = can(input.principal, 'media:serve', {
+    academyId: input.academyId,
+  })
+
+  if (!entitledToAcademy.allowed) return null
+
+  const asset = await resolveServableAsset({
+    academyId: input.academyId,
+    assetId: input.assetId,
+  })
+
+  if (!asset) return null
+
+  /**
+   * Only a learner is answering a question about their own enrollment. Staff
+   * are answering one about the academy they administer.
+   */
+  if (input.principal.kind !== 'learner') return asset
+
+  const enrolled = await learnerMayOpenMedia({
+    academyId: input.academyId,
+    learnerId: input.principal.learnerId,
+    assetId: asset.id,
+  })
+
+  return enrolled ? asset : null
+}
+
+/**
+ * Whether a learner may currently open a course whose published release uses
+ * this asset.
+ *
+ * Read from `ReleaseLesson` rather than from the draft lesson, because that is
+ * the row that says what a learner is following: an author swapping a lesson's
+ * video mid-term changes the draft, and a learner working through an older
+ * release keeps the asset that release names.
+ *
+ * Access is asked per course with `hasAccess`, which evaluates grants as of
+ * now — so a revoked or expired grant stops the bytes on the next request
+ * rather than on the next page render.
+ */
+async function learnerMayOpenMedia(input: {
+  academyId: string
+  learnerId: string
+  assetId: string
+}): Promise<boolean> {
+  const referencing = await prisma.releaseLesson.findMany({
+    where: {
+      mediaAssetId: input.assetId,
+      release: {
+        supersededAt: null,
+        course: { academyId: input.academyId },
+      },
+    },
+    select: { release: { select: { courseId: true } } },
+    /**
+     * Bounded, because an asset is workspace-owned and reusable across courses:
+     * a logo or an intro clip could legitimately appear in many. The cap is
+     * deliberately far above the plausible number of courses one learner is
+     * enrolled in, and a miss here is a refusal rather than an unbounded scan.
+     */
+    take: 200,
+  })
+
+  const courseIds = [...new Set(referencing.map((row) => row.release.courseId))]
+
+  for (const courseId of courseIds) {
+    if (await hasAccess(input.academyId, courseId, input.learnerId)) {
+      return true
+    }
+  }
+
+  return false
 }
 
 /**

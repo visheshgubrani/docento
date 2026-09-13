@@ -93,12 +93,15 @@ export interface StorageAdapter {
 /**
  * Errors a storage call can raise.
  *
- * Typed so the transport layer can map them: a missing object is a `404` and a
- * provider misconfiguration is a `503`, and the difference is worth keeping
- * rather than collapsing into one failure.
+ * Typed so the transport layer can map them: a missing object is a `404`, a
+ * range the object cannot satisfy is a `416`, and a provider misconfiguration
+ * is a `503`. The difference is worth keeping rather than collapsing into one
+ * failure — a player that is told `404` stops, and one that is told `416`
+ * retries without a range.
  */
 export class StorageError extends Error {
-  readonly code: 'not_found' | 'not_configured' | 'provider_error'
+  readonly code:
+    'not_found' | 'not_configured' | 'provider_error' | 'range_not_satisfiable'
 
   constructor(
     code: StorageError['code'],

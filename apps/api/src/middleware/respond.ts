@@ -14,6 +14,7 @@ import {
   ForbiddenError,
   NotFoundError,
 } from '@docento/domain'
+import { StorageError } from '@docento/integrations'
 
 import { RequestError } from './request-error.js'
 import { requestOf } from './request-context.js'
@@ -62,6 +63,15 @@ export function fail(
   code: ErrorCode,
   message: string,
   details?: ApiError['details'],
+  /**
+   * Overrides the status the code normally maps to.
+   *
+   * Used only where HTTP has a more specific answer than the code vocabulary
+   * does — `416` for a byte range past the end of a file is the case. The
+   * envelope stays identical, so a client unwrapping `error.code` never has to
+   * know this argument exists.
+   */
+  status?: ContentfulStatusCode,
 ) {
   const context = requestOf(c)
 
@@ -77,7 +87,7 @@ export function fail(
       error,
       meta: { requestId: context.requestId },
     },
-    STATUS_FOR[code],
+    status ?? STATUS_FOR[code],
   )
 }
 
@@ -138,6 +148,32 @@ export function handleError(c: Context, error: unknown) {
    */
   if (error instanceof RequestError) {
     return fail(c, 'validation_failed', error.message, [...error.details])
+  }
+
+  /**
+   * A storage failure, which is a fact about this deployment rather than a bug
+   * in it.
+   *
+   * Unmapped, every one of these was a `500`: a row marked `READY` whose bytes
+   * had been swept, a bucket that does not exist, and a player seeking past the
+   * end of a file all reported the same "something went wrong on our side" —
+   * which is the answer that tells an operator to look for a bug that is not
+   * there. The codes are distinct precisely so they can be told apart here.
+   */
+  if (error instanceof StorageError) {
+    if (error.code === 'not_found') {
+      return fail(c, 'not_found', 'That file is no longer stored here.')
+    }
+
+    if (error.code === 'range_not_satisfiable') {
+      return fail(c, 'validation_failed', error.message, undefined, 416)
+    }
+
+    if (error.code === 'not_configured') {
+      return fail(c, 'provider_not_configured', error.message)
+    }
+
+    return fail(c, 'provider_error', error.message)
   }
 
   /**

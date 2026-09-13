@@ -106,6 +106,21 @@ export function createS3Storage(options: S3StorageOptions): StorageAdapter {
       )
     }
 
+    /**
+     * A range the object cannot satisfy.
+     *
+     * S3 answers `416` itself and the SDK surfaces it as `InvalidRange`. Without
+     * this branch it falls through to `provider_error`, and the API would report
+     * a `502` for an ordinary seek past the end of a file.
+     */
+    if (name === 'InvalidRange') {
+      return new StorageError(
+        'range_not_satisfiable',
+        'That byte range is past the end of the object.',
+        { cause: error },
+      )
+    }
+
     return new StorageError('provider_error', fallback, { cause: error })
   }
 

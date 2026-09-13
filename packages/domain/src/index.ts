@@ -123,6 +123,7 @@ export {
   normaliseHostname,
   normaliseSlug,
   resolveAcademy,
+  resolveAcademyById,
   validateSlug,
 } from './tenancy/resolve-academy'
 export type {
@@ -175,6 +176,7 @@ export {
   ALLOWED_MIME_TYPES,
   MEDIA_PROVIDERS,
   MEDIA_STATUSES,
+  authorizeMediaServe,
   completeMediaAsset,
   createMediaAsset,
   deleteMediaAsset,
@@ -189,6 +191,7 @@ export type {
   MediaAssetSummary,
   MediaProvider,
   MediaStatus,
+  ServableAsset,
 } from './media/assets'
 
 // Content

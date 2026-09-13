@@ -181,6 +181,20 @@ export type CoreEnv = z.infer<typeof coreEnvSchema>
 export const storageEnvSchema = z.object({
   STORAGE_DRIVER: z.enum(['local', 's3']).default('local'),
   LOCAL_STORAGE_DIR: z.string().default('./.data/uploads'),
+  /**
+   * The largest upload the API will accept, in bytes.
+   *
+   * Validated here so a typo is a startup failure rather than a limit that
+   * silently does nothing — a non-numeric value would otherwise be discarded by
+   * the fallback in the route. The default is generous because the default
+   * storage is the operator's own disk and a lecture recording is legitimately
+   * large; a deployment that wants a real ceiling sets it lower.
+   */
+  MEDIA_MAX_UPLOAD_BYTES: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(2 * 1024 * 1024 * 1024),
   S3_BUCKET: z.string().optional(),
   S3_REGION: z.string().optional(),
   S3_ENDPOINT: optionalUrl,

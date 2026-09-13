@@ -206,8 +206,15 @@ function rangeFor(
   const end = Math.min(requestedEnd, size - 1)
 
   if (start > end) {
+    /**
+     * A range the object cannot satisfy, which is a `416` and not a `404`.
+     *
+     * Reporting it as absent would tell a player the file is gone, and the
+     * right response to that is to stop; the right response to a range past the
+     * end is to ask again without one.
+     */
     throw new StorageError(
-      'not_found',
+      'range_not_satisfiable',
       'That byte range is past the end of the object.',
     )
   }
