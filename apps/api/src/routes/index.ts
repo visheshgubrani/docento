@@ -19,9 +19,11 @@ import {
   getAssignmentForLearner,
   getCourse,
   getCourseForLearner,
+  getLesson,
   getCourseProgress,
   getLearnerProfile,
   getPublicAcademy,
+  getStaffIdentity,
   readAcademyIdentity,
   getPublicCourse,
   getPublicOutline,
@@ -107,9 +109,23 @@ function requireLearner(principal: Principal): { learnerId: string; academyId: s
   return { learnerId: principal.learnerId, academyId: principal.academyId }
 }
 
-/** The workspace a staff or service-key principal acts in. */
+/**
+ * The workspace a staff or service-key principal acts in.
+ *
+ * A signed-in staff member who has not chosen a workspace is refused here rather
+ * than by `can()`, because the two failures need different advice: this one is
+ * resolved by visiting the workspace chooser, and a permission failure is not.
+ */
 function requireWorkspace(principal: Principal): string {
-  if (principal.kind === 'staff' || principal.kind === 'serviceKey') {
+  if (principal.kind === 'serviceKey') return principal.workspaceId
+
+  if (principal.kind === 'staff') {
+    if (!principal.workspaceId) {
+      throw new ForbiddenAccess(
+        'This operation acts in a workspace, and none has been chosen. Choose one first.',
+      )
+    }
+
     return principal.workspaceId
   }
 
@@ -271,9 +287,30 @@ export function createRoutes(): Hono {
        * learner-facing read is a different operation against a release, which is
        * what keeps an unfinished edit from reaching a student.
        */
+      /**
+       * The live release, when there is one.
+       *
+       * A course that has never been published has no release, and the domain
+       * raises not-found for that — which is an answer here rather than an
+       * error, because "nothing is published yet" is the state a new course is
+       * in. Caught narrowly so a genuine failure is not flattened into "not
+       * published".
+       */
+      const release = await getRelease(principal, scope)
+        .then((result) => result.release)
+        .catch((error: unknown) => {
+          if (error instanceof NotFoundError) return null
+
+          throw error
+        })
+
       return {
         course: await getCourse(principal, scope),
-        modules: await listDraftModules(scope.courseId),
+        modules: await listDraftModules(principal, {
+          workspaceId: scope.workspaceId,
+          courseId: scope.courseId,
+        }),
+        release,
       }
     }),
   )
@@ -400,6 +437,18 @@ export function createRoutes(): Hono {
         courseId: param(input, 'courseId'),
         moduleId: param(input, 'moduleId'),
         ...(input.body as { title: string; contentType: string }),
+      }),
+    })),
+  )
+
+  routes.get(
+    '/workspaces/:workspaceId/academies/:academyId/courses/:courseId/lessons/:lessonId',
+    operation('lesson.get', async ({ principal, input }) => ({
+      lesson: await getLesson(principal, {
+        workspaceId: param(input, 'workspaceId'),
+        academyId: param(input, 'academyId'),
+        courseId: param(input, 'courseId'),
+        lessonId: param(input, 'lessonId'),
       }),
     })),
   )
@@ -656,6 +705,26 @@ export function createRoutes(): Hono {
 
       return { certificate }
     }),
+  )
+
+  // -------------------------------------------------------------------------
+  // Staff
+  // -------------------------------------------------------------------------
+
+  /**
+   * Who the caller is, and where they may act.
+   *
+   * Mounted before any workspace-scoped route because it is the one staff
+   * operation that has no workspace to be scoped by — the application asks it
+   * before a workspace exists in the URL. Like the learner session above, it
+   * re-validates nothing: the principal was resolved at the top of the wrapper,
+   * and reading the session a second time is how two answers start disagreeing.
+   */
+  routes.get(
+    '/staff/session',
+    operation('staff.session', async ({ principal }) => ({
+      session: await getStaffIdentity(principal),
+    })),
   )
 
   // -------------------------------------------------------------------------

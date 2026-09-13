@@ -10,7 +10,7 @@ import {
 
 import { resolveAcademyFor } from './auth/principal.js'
 import { requestContext } from './middleware/request-context.js'
-import { fail } from './middleware/respond.js'
+import { fail, handleError } from './middleware/respond.js'
 import { createRoutes } from './routes/index.js'
 
 /**
@@ -45,13 +45,26 @@ export function createApp(): Hono {
 
   // --- Authentication realms ----------------------------------------------
 
-  app.on(['GET', 'POST'], `${STAFF_AUTH_BASE_PATH}/*`, (c) => {
+  app.on(['GET', 'POST'], `${STAFF_AUTH_BASE_PATH}/*`, async (c) => {
     /**
      * Better Auth handles its own sub-paths, so the wildcard is passed through
      * rather than enumerated: adding a plugin that registers a new endpoint
      * should not require changing this file.
      */
-    return staffAuth.handler(c.req.raw)
+    try {
+      return await staffAuth.handler(c.req.raw)
+    } catch (error) {
+      /**
+       * The auth mount is the one place that does not go through the operation
+       * wrapper, so it is also the one place an error would otherwise escape to
+       * `onError` and be reported as a bug in this application.
+       *
+       * It happens for a real reason: workspace resolution refuses a session
+       * whose active workspace the caller has been removed from, which is a
+       * sign-out rather than a crash.
+       */
+      return handleError(c, error)
+    }
   })
 
   app.on(['GET', 'POST'], `${LEARNER_AUTH_BASE_PATH}/*`, async (c) => {

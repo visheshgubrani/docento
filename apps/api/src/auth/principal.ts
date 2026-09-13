@@ -5,10 +5,12 @@ import type { Context } from 'hono'
 import {
   type Principal,
   type ResolvedAcademy,
+  ForbiddenError,
   getLearnerAuth,
   prisma,
   resolveAcademy,
 } from '@docento/domain'
+import { WORKSPACE_HEADER } from '@docento/contracts'
 
 /**
  * Resolving who is calling, and which academy they are calling about.
@@ -28,13 +30,25 @@ import {
  * | Principal | Comes from | Never from |
  * | --- | --- | --- |
  * | learner | the session row, stamped at sign-in | a request body or header |
- * | staff | the session row | a request body or header |
+ * | staff identity | the session row | a request body or header |
+ * | staff workspace | `x-workspace-id`, or the session's active workspace, checked against the membership table | a request body, or the header unchecked |
  * | service key | a hashed lookup of the presented key | the workspace in the URL |
  * | anonymous | nothing | — |
  *
  * A request body naming an academy is ignored. That is why every learner
  * operation takes its academy from this module rather than from its input: a
  * caller cannot redirect a write by editing a payload.
+ *
+ * ## Why a staff workspace may come from a header at all
+ *
+ * A staff identity spans workspaces, so the session does not determine which one
+ * a request is about — and the application cannot say either, because the
+ * operator switches between them inside one browser tab. What makes the header
+ * safe is not that it is trusted but that it is *checked*: it selects which
+ * workspace the caller is acting in, and the membership row decides whether they
+ * may. A header naming a workspace they do not belong to is refused outright
+ * rather than silently falling back, because a fallback would perform the write
+ * somewhere the operator was not looking.
  */
 
 /** What a resolved request knows about its caller. */
@@ -269,11 +283,15 @@ async function principalFromLearnerSession(
  * The staff realm's session, with the workspace it is acting in.
  *
  * A staff identity spans workspaces, so the session alone does not determine
- * which one is in play — `activeOrganizationId` does, written by the
- * organization plugin when a workspace is selected. Without it there is no
- * workspace to contain a decision in, so the principal is not formed: `can()`
- * would refuse everything anyway, and a half-built principal is how a check
- * gets skipped.
+ * which one is in play: the `x-workspace-id` header names it, and the session's
+ * `activeOrganizationId` — written by the organization plugin when a workspace
+ * is selected — is the fallback for a client that does not send one.
+ *
+ * A session that names no workspace still resolves, to a principal whose
+ * `workspaceId` is null. That state is ordinary rather than half-built: it is
+ * what a staff member has immediately after signing in, and `can()` refuses
+ * every workspace-scoped action for it while `staff.session` — which needs no
+ * workspace — still answers.
  */
 async function principalFromStaffSession(c: Context): Promise<Principal | null> {
   try {
@@ -283,28 +301,100 @@ async function principalFromStaffSession(c: Context): Promise<Principal | null> 
 
     if (!session?.user) return null
 
-    const workspaceId = (session.session as { activeOrganizationId?: string | null })
-      .activeOrganizationId
+    const requested = c.req.header(WORKSPACE_HEADER)
 
-    if (!workspaceId) return null
+    /**
+     * Which workspace the caller means.
+     *
+     * The header wins over the session's active workspace, because the session
+     * may name a different one than the page the operator is looking at — and
+     * acting in the wrong tenant is exactly the failure this whole design is
+     * arranged to prevent. A request that names no workspace falls back to the
+     * active one so an unchanged client keeps working.
+     */
+    const workspaceId =
+      requested ??
+      (session.session as { activeOrganizationId?: string | null })
+        .activeOrganizationId ??
+      null
+
+    /** No workspace named or remembered: signed in, acting nowhere yet. */
+    if (!workspaceId) {
+      return {
+        kind: 'staff',
+        userId: session.user.id,
+        workspaceId: null,
+        memberId: null,
+        role: null,
+      }
+    }
 
     const member = await prisma.member.findUnique({
       where: { workspaceId_userId: { workspaceId, userId: session.user.id } },
       select: { id: true, role: true },
     })
 
-    if (!member) return null
+    /**
+     * Not a member — and the two ways of asking get different answers.
+     *
+     * A *requested* workspace the caller is not in is refused. Returning no
+     * principal would make the request anonymous, and the caller would be told
+     * to sign in: advice that cannot help, because they already are. `403` is
+     * the true answer. The membership table is the only thing consulted, so a
+     * well-formed header naming somebody else's workspace reveals nothing beyond
+     * "no".
+     *
+     * A *remembered* workspace the caller has since been removed from is
+     * different: nothing in this request asked for it, the session field is
+     * simply stale, and the caller is a signed-in staff member with no workspace
+     * to act in. Refusing would strand them — the field is written by the
+     * organization plugin, so no application code could clear it — and the
+     * honest answer is the one below, where `can()` refuses everything that
+     * needs a workspace and `staff.session` still lists where they may go.
+     */
+    if (!member && requested) {
+      throw new ForbiddenError(
+        'workspace:read',
+        `The caller is not a member of workspace "${requested}".`,
+      )
+    }
 
-    if (member.role !== 'owner' && member.role !== 'admin') return null
+    if (!member) {
+      return {
+        kind: 'staff',
+        userId: session.user.id,
+        workspaceId: null,
+        memberId: null,
+        role: null,
+      }
+    }
+
+    /**
+     * A membership in a role `can()` does not recognise resolves to a principal
+     * with no workspace rather than to no principal. The identity is real; what
+     * it lacks is a workspace it may act in, and saying so is the honest answer.
+     */
+    const role = member.role === 'owner' || member.role === 'admin' ? member.role : null
 
     return {
       kind: 'staff',
       userId: session.user.id,
-      workspaceId,
-      memberId: member.id,
-      role: member.role,
+      workspaceId: role ? workspaceId : null,
+      memberId: role ? member.id : null,
+      role,
     }
-  } catch {
+  } catch (error) {
+    /**
+     * A refusal travels; anything else does not.
+     *
+     * The catch exists because `getSession` can throw on a malformed cookie, and
+     * a malformed cookie is the normal state of a first visit — so it must not
+     * become a 500. A `ForbiddenError` is a *decision*, though, and swallowing
+     * it here would turn "you are not in this workspace" back into "sign in",
+     * which is the bug this branch was written to fix.
+     */
+    if (error instanceof ForbiddenError) throw error
+
     return null
   }
 }
