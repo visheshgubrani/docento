@@ -14,6 +14,8 @@
   "dependencies": {
     "@clipmux/player": "^0.1.2",
     "@clipmux/uploader": "^0.1.1",
+    "@docento/contracts": "workspace:*",
+    "@docento/sdk": "workspace:*",
     "@floating-ui/react": "^0.27.16",
     "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",

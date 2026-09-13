@@ -275,6 +275,12 @@ importers:
       '@clipmux/uploader':
         specifier: ^0.1.1
         version: 0.1.1
+      '@docento/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@docento/sdk':
+        specifier: workspace:*
+        version: link:../../packages/sdk
       '@floating-ui/react':
         specifier: ^0.27.16
         version: 0.27.20(react-dom@19.2.5(react@19.2.5))(react@19.2.5)

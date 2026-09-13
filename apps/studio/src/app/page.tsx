@@ -1,42 +1,16 @@
-import {
-  LandingHeader,
-  HeroSection,
-  BenefitsSection,
-  CourseBuilderSection,
-  AIToolsSection,
-  DashboardSection,
-  DeveloperExperienceSection,
-  StarterTemplatesSection,
-  CTASection,
-  LandingFooter,
-} from '@/components/landing'
+import { redirect } from 'next/navigation'
+
+import { getStaffSession } from '@/lib/studio-api'
 
 /**
- * The Studio marketing page.
+ * The front door.
  *
- * There is no testimonials section, and that is deliberate rather than an
- * omission to fill in later. The previous version carried six quotes attributed
- * to named people at named companies, alongside stock portraits, none of which
- * described anyone who had used this software. Fabricated endorsements are a
- * legal liability and, in a repository whose whole pitch is that you can read
- * the code before you trust it, a credibility problem as well.
- *
- * Restore the section when there are real quotes to put in it, with the
- * attribution the author agreed to.
+ * A staff application has no public front page: everything an operator wants is
+ * behind the session, and a landing page would be a page nobody needs. Signed-in
+ * staff go to their workspaces; everybody else signs in.
  */
-export default function Home() {
-  return (
-    <main className="relative mx-auto flex w-full flex-col items-center justify-center">
-      <LandingHeader />
-      <HeroSection />
-      <BenefitsSection />
-      <CourseBuilderSection />
-      <AIToolsSection />
-      <DashboardSection />
-      <DeveloperExperienceSection />
-      <StarterTemplatesSection />
-      <CTASection />
-      <LandingFooter />
-    </main>
-  )
+export default async function HomePage() {
+  const session = await getStaffSession()
+
+  redirect(session ? '/workspaces' : '/login')
 }

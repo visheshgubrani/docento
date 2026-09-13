@@ -67,6 +67,22 @@ export class DocentoApi extends DocentoClient {
   }
 
   // -------------------------------------------------------------------------
+  // Session
+  // -------------------------------------------------------------------------
+
+  /**
+   * Who the caller is, and where they may act.
+   *
+   * The one staff operation callable before a workspace has been chosen, which
+   * is why it exists: without it an application has to read the session cookie
+   * itself to know whether to draw a sign-in page, and that is a second
+   * implementation of session validation.
+   */
+  getStaffSession() {
+    return this.call('staff.session', {}, describe('getStaffSession'))
+  }
+
+  // -------------------------------------------------------------------------
   // Workspace
   // -------------------------------------------------------------------------
 
@@ -291,6 +307,19 @@ export class DocentoApi extends DocentoClient {
       'module.delete',
       { params: { workspaceId, academyId, courseId, moduleId } },
       describe('deleteModule'),
+    )
+  }
+
+  getLesson(
+    workspaceId: string,
+    academyId: string,
+    courseId: string,
+    lessonId: string,
+  ) {
+    return this.call(
+      'lesson.get',
+      { params: { workspaceId, academyId, courseId, lessonId } },
+      describe('getLesson'),
     )
   }
 
@@ -767,10 +796,12 @@ export const IMPLEMENTED_OPERATIONS = {
   'course.archive': 'archiveCourse',
   'course.publish': 'publishCourse',
   'course.release': 'getRelease',
+  'staff.session': 'getStaffSession',
   'module.create': 'createModule',
   'module.update': 'updateModule',
   'module.reorder': 'reorderModules',
   'module.delete': 'deleteModule',
+  'lesson.get': 'getLesson',
   'lesson.create': 'createLesson',
   'lesson.update': 'updateLesson',
   'lesson.reorder': 'reorderLessons',

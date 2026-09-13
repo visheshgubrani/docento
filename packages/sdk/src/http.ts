@@ -6,6 +6,7 @@ import {
   type OperationOutput,
   OPERATIONS,
   REQUEST_ID_HEADER,
+  WORKSPACE_HEADER,
   apiErrorSchema,
   buildPath,
 } from '@docento/contracts'
@@ -46,6 +47,15 @@ export type DocentoClientOptions = {
   apiKey?: string
   /** Bearer token for a learner acting on their own data. */
   learnerToken?: string
+  /**
+   * The workspace a staff request acts in.
+   *
+   * A staff identity spans workspaces, so the client says which one it means —
+   * and the API checks that against the membership table rather than trusting
+   * it. Omitted for learners and for public reads, which have no workspace to
+   * name.
+   */
+  workspaceId?: string
   /**
    * Send cookies.
    *
@@ -138,6 +148,7 @@ export class DocentoClient {
   private readonly baseUrl: string
   private readonly apiKey?: string
   private readonly learnerToken?: string
+  private readonly workspaceId?: string
   private readonly credentials: 'include' | 'omit' | 'same-origin'
   private readonly fetchImpl: typeof globalThis.fetch
   private readonly onResponse?: DocentoClientOptions['onResponse']
@@ -152,6 +163,7 @@ export class DocentoClient {
     this.baseUrl = options.baseUrl.replace(/\/+$/, '')
     this.apiKey = options.apiKey
     this.learnerToken = options.learnerToken
+    this.workspaceId = options.workspaceId
     this.credentials = options.credentials ?? 'omit'
     this.fetchImpl = options.fetch ?? globalThis.fetch?.bind(globalThis)
     this.onResponse = options.onResponse
@@ -217,6 +229,10 @@ export class DocentoClient {
       headers[
         this.apiKey.startsWith('pk_') ? 'x-publishable-key' : 'x-api-key'
       ] = this.apiKey
+    }
+
+    if (this.workspaceId) {
+      headers[WORKSPACE_HEADER] = this.workspaceId
     }
 
     if (options.idempotencyKey) {
