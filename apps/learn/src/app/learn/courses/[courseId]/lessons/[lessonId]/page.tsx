@@ -4,7 +4,12 @@ import { notFound } from 'next/navigation'
 
 import { LessonBody } from '@/components/player/lesson-body'
 import { ProgressTracker } from '@/components/player/progress-tracker'
-import { apiClient, isNotFound, redirectIfSignedOut } from '@/lib/academy'
+import {
+  apiClient,
+  isNotFound,
+  redirectIfSignedOut,
+  resolveAcademy,
+} from '@/lib/academy'
 
 export const metadata: Metadata = { title: 'Lesson' }
 
@@ -36,6 +41,19 @@ export default async function LessonPage({
   await redirectIfSignedOut(`/learn/courses/${courseId}/lessons/${lessonId}`)
 
   const api = await apiClient()
+
+  /**
+   * The academy this page is about.
+   *
+   * The byte route takes it in the path rather than from a header, because a
+   * `<video>` element cannot send one: it issues a plain GET with no custom
+   * headers, and behind the rewrite the `Host` the API sees is the API's own.
+   * `resolveAcademy` memoises per render and the layout has already asked, so
+   * this is not a second request.
+   */
+  const academy = await resolveAcademy()
+
+  if (!academy) notFound()
 
   let course
 
@@ -104,15 +122,23 @@ export default async function LessonPage({
           /**
            * Native video.
            *
-           * The API serves the bytes and checks entitlement when they are asked
-           * for, so a learner whose access lapses mid-course cannot keep playing
-           * from a URL they already hold. Range requests work, so seeking does.
+           * The `academyId` segment is not decoration: the serve route is
+           * `/media/:academyId/:assetId`, and an earlier version of this line
+           * omitted it, so the request matched no route at all and every video
+           * 404'd.
+           *
+           * Entitlement is decided per request, by the API, when the browser asks
+           * for the bytes — a learner whose access lapses stops playing on the
+           * next range request rather than holding a URL that outlives their
+           * enrollment. The URL itself is stable, which is a deliberate
+           * difference from ADR 0008's short-lived links; signed, expiring
+           * playback URLs are the next step for this surface.
            */
           <video
             controls
             preload="metadata"
             className="w-full rounded-lg"
-            src={`/api/v1/media/${lesson.mediaAssetId}`}
+            src={`/api/v1/media/${academy.id}/${lesson.mediaAssetId}`}
           />
         ) : lesson.embedUrl ? (
           <div className="aspect-video w-full overflow-hidden rounded-lg">

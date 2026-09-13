@@ -19,6 +19,41 @@ const nextConfig: NextConfig = {
   output: 'standalone',
 
   /**
+   * Everything the browser calls goes through this origin.
+   *
+   * Both realms set session cookies on the API's host. If the browser talked to
+   * the API on a different origin those cookies would be third-party — needing
+   * `SameSite=None`, which requires HTTPS even locally, and subject to
+   * third-party cookie restrictions that would eventually break sign-in in a way
+   * nobody could reproduce. Rewriting makes them ordinary first-party cookies
+   * with `SameSite=Lax`, with no CORS preflight and nothing to configure for
+   * local HTTPS.
+   *
+   * It also means the application needs no API URL at build time, so one image
+   * runs against any API origin.
+   *
+   * ## Why this was missing, and what it cost
+   *
+   * `apiOrigin` was computed above and never used: this application had no
+   * `rewrites()` at all. Every browser-side call — enrolling, recording progress,
+   * submitting a quiz, requesting a certificate — is issued by
+   * `browserApiClient`, which uses `baseUrl: ''` and therefore a relative
+   * `/api/v1/...` path. With nothing proxying that prefix, Next answered each one
+   * itself with a `404`, so the learner's half of the loop could not work in a
+   * browser at all. Server-side calls were fine, which is why the pages rendered
+   * and the failure looked like a broken button rather than a missing route.
+   */
+  async rewrites() {
+    return [
+      { source: '/api/v1/:path*', destination: `${apiOrigin}/api/v1/:path*` },
+      {
+        source: '/api/auth/:path*',
+        destination: `${apiOrigin}/api/auth/:path*`,
+      },
+    ]
+  },
+
+  /**
    * The workspace packages are consumed as TypeScript source, not as build
    * output, so Next has to compile them rather than treat them as vendored
    * JavaScript it should not touch.
