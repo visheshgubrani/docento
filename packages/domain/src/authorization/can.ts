@@ -90,6 +90,8 @@ export const REQUIRED_RESOURCE_FIELDS: Record<
 
   // Academy-scoped: a workspace alone is not enough, because every one of these
   // acts on one academy inside it.
+  'academy:create': ['workspaceId'],
+  'academy:list': ['workspaceId'],
   'academy:read': ['workspaceId', 'academyId'],
   'academy:update': ['workspaceId', 'academyId'],
   'academy:delete': ['workspaceId', 'academyId'],

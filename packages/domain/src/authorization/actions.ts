@@ -15,6 +15,19 @@ export const ACTIONS = [
   'serviceKey:manage',
 
   // Academy
+  /**
+   * Creating an academy is a workspace-scoped decision.
+   *
+   * There is no academy yet to name, so `academy:update` cannot express it —
+   * that action requires an `academyId`, and passing the workspace id in its
+   * place (as an earlier draft of `createAcademy` did) satisfies the shape
+   * check while checking nothing at all.
+   */
+  'academy:create',
+  /// Listing is workspace-scoped: there is no academy to name before the list
+  /// exists. Reading one academy is a different question with a different
+  /// answer, so it is a different action.
+  'academy:list',
   'academy:read',
   'academy:update',
   'academy:delete',
