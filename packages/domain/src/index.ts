@@ -146,7 +146,25 @@ export {
   updateWorkspace,
   verifyAcademyDomain,
 } from './tenancy/academies.js'
-export type { AcademySummary, WorkspaceSummary } from './tenancy/academies.js'
+export { ACADEMY_AUTH_MODES, readAcademyIdentity } from './tenancy/academies.js'
+export type {
+  AcademyAuthMode,
+  AcademySummary,
+  WorkspaceSummary,
+} from './tenancy/academies.js'
+export {
+  createServiceKey,
+  hashKey,
+  listServiceKeys,
+  listWorkspacesForPrincipal,
+  resolveServiceKey,
+  revokeServiceKey,
+  touchServiceKey,
+} from './tenancy/service-keys.js'
+export type {
+  ServiceKeySummary,
+  WorkspaceMembership,
+} from './tenancy/service-keys.js'
 
 // Content
 export {
@@ -184,6 +202,19 @@ export type {
   SnapshotModule,
   SnapshotQuiz,
 } from './content/publishing.js'
+export {
+  getPublicAcademy,
+  getPublicCourse,
+  getPublicOutline,
+  listDraftModules,
+  listPublicCourses,
+} from './content/catalog.js'
+export type {
+  CatalogCourse,
+  PublicAcademy,
+  PublicOutlineLesson,
+  PublicOutlineModule,
+} from './content/catalog.js'
 
 // Learning
 export {

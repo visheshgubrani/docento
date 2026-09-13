@@ -727,9 +727,9 @@ export const OPERATIONS = {
     method: 'GET',
     path: '/verify/{verificationId}',
     params: z.object({ verificationId: z.string().min(8).max(128) }),
-    response: z.object({ certificateSchema: publicCertificateSchema }),
+    response: z.object({ certificate: publicCertificateSchema }),
     action: 'public',
-    summary: 'Public verification of an issued certificateSchema',
+    summary: 'Public verification of an issued certificate',
   },
 
   // --- Learner: enrolment and progress -----------------------------------
@@ -934,17 +934,17 @@ export const OPERATIONS = {
         }),
       ),
     }),
-    action: 'learner:certificateSchema:read',
+    action: 'learner:certificate:read',
     summary: 'Certificates the caller holds',
   },
 
   'learner.certificate.issue': {
     method: 'POST',
-    path: '/learn/courses/{courseId}/certificateSchema',
+    path: '/learn/courses/{courseId}/certificate',
     params: z.object({ courseId: id }),
     body: emptyBody,
     response: z.object({
-      certificateSchema: z.object({
+      certificate: z.object({
         id,
         courseId: id,
         title: z.string(),
@@ -954,60 +954,28 @@ export const OPERATIONS = {
       }),
       created: z.boolean(),
     }),
-    action: 'learner:certificateSchema:read',
-    summary: 'Request the certificateSchema for a completed course',
+    action: 'learner:certificate:read',
+    summary: 'Request the certificate for a completed course',
     retryable: true,
   },
 
-  // --- Media --------------------------------------------------------------
-  'media.upload': {
-    method: 'POST',
-    path: '/workspaces/{workspaceId}/media/uploads',
-    params: workspaceParam,
-    body: z
-      .object({
-        filename: z.string().min(1).max(255),
-        mimeType: z.string().min(1).max(255),
-        sizeBytes: z.number().int().min(1),
-      })
-      .strict(),
-    response: z.object({
-      assetId: id,
-      /** Where to PUT the bytes. Always a URL this API issued. */
-      uploadUrl: z.string(),
-      method: z.enum(['PUT', 'POST']),
-      headers: z.record(z.string(), z.string()),
-      expiresAt: z.coerce.date(),
-    }),
-    action: 'media:upload',
-    summary: 'Begin an upload and receive a destination for the bytes',
-    retryable: true,
-  },
-
-  'media.complete': {
-    method: 'POST',
-    path: '/workspaces/{workspaceId}/media/{assetId}/complete',
-    params: z.object({ workspaceId: id, assetId: id }),
-    body: z
-      .object({ durationSeconds: z.number().int().min(0).optional() })
-      .strict(),
-    response: z.object({
-      assetId: id,
-      status: z.enum(['PROCESSING', 'READY', 'FAILED']),
-    }),
-    action: 'media:upload',
-    summary: 'Confirm the bytes arrived',
-    retryable: true,
-  },
-
-  'media.serve': {
-    method: 'GET',
-    path: '/media/{assetId}',
-    params: z.object({ assetId: id }),
-    response: z.unknown(),
-    action: 'media:serve',
-    summary: 'Serve asset bytes, with entitlement checked here',
-  },
+  /**
+   * Media operations are deliberately absent.
+   *
+   * The registry describes what the API serves, and a declared endpoint with no
+   * route is worse than an absent one: it appears in the generated document, it
+   * gets an SDK method, and it 404s the first time an integrator calls it. The
+   * storage adapters are the next piece of work, and these three arrive with
+   * them:
+   *
+   *   POST /workspaces/{workspaceId}/media/uploads
+   *   POST /workspaces/{workspaceId}/media/{assetId}/complete
+   *   GET  /media/{assetId}
+   *
+   * The last of those returns bytes rather than an envelope, which is why the
+   * SDK's completeness test has a category for operations it cannot wrap — the
+   * category exists before the operation does.
+   */
 
   // --- Service keys -------------------------------------------------------
   'serviceKey.list': {

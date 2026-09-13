@@ -37,7 +37,9 @@ import {
 } from '../shared/errors.js'
 import {
   type GradingSnapshot,
+  type QuestionType,
   type SubmittedAnswer,
+  asQuestionType,
   gradeFromSnapshot,
   scoreAttempt,
 } from '../assessment/grading.js'
@@ -205,7 +207,7 @@ export type LearnerQuizView = {
   questions: {
     id: string
     prompt: string
-    questionType: string
+    questionType: QuestionType
     options: string[]
     points: number
     sectionId: string | null
@@ -326,7 +328,8 @@ export async function getQuizForLearner(
     questions: quiz.questions.map((question) => ({
       id: question.id,
       prompt: question.prompt,
-      questionType: question.questionType,
+      // Narrowed before it can reach a client or the grading engine.
+      questionType: asQuestionType(question.questionType),
       options: asStringArray(question.options),
       points: question.points,
       sectionId: question.sectionId,
@@ -781,7 +784,9 @@ async function buildResult(
     return {
       questionId: question.questionId,
       prompt: row?.question.prompt ?? '',
-      questionType: row?.question.questionType ?? question.marking.questionType,
+      questionType: row?.question.questionType
+        ? asQuestionType(row.question.questionType)
+        : question.marking.questionType,
       submitted: { answer: row?.answer ?? '', answers: row?.answers ?? [] },
       isCorrect: row?.isCorrect ?? false,
       pointsEarned: row?.pointsEarned ?? 0,

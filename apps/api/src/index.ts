@@ -1,97 +1,128 @@
-import './instrument'
-import './utils/logger'
-import app from './app'
-import { prisma } from './lib/prisma'
-import { flushPostHog } from './lib/posthog'
-import { logger } from './utils/logger'
+import { serve } from '@hono/node-server'
 
-const port = process.env.PORT || 4000
-let server: ReturnType<typeof app.listen> | null = null
-let isShuttingDown = false
-const requiredEnvVars = ['JWT_SECRET', 'REFRESH_TOKEN_SECRET'] as const
+import { loadEnv } from '@docento/config'
+import { prisma } from '@docento/domain'
 
-const validateRequiredEnvVars = () => {
-  const missingEnvVars = requiredEnvVars.filter((envVar) => {
-    const value = process.env[envVar]
-    return typeof value !== 'string' || value.trim().length === 0
-  })
+import { createApp } from './app.js'
 
-  if (missingEnvVars.length > 0) {
-    throw new Error(
-      `Missing required environment variables: ${missingEnvVars.join(', ')}`,
-    )
-  }
+/**
+ * The API process.
+ *
+ * Configuration is validated once, at startup, and the report lists every
+ * problem at once rather than one per restart. A server that starts with an
+ * unusable value and fails on the first request that needs it is a server whose
+ * failures arrive without context.
+ */
+
+function log(message: string, fields: Record<string, unknown> = {}): void {
+  console.log(
+    JSON.stringify({
+      level: 'info',
+      service: 'api',
+      message,
+      timestamp: new Date().toISOString(),
+      ...fields,
+    }),
+  )
 }
 
-const closeServer = () =>
-  new Promise<void>((resolve, reject) => {
-    if (!server) {
-      resolve()
-      return
-    }
+async function main(): Promise<void> {
+  // Fails fast, with every problem listed. Never throws at import time, which
+  // is why it is called here rather than relied upon.
+  const env = loadEnv()
 
-    server.close((error?: Error) => {
-      if (error) {
-        reject(error)
-        return
-      }
+  const app = createApp()
 
-      resolve()
-    })
-  })
+  const server = serve(
+    {
+      fetch: app.fetch,
+      port: env.API_PORT,
+    },
+    (info) => {
+      log('API listening', { port: info.port, url: env.API_URL, nodeEnv: env.NODE_ENV })
+    },
+  )
 
-const gracefulShutdown = async (signal: string) => {
-  if (isShuttingDown) {
-    return
-  }
+  /**
+   * Graceful shutdown, because a container orchestrator sends `SIGTERM` and
+   * then waits.
+   *
+   * In-flight requests are allowed to finish and the database connection is
+   * released, so a deploy does not turn into a burst of failed requests for
+   * whoever happened to be mid-call. A second signal exits immediately, which is
+   * what an operator pressing Ctrl-C twice expects.
+   */
+  let shuttingDown = false
 
-  isShuttingDown = true
-  logger.info(`${signal} received, shutting down gracefully`)
-
-  try {
-    await closeServer()
-    await flushPostHog()
-    await prisma.$disconnect()
-    await logger.flush()
-    process.exit(0)
-  } catch (error) {
-    logger.error('Graceful shutdown failed', { signal, error })
-    try {
-      await logger.flush()
-    } finally {
+  const shutdown = async (signal: string): Promise<void> => {
+    if (shuttingDown) {
+      log('Second signal, exiting now', { signal })
       process.exit(1)
     }
-  }
-}
 
-const startServer = async () => {
-  validateRequiredEnvVars()
+    shuttingDown = true
+    log('Shutting down', { signal })
 
-  try {
-    await prisma.$connect()
-    logger.info('Prisma connected')
-  } catch (error) {
-    logger.warn('Prisma preconnect failed, continuing startup', { error })
-  }
+    server.close(async (error) => {
+      if (error) {
+        log('Server close failed', { error: error.message })
+      }
 
-  server = app.listen(port, () => {
-    logger.info('Server started', {
-      port: Number(port),
-      url: `http://localhost:${port}`,
+      try {
+        await prisma.$disconnect()
+      } catch (disconnectError) {
+        log('Database disconnect failed', {
+          error:
+            disconnectError instanceof Error
+              ? disconnectError.message
+              : String(disconnectError),
+        })
+      }
+
+      process.exit(error ? 1 : 0)
     })
-    logger.info('Environment configuration loaded', {
-      jwtSecretConfigured: Boolean(process.env.JWT_SECRET),
-      refreshTokenSecretConfigured: Boolean(process.env.REFRESH_TOKEN_SECRET),
-    })
+
+    /**
+     * A deadline, because a connection that never closes would otherwise hold
+     * the process open until the orchestrator escalates to `SIGKILL` — which
+     * loses the graceful part anyway.
+     */
+    setTimeout(() => {
+      log('Shutdown deadline reached, exiting')
+      process.exit(0)
+    }, 10_000).unref()
+  }
+
+  process.on('SIGTERM', () => void shutdown('SIGTERM'))
+  process.on('SIGINT', () => void shutdown('SIGINT'))
+
+  /**
+   * A rejected promise nobody handled leaves the process in an undefined state
+   * while still appearing healthy, so it is reported rather than swallowed.
+   */
+  process.on('unhandledRejection', (reason) => {
+    console.error(
+      JSON.stringify({
+        level: 'error',
+        service: 'api',
+        message: 'unhandled_rejection',
+        error: reason instanceof Error ? reason.message : String(reason),
+        timestamp: new Date().toISOString(),
+      }),
+    )
   })
 }
 
-process.on('SIGTERM', () => {
-  void gracefulShutdown('SIGTERM')
-})
+main().catch((error: unknown) => {
+  console.error(
+    JSON.stringify({
+      level: 'error',
+      service: 'api',
+      message: 'failed_to_start',
+      error: error instanceof Error ? error.message : String(error),
+      timestamp: new Date().toISOString(),
+    }),
+  )
 
-process.on('SIGINT', () => {
-  void gracefulShutdown('SIGINT')
+  process.exit(1)
 })
-
-void startServer()

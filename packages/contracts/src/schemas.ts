@@ -27,6 +27,31 @@ import { z } from 'zod'
 /** An opaque identifier. Not validated as a CUID: that format is the database's business. */
 export const idSchema = z.string().min(1).max(64)
 
+/**
+ * A date.
+ *
+ * `z.coerce.date()` because JSON has no date type: a value arrives as a string
+ * and has to become a `Date` for the output type to mean what it says. Without
+ * the coercion the inferred type would be `string`, and an SDK caller would be
+ * handed a string where the type promised a `Date`.
+ *
+ * A domain operation returns `Date` for the same reason, so this is the shape
+ * both sides agree on. Serialising to ISO happens in `JSON.stringify`, which is
+ * what the wire format actually is.
+ */
+export const dateSchema = z.coerce.date()
+
+/**
+ * An instant that the domain produces as a string.
+ *
+ * Used where a value came out of a JSON column rather than a `timestamp`
+ * column — a release snapshot stores ISO strings, and converting them to `Date`
+ * on the way out would be a translation with nothing to gain. Numbering the two
+ * shapes differently is what stops "sometimes a Date, sometimes a string"
+ * spreading further.
+ */
+export const isoDateSchema = z.string()
+
 // ---------------------------------------------------------------------------
 // Tenancy
 // ---------------------------------------------------------------------------
@@ -77,7 +102,7 @@ export const workspaceSummarySchema = z.object({
   name: z.string(),
   slug: z.string(),
   logo: z.string().nullable(),
-  createdAt: z.coerce.date(),
+  createdAt: dateSchema,
 })
 
 export type WorkspaceSummary = z.infer<typeof workspaceSummarySchema>
@@ -90,7 +115,7 @@ export const academySummarySchema = z.object({
   logo: z.string().nullable(),
   authMode: z.enum(['MANAGED', 'DELEGATED', 'HYBRID']),
   branding: brandingSchema.nullable(),
-  createdAt: z.coerce.date(),
+  createdAt: dateSchema,
 })
 
 export type AcademySummary = z.infer<typeof academySummarySchema>
@@ -109,8 +134,8 @@ export const courseSummarySchema = z.object({
   description: z.string().nullable(),
   thumbnail: z.string().nullable(),
   status: courseStatusSchema,
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
+  createdAt: dateSchema,
+  updatedAt: dateSchema,
 })
 
 export type CourseSummary = z.infer<typeof courseSummarySchema>
@@ -180,8 +205,8 @@ export const releaseSummarySchema = z.object({
   id: idSchema,
   courseId: idSchema,
   version: z.number().int().positive(),
-  publishedAt: z.coerce.date(),
-  supersededAt: z.coerce.date().nullable(),
+  publishedAt: dateSchema,
+  supersededAt: dateSchema.nullable(),
 })
 
 export type ReleaseSummary = z.infer<typeof releaseSummarySchema>
@@ -241,9 +266,9 @@ export const enrollmentSummarySchema = z.object({
   academyId: idSchema,
   courseId: idSchema,
   learnerId: idSchema,
-  enrolledAt: z.coerce.date(),
-  startedAt: z.coerce.date().nullable(),
-  completedAt: z.coerce.date().nullable(),
+  enrolledAt: dateSchema,
+  startedAt: dateSchema.nullable(),
+  completedAt: dateSchema.nullable(),
 })
 
 export type EnrollmentSummary = z.infer<typeof enrollmentSummarySchema>
@@ -384,8 +409,8 @@ export const quizAttemptSummarySchema = z.object({
   score: z.number(),
   totalPoints: z.number().int(),
   passed: z.boolean(),
-  startedAt: z.coerce.date(),
-  submittedAt: z.coerce.date().nullable(),
+  startedAt: dateSchema,
+  submittedAt: dateSchema.nullable(),
   timeSpentSeconds: z.number().int().nullable(),
 })
 
@@ -430,10 +455,10 @@ export const submissionSummarySchema = z.object({
   fileUrl: z.string().nullable(),
   grade: z.number().nullable(),
   feedback: z.string().nullable(),
-  gradedAt: z.coerce.date().nullable(),
+  gradedAt: dateSchema.nullable(),
   gradedById: idSchema.nullable(),
-  submittedAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
+  submittedAt: dateSchema,
+  updatedAt: dateSchema,
 })
 
 export type SubmissionSummary = z.infer<typeof submissionSummarySchema>
@@ -455,7 +480,7 @@ export const publicCertificateSchema = z.object({
   status: z.enum(['VALID', 'REVOKED']),
   title: z.string(),
   recipientName: z.string(),
-  issuedAt: z.string(),
+  issuedAt: isoDateSchema,
   academy: z.object({ name: z.string(), slug: z.string() }),
   revocationReason: z.string().nullable(),
 })
@@ -468,8 +493,8 @@ export const certificateSchema = z.object({
   title: z.string(),
   recipientName: z.string(),
   verificationId: z.string(),
-  issuedAt: z.coerce.date(),
-  revokedAt: z.coerce.date().nullable(),
+  issuedAt: dateSchema,
+  revokedAt: dateSchema.nullable(),
 })
 
 export type Certificate = z.infer<typeof certificateSchema>

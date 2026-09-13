@@ -676,31 +676,6 @@ export class DocentoApi extends DocentoClient {
   // Media and service keys
   // -------------------------------------------------------------------------
 
-  beginUpload(
-    workspaceId: string,
-    body: { filename: string; mimeType: string; sizeBytes: number },
-    idempotencyKey: string,
-  ) {
-    return this.call(
-      'media.upload',
-      { params: { workspaceId }, body },
-      { idempotencyKey, ...describe('beginUpload') },
-    )
-  }
-
-  completeUpload(
-    workspaceId: string,
-    assetId: string,
-    body: { durationSeconds?: number },
-    idempotencyKey: string,
-  ) {
-    return this.call(
-      'media.complete',
-      { params: { workspaceId, assetId }, body },
-      { idempotencyKey, ...describe('completeUpload') },
-    )
-  }
-
   listServiceKeys(workspaceId: string) {
     return this.call(
       'serviceKey.list',
@@ -737,14 +712,14 @@ export class DocentoApi extends DocentoClient {
 /**
  * Operations a JSON client cannot meaningfully perform.
  *
- * `media.serve` returns asset bytes with a `Content-Range`, not an envelope. It
- * is deliberately not a method here: wrapping it would either buffer a video
- * into memory or hand back a `Response` that pretends to follow the same
- * contract as every other call. A caller points an `<img>`, a `<video>` or a
- * download at the URL, and the completeness test knows the omission is
- * intentional rather than forgotten.
+ * Empty today, and kept because the category is the point: when media serving
+ * arrives it returns asset bytes with a `Content-Range` rather than an envelope,
+ * and wrapping that would either buffer a video into memory or hand back a
+ * `Response` that pretends to follow the same contract as every other call. The
+ * completeness test knows the difference between an operation deliberately not
+ * wrapped and one somebody forgot.
  */
-export const STREAMING_OPERATIONS = ['media.serve'] as const
+export const STREAMING_OPERATIONS = [] as const
 
 /**
  * Which method implements which operation.
@@ -805,15 +780,10 @@ export const IMPLEMENTED_OPERATIONS = {
   'learner.assignment.submit': 'submitAssignment',
   'learner.certificates': 'listLearnerCertificates',
   'learner.certificate.issue': 'requestCertificate',
-  'media.upload': 'beginUpload',
-  'media.complete': 'completeUpload',
   'serviceKey.list': 'listServiceKeys',
   'serviceKey.create': 'createServiceKey',
   'serviceKey.revoke': 'revokeServiceKey',
-} as const satisfies Record<
-  Exclude<OperationName, (typeof STREAMING_OPERATIONS)[number]>,
-  keyof DocentoApi
->
+} as const satisfies Record<OperationName, keyof DocentoApi>
 
 /**
  * Registry operations this client does not implement.

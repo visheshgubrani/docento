@@ -133,7 +133,6 @@ describe('idempotency', () => {
       'learner.certificate.issue',
       'learner.quiz.start',
       'learner.quiz.submit',
-      'media.upload',
       'module.create',
       'lesson.create',
     ]) {

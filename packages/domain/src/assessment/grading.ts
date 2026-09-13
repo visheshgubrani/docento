@@ -1,3 +1,5 @@
+import { DomainRuleError } from '../shared/errors.js'
+
 /**
  * Quiz grading.
  *
@@ -39,6 +41,34 @@ export const QUESTION_TYPES = [
 ] as const
 
 export type QuestionType = (typeof QUESTION_TYPES)[number]
+
+/**
+ * Read a question type from storage.
+ *
+ * The column is a `String`, so it can hold a value this build cannot grade. That
+ * is worse than a rendering problem: the grading engine's `switch` falls through
+ * to the single-answer branch, so an unknown type is silently graded as if it
+ * were multiple choice — a learner could be marked wrong by a typo in a column.
+ *
+ * Refusing is the only safe answer. A malformed question is a problem somebody
+ * has to see, not one to grade around.
+ */
+export function asQuestionType(value: string): QuestionType {
+  if ((QUESTION_TYPES as readonly string[]).includes(value)) {
+    return value as QuestionType
+  }
+
+  throw new DomainRuleError(
+    'invalid_question_type',
+    'This quiz has a question type the platform cannot grade.',
+    [
+      {
+        path: 'questionType',
+        message: `must be one of ${QUESTION_TYPES.join(', ')}`,
+      },
+    ],
+  )
+}
 
 /**
  * The marking scheme for one question.

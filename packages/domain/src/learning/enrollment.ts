@@ -769,9 +769,18 @@ export async function listLearnerCourses(
     courseId: string
     title: string
     slug: string
+    description: string | null
     thumbnail: string | null
     percent: number
     isComplete: boolean
+    /**
+     * Whether the learner may currently open the lessons.
+     *
+     * In the list, not only on the course page: a dashboard that cannot say
+     * "your access ended" shows a course that looks openable and then refuses
+     * when clicked, which is the worst of both answers.
+     */
+    hasAccess: boolean
     lastSeenAt: Date | null
   }[]
 > {
@@ -785,7 +794,14 @@ export async function listLearnerCourses(
     orderBy: { enrolledAt: 'desc' },
     select: {
       courseId: true,
-      course: { select: { title: true, slug: true, thumbnail: true } },
+      course: {
+        select: {
+          title: true,
+          slug: true,
+          description: true,
+          thumbnail: true,
+        },
+      },
     },
   })
 
@@ -810,9 +826,15 @@ export async function listLearnerCourses(
       courseId: enrollment.courseId,
       title: enrollment.course.title,
       slug: enrollment.course.slug,
+      description: enrollment.course.description,
       thumbnail: enrollment.course.thumbnail,
       percent: progress.percent,
       isComplete: progress.isComplete,
+      hasAccess: await hasAccess(
+        input.academyId,
+        enrollment.courseId,
+        input.learnerId,
+      ),
       lastSeenAt,
     })
   }

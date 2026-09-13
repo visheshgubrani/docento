@@ -34,6 +34,18 @@ import {
 } from '../shared/errors.js'
 import { SLUG_PATTERN } from '../tenancy/resolve-academy.js'
 
+/**
+ * A course's lifecycle.
+ *
+ * A union rather than `string`, for the same reason as `authMode`: the column is
+ * a `String` with a default, so it can hold something else, and a value outside
+ * this set would reach a client as an enum the contract says cannot exist.
+ * `toCourseSummary` is where that is caught.
+ */
+export const COURSE_STATUSES = ['DRAFT', 'PUBLISHED', 'ARCHIVED'] as const
+
+export type CourseStatus = (typeof COURSE_STATUSES)[number]
+
 export type CourseSummary = {
   id: string
   academyId: string
@@ -41,10 +53,44 @@ export type CourseSummary = {
   slug: string
   description: string | null
   thumbnail: string | null
-  /** DRAFT | PUBLISHED | ARCHIVED */
+  status: CourseStatus
+  createdAt: Date
+  updatedAt: Date
+}
+
+/**
+ * Read a status from storage.
+ *
+ * Refuses an unrecognised value rather than passing it through: a row with a
+ * status this build does not know about is either a migration that has not run
+ * or a write that bypassed the application, and both are worth hearing about at
+ * the point of the read rather than at a client's schema validation.
+ */
+function toCourseSummary(row: {
+  id: string
+  academyId: string
+  title: string
+  slug: string
+  description: string | null
+  thumbnail: string | null
   status: string
   createdAt: Date
   updatedAt: Date
+}): CourseSummary {
+  if (!(COURSE_STATUSES as readonly string[]).includes(row.status)) {
+    throw new DomainRuleError(
+      'invalid_course_status',
+      'This course has a status the platform does not recognise.',
+      [
+        {
+          path: 'status',
+          message: `must be one of ${COURSE_STATUSES.join(', ')}`,
+        },
+      ],
+    )
+  }
+
+  return { ...row, status: row.status as CourseStatus }
 }
 
 const COURSE_FIELDS = {
@@ -170,7 +216,7 @@ export async function createCourse(
     )
   }
 
-  return prisma.course.create({
+  const created = await prisma.course.create({
     data: {
       academyId: input.academyId,
       title,
@@ -179,6 +225,8 @@ export async function createCourse(
     },
     select: COURSE_FIELDS,
   })
+
+  return toCourseSummary(created)
 }
 
 /**
@@ -205,7 +253,7 @@ export async function getCourse(
 
   assertFound('course', course, input.courseId)
 
-  return course
+  return toCourseSummary(course)
 }
 
 export async function listCourses(
@@ -217,7 +265,7 @@ export async function listCourses(
     academyId: input.academyId,
   })
 
-  return prisma.course.findMany({
+  const rows = await prisma.course.findMany({
     where: {
       academyId: input.academyId,
       ...(input.status ? { status: input.status } : {}),
@@ -225,6 +273,8 @@ export async function listCourses(
     orderBy: { createdAt: 'asc' },
     select: COURSE_FIELDS,
   })
+
+  return rows.map(toCourseSummary)
 }
 
 export async function updateCourse(
@@ -251,7 +301,7 @@ export async function updateCourse(
 
   const title = input.title === undefined ? undefined : assertTitle(input.title)
 
-  return prisma.course.update({
+  const updated = await prisma.course.update({
     where: { id: input.courseId },
     data: {
       ...(title !== undefined ? { title } : {}),
@@ -262,6 +312,8 @@ export async function updateCourse(
     },
     select: COURSE_FIELDS,
   })
+
+  return toCourseSummary(updated)
 }
 
 /**
@@ -299,11 +351,13 @@ export async function archiveCourse(
     )
   }
 
-  return prisma.course.update({
+  const archived = await prisma.course.update({
     where: { id: input.courseId },
     data: { status: 'ARCHIVED' },
     select: COURSE_FIELDS,
   })
+
+  return toCourseSummary(archived)
 }
 
 // ---------------------------------------------------------------------------
@@ -513,12 +567,28 @@ export type LessonSummary = {
   moduleId: string
   title: string
   summary: string | null
+  contentType: LessonContentType
+  position: number
+  isFree: boolean
+  body: string | null
+  mediaAssetId: string | null
+  embedUrl: string | null
+}
+
+/** Read a stored lesson type, refusing one this build cannot render. */
+function toLessonSummary(row: {
+  id: string
+  moduleId: string
+  title: string
+  summary: string | null
   contentType: string
   position: number
   isFree: boolean
   body: string | null
   mediaAssetId: string | null
   embedUrl: string | null
+}): LessonSummary {
+  return { ...row, contentType: assertContentType(row.contentType) }
 }
 
 const LESSON_FIELDS = {
@@ -581,7 +651,7 @@ export async function createLesson(
   return prisma.$transaction(async (tx) => {
     const position = await nextLessonPosition(tx, input.moduleId)
 
-    return tx.lesson.create({
+    const created = await tx.lesson.create({
       data: {
         moduleId: input.moduleId,
         title,
@@ -595,6 +665,8 @@ export async function createLesson(
       },
       select: LESSON_FIELDS,
     })
+
+    return toLessonSummary(created)
   })
 }
 
@@ -626,7 +698,7 @@ export async function updateLesson(
 
   const title = input.title === undefined ? undefined : assertTitle(input.title)
 
-  return prisma.lesson.update({
+  const updated = await prisma.lesson.update({
     where: { id: input.lessonId },
     data: {
       ...(title !== undefined ? { title } : {}),
@@ -640,6 +712,8 @@ export async function updateLesson(
     },
     select: LESSON_FIELDS,
   })
+
+  return toLessonSummary(updated)
 }
 
 export async function reorderLessons(

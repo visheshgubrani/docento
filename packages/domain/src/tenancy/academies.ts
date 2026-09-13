@@ -26,7 +26,182 @@ export type WorkspaceSummary = {
   createdAt: Date
 }
 
+/**
+ * How learners in an academy authenticate.
+ *
+ * A union rather than `string`, because the column is a `String` with a default
+ * and can therefore hold something else — and a value outside this set would
+ * reach a client as an enum the contract says cannot exist. `asAuthMode` is
+ * where that is caught.
+ */
+export const ACADEMY_AUTH_MODES = ['MANAGED', 'DELEGATED', 'HYBRID'] as const
+
+export type AcademyAuthMode = (typeof ACADEMY_AUTH_MODES)[number]
+
+/**
+ * Academy branding.
+ *
+ * A structural type rather than `unknown`, and validated on read rather than
+ * trusted. The column is `Json`, so the database will store anything — and a
+ * client rendering `primaryColor` as a number would be a bug whose cause is a
+ * row nobody validated. `asBranding` is where that is caught, and it refuses
+ * rather than silently repairing, because a colour that does not parse is a
+ * data problem somebody should see.
+ */
+export type AcademyBranding = {
+  displayName?: string
+  logoUrl?: string
+  faviconUrl?: string
+  primaryColor?: string
+  accentColor?: string
+  supportEmail?: string
+  legal?: {
+    termsUrl?: string
+    privacyUrl?: string
+    refundPolicyUrl?: string
+  }
+}
+
 export type AcademySummary = {
+  id: string
+  workspaceId: string
+  name: string
+  slug: string
+  logo: string | null
+  authMode: AcademyAuthMode
+  branding: AcademyBranding | null
+  createdAt: Date
+}
+
+/**
+ * Read branding from storage.
+ *
+ * Unknown keys are dropped rather than rejected: branding is presentation, and a
+ * key that a newer version wrote is not a reason to fail a read that an older
+ * version can serve. A key with the wrong *type* is a refusal, because that is
+ * the case a renderer would break on.
+ */
+function asBranding(value: unknown): AcademyBranding | null {
+  if (value === null || value === undefined) return null
+
+  if (typeof value !== 'object' || Array.isArray(value)) {
+    throw new DomainRuleError(
+      'invalid_branding',
+      'This academy has branding the platform cannot read.',
+      [{ path: 'branding', message: 'must be an object' }],
+    )
+  }
+
+  const raw = value as Record<string, unknown>
+  const branding: AcademyBranding = {}
+
+  const stringKeys = [
+    'displayName',
+    'logoUrl',
+    'faviconUrl',
+    'primaryColor',
+    'accentColor',
+    'supportEmail',
+  ] as const
+
+  for (const key of stringKeys) {
+    const entry = raw[key]
+
+    if (entry === undefined) continue
+
+    if (typeof entry !== 'string') {
+      throw new DomainRuleError(
+        'invalid_branding',
+        `This academy's branding has an unreadable "${key}".`,
+        [{ path: `branding.${key}`, message: 'must be a string' }],
+      )
+    }
+
+    branding[key] = entry
+  }
+
+  if (raw.legal !== undefined) {
+    if (
+      typeof raw.legal !== 'object' ||
+      raw.legal === null ||
+      Array.isArray(raw.legal)
+    ) {
+      throw new DomainRuleError(
+        'invalid_branding',
+        "This academy's branding has unreadable legal links.",
+        [{ path: 'branding.legal', message: 'must be an object' }],
+      )
+    }
+
+    const legal: NonNullable<AcademyBranding['legal']> = {}
+    const legalRaw = raw.legal as Record<string, unknown>
+
+    for (const key of ['termsUrl', 'privacyUrl', 'refundPolicyUrl'] as const) {
+      const entry = legalRaw[key]
+
+      if (entry === undefined) continue
+
+      if (typeof entry !== 'string') {
+        throw new DomainRuleError(
+          'invalid_branding',
+          `This academy's branding has an unreadable "${key}".`,
+          [{ path: `branding.legal.${key}`, message: 'must be a string' }],
+        )
+      }
+
+      legal[key] = entry
+    }
+
+    branding.legal = legal
+  }
+
+  return branding
+}
+
+/**
+ * Read an `authMode` from storage.
+ *
+ * Refuses an unrecognised value rather than passing it through. A row with
+ * `authMode: 'MANAGED '` — a trailing space from an import, say — would
+ * otherwise produce a response that fails schema validation at the edge, which
+ * is a confusing way to learn about a data problem.
+ */
+function asAuthMode(value: string): AcademyAuthMode {
+  if ((ACADEMY_AUTH_MODES as readonly string[]).includes(value)) {
+    return value as AcademyAuthMode
+  }
+
+  throw new DomainRuleError(
+    'invalid_auth_mode',
+    `This academy has an authentication mode the platform does not recognise.`,
+    [
+      {
+        path: 'authMode',
+        message: `must be one of ${ACADEMY_AUTH_MODES.join(', ')}`,
+      },
+    ],
+  )
+}
+
+/**
+ * Narrow the columns a client must be able to trust.
+ *
+ * Exported so the public catalogue read uses the same validators rather than
+ * repeating them: two answers to "what is a valid authMode" is the shape of bug
+ * that shows up as one endpoint accepting a row another refuses.
+ */
+export function readAcademyIdentity(row: {
+  authMode: string
+  branding: unknown
+}): { authMode: AcademyAuthMode; branding: AcademyBranding | null } {
+  return {
+    authMode: asAuthMode(row.authMode),
+    branding: asBranding(row.branding),
+  }
+}
+
+/** Map a stored academy row to the summary shape, narrowing `authMode`. */
+function toAcademySummary(row: {
   id: string
   workspaceId: string
   name: string
@@ -35,6 +210,12 @@ export type AcademySummary = {
   authMode: string
   branding: unknown
   createdAt: Date
+}): AcademySummary {
+  return {
+    ...row,
+    authMode: asAuthMode(row.authMode),
+    branding: asBranding(row.branding),
+  }
 }
 
 /**
@@ -206,7 +387,7 @@ export async function createAcademy(
     )
   }
 
-  return prisma.academy.create({
+  const created = await prisma.academy.create({
     data: {
       workspaceId,
       name,
@@ -215,6 +396,8 @@ export async function createAcademy(
     },
     select: ACADEMY_FIELDS,
   })
+
+  return toAcademySummary(created)
 }
 
 const ACADEMY_FIELDS = {
@@ -243,11 +426,13 @@ export async function listAcademies(
 ): Promise<AcademySummary[]> {
   assertCan(principal, 'academy:list', { workspaceId })
 
-  return prisma.academy.findMany({
+  const rows = await prisma.academy.findMany({
     where: { workspaceId },
     orderBy: { createdAt: 'asc' },
     select: ACADEMY_FIELDS,
   })
+
+  return rows.map(toAcademySummary)
 }
 
 export async function getAcademy(
@@ -264,7 +449,7 @@ export async function getAcademy(
 
   assertFound('academy', academy, academyId)
 
-  return academy
+  return toAcademySummary(academy)
 }
 
 /**
@@ -305,7 +490,7 @@ export async function updateAcademy(
     ])
   }
 
-  return prisma.academy.update({
+  const updated = await prisma.academy.update({
     where: { id: academyId },
     data: {
       ...(name !== undefined ? { name } : {}),
@@ -315,6 +500,8 @@ export async function updateAcademy(
     },
     select: ACADEMY_FIELDS,
   })
+
+  return toAcademySummary(updated)
 }
 
 /**
