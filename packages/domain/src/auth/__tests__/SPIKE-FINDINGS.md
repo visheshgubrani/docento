@@ -28,7 +28,7 @@ not only sequentially.
 ```js
 // @better-auth/core/dist/db/context/transaction.mjs
 const getCurrentAdapter = async (fallback) =>
-  ensureAsyncStorage().then((als) => als.getStore()?.adapter || fallback);
+  ensureAsyncStorage().then((als) => als.getStore()?.adapter || fallback)
 ```
 
 The instance that resolves there is **not** always the one produced by wrapping
@@ -93,7 +93,7 @@ Two details that are easy to get wrong:
 academy through Better Auth's documented hook API, so a create stays scoped even
 if a future release changes how adapters are resolved.
 
-An adapter *wrapper* also lived here. It was removed once scoping moved to the
+An adapter _wrapper_ also lived here. It was removed once scoping moved to the
 client, because nothing constructed it any more — leaving it exported implied a
 layer that was not in force, which is worse than having no layer at all.
 

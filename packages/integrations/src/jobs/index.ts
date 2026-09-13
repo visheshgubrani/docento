@@ -189,7 +189,9 @@ export class JobQueue {
     if (!parsed.success) {
       throw new Error(
         `Invalid payload for job "${name}": ${parsed.error.issues
-          .map((issue) => `${issue.path.join('.') || '(root)'} ${issue.message}`)
+          .map(
+            (issue) => `${issue.path.join('.') || '(root)'} ${issue.message}`,
+          )
           .join('; ')}`,
       )
     }
@@ -197,7 +199,8 @@ export class JobQueue {
     // pg-boss validates these and rejects an explicit `undefined`, so the
     // object is built rather than passed with holes. The queue's declared
     // options are the default; the caller may override the retry limit.
-    const declared = (definition as { options?: Record<string, unknown> }).options ?? {}
+    const declared =
+      (definition as { options?: Record<string, unknown> }).options ?? {}
 
     const sendOptions: Record<string, unknown> = {}
 
@@ -235,7 +238,10 @@ export class JobQueue {
    * Handlers must be idempotent: pg-boss guarantees at-least-once delivery, and
    * a job that fails after its side effect has landed will be retried.
    */
-  async work<N extends JobName>(name: N, handler: JobHandler<N>): Promise<void> {
+  async work<N extends JobName>(
+    name: N,
+    handler: JobHandler<N>,
+  ): Promise<void> {
     if (!this.started) {
       throw new Error(
         `Cannot register a handler for "${name}" before the queue has started. Call start() first.`,
@@ -246,9 +252,9 @@ export class JobQueue {
 
     await this.boss.work(name, async (jobs) => {
       for (const job of jobs) {
-        const parsed = (JOB_DEFINITIONS[name] as { schema: z.ZodTypeAny }).schema.safeParse(
-          job.data,
-        )
+        const parsed = (
+          JOB_DEFINITIONS[name] as { schema: z.ZodTypeAny }
+        ).schema.safeParse(job.data)
 
         if (!parsed.success) {
           // A payload that cannot be parsed will never succeed. Failing loudly
@@ -277,7 +283,10 @@ export class JobQueue {
   }
 
   /** Enqueue a scheduled job immediately, for an operator-triggered run. */
-  async trigger<N extends JobName>(name: N, payload: JobPayload<N>): Promise<string | null> {
+  async trigger<N extends JobName>(
+    name: N,
+    payload: JobPayload<N>,
+  ): Promise<string | null> {
     return this.enqueue(name, payload)
   }
 

@@ -1,11 +1,11 @@
-"use client";
+'use client'
 
-import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { AnimatePresence, motion, useScroll, type Variants } from "motion/react";
-import { FaGithub } from "react-icons/fa6";
+import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { AnimatePresence, motion, useScroll, type Variants } from 'motion/react'
+import { FaGithub } from 'react-icons/fa6'
 import {
   HiArrowRightOnRectangle,
   HiBars3,
@@ -13,10 +13,10 @@ import {
   HiQuestionMarkCircle,
   HiShoppingBag,
   HiXMark,
-} from "react-icons/hi2";
-import { signOut } from "@/actions/auth";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { Button } from "@/components/ui/button";
+} from 'react-icons/hi2'
+import { signOut } from '@/actions/auth'
+import { ThemeToggle } from '@/components/theme-toggle'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,44 +24,44 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { navLinks } from "@/config/navigation";
-import { siteConfig } from "@/config/site";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/dropdown-menu'
+import { navLinks } from '@/config/navigation'
+import { siteConfig } from '@/config/site'
+import { cn } from '@/lib/utils'
 
 export type NavigationHeaderUser = {
-  name: string;
-  email?: string;
-  avatar?: string | null;
-};
+  name: string
+  email?: string
+  avatar?: string | null
+}
 
 type NavigationHeaderProps = {
-  user?: NavigationHeaderUser | null;
-};
+  user?: NavigationHeaderUser | null
+}
 
 const userMenuLinks = [
   {
-    label: "Purchase History",
-    href: "/dashboard/purchases",
+    label: 'Purchase History',
+    href: '/dashboard/purchases',
     icon: HiShoppingBag,
   },
   {
-    label: "Contact",
-    href: "/contact",
+    label: 'Contact',
+    href: '/contact',
     icon: HiQuestionMarkCircle,
   },
   {
-    label: "Edit Profile",
-    href: "/profile/edit",
+    label: 'Edit Profile',
+    href: '/profile/edit',
     icon: HiPencilSquare,
   },
-];
+]
 
 const overlayVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1 },
   exit: { opacity: 0 },
-} satisfies Variants;
+} satisfies Variants
 
 const drawerVariants = {
   hidden: { opacity: 0, y: 90 },
@@ -69,7 +69,7 @@ const drawerVariants = {
     opacity: 1,
     y: 0,
     transition: {
-      type: "spring",
+      type: 'spring',
       damping: 18,
       stiffness: 220,
       staggerChildren: 0.03,
@@ -80,27 +80,27 @@ const drawerVariants = {
     y: 90,
     transition: { duration: 0.12 },
   },
-} satisfies Variants;
+} satisfies Variants
 
 const drawerItemVariants = {
   hidden: { opacity: 0, y: 8 },
   visible: { opacity: 1, y: 0 },
-} satisfies Variants;
+} satisfies Variants
 
 function getInitials(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const parts = name.trim().split(/\s+/).filter(Boolean)
   return parts
     .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('')
 }
 
 function isActive(pathname: string, href: string) {
-  if (href === "/dashboard") {
-    return pathname === "/dashboard" || pathname.startsWith("/dashboard/");
+  if (href === '/dashboard') {
+    return pathname === '/dashboard' || pathname.startsWith('/dashboard/')
   }
 
-  return pathname === href;
+  return pathname === href
 }
 
 function UserAvatarMenu({ userName }: { userName: string }) {
@@ -117,14 +117,16 @@ function UserAvatarMenu({ userName }: { userName: string }) {
             className="size-10 p-0 overflow-hidden rounded-full border-3 border-primary/60 bg-primary/95 hover:text-white cursor-pointer text-base font-semibold uppercase tracking-wide text-white hover:bg-primary/90"
             aria-label="Open user menu"
           >
-            {getInitials(userName) || "U"}
+            {getInitials(userName) || 'U'}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
           className="w-56 mt-1 py-2 flex flex-col gap-1.5 shadow-sm shadow-muted/30 border border-muted-foreground/20 bg-sidebar"
         >
-          <DropdownMenuLabel className="font-medium text-foreground">{userName}</DropdownMenuLabel>
+          <DropdownMenuLabel className="font-medium text-foreground">
+            {userName}
+          </DropdownMenuLabel>
           <DropdownMenuSeparator />
 
           {userMenuLinks.map((item) => (
@@ -153,57 +155,62 @@ function UserAvatarMenu({ userName }: { userName: string }) {
         </DropdownMenuContent>
       </DropdownMenu>
     </>
-  );
+  )
 }
 
 export function NavigationHeader({ user }: NavigationHeaderProps) {
-  const pathname = usePathname();
-  const { scrollY } = useScroll();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const isLoggedIn = Boolean(user);
+  const pathname = usePathname()
+  const { scrollY } = useScroll()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const isLoggedIn = Boolean(user)
 
   const links = useMemo(
-    () => (isLoggedIn ? [{ label: "My Dashboard", href: "/dashboard" }, ...navLinks] : navLinks),
-    [isLoggedIn]
-  );
+    () =>
+      isLoggedIn
+        ? [{ label: 'My Dashboard', href: '/dashboard' }, ...navLinks]
+        : navLinks,
+    [isLoggedIn],
+  )
 
   useEffect(() => {
-    const unsubscribe = scrollY.on("change", (latest) => {
-      setIsScrolled(latest > 10);
-    });
+    const unsubscribe = scrollY.on('change', (latest) => {
+      setIsScrolled(latest > 10)
+    })
 
-    return unsubscribe;
-  }, [scrollY]);
+    return unsubscribe
+  }, [scrollY])
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 1024) setIsMenuOpen(false);
-    };
+      if (window.innerWidth >= 1024) setIsMenuOpen(false)
+    }
 
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
-    if (!isMenuOpen) return;
+    if (!isMenuOpen) return
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsMenuOpen(false);
-    };
+      if (event.key === 'Escape') setIsMenuOpen(false)
+    }
 
-    window.addEventListener("keydown", handleEscape);
-    return () => window.removeEventListener("keydown", handleEscape);
-  }, [isMenuOpen]);
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [isMenuOpen])
 
   return (
-    <header className={cn("sticky w-full top-0 z-50 transition-all duration-300")}>
+    <header
+      className={cn('sticky w-full top-0 z-50 transition-all duration-300')}
+    >
       <motion.div
         className={cn(
-          "w-full transition-all duration-300",
+          'w-full transition-all duration-300',
           isScrolled
-            ? "backdrop-blur-xl supports-backdrop-filter:bg-primary/15 shadow-sm"
-            : "bg-background"
+            ? 'backdrop-blur-xl supports-backdrop-filter:bg-primary/15 shadow-sm'
+            : 'bg-background',
         )}
       >
         <nav className="mx-auto flex h-21 max-w-7xl items-center gap-4 px-6 lg:px-10">
@@ -213,10 +220,10 @@ export function NavigationHeader({ user }: NavigationHeaderProps) {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "text-base font-semibold transition-colors",
+                  'text-base font-semibold transition-colors',
                   isActive(pathname, link.href)
-                    ? "text-foreground font-bold"
-                    : "text-foreground/85 hover:text-primary hover:underline"
+                    ? 'text-foreground font-bold'
+                    : 'text-foreground/85 hover:text-primary hover:underline',
                 )}
               >
                 {link.label}
@@ -225,7 +232,12 @@ export function NavigationHeader({ user }: NavigationHeaderProps) {
           </div>
 
           <Link href="/" className="flex items-center gap-2.5">
-            <Image src={siteConfig.logo} alt={siteConfig.name} width={32} height={32} />
+            <Image
+              src={siteConfig.logo}
+              alt={siteConfig.name}
+              width={32}
+              height={32}
+            />
             <span className="hidden font-brand text-[1.25rem] font-extrabold lowercase text-foreground md:flex">
               {siteConfig.name}
             </span>
@@ -253,7 +265,7 @@ export function NavigationHeader({ user }: NavigationHeaderProps) {
             ) : null}
 
             {isLoggedIn ? (
-              <UserAvatarMenu userName={user?.name || "User"} />
+              <UserAvatarMenu userName={user?.name || 'User'} />
             ) : (
               <>
                 <Button
@@ -284,7 +296,11 @@ export function NavigationHeader({ user }: NavigationHeaderProps) {
               aria-expanded={isMenuOpen}
               aria-controls="mobile-nav-drawer"
             >
-              {isMenuOpen ? <HiXMark className="size-6.5" /> : <HiBars3 className="size-6.5" />}
+              {isMenuOpen ? (
+                <HiXMark className="size-6.5" />
+              ) : (
+                <HiBars3 className="size-6.5" />
+              )}
             </Button>
 
             <ThemeToggle />
@@ -321,7 +337,12 @@ export function NavigationHeader({ user }: NavigationHeaderProps) {
                   className="flex items-center gap-2.5"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <Image src={siteConfig.logo} alt={siteConfig.name} width={32} height={32} />
+                  <Image
+                    src={siteConfig.logo}
+                    alt={siteConfig.name}
+                    width={32}
+                    height={32}
+                  />
                   <span className="font-brand text-[1.125rem] font-extrabold lowercase text-foreground">
                     {siteConfig.name}
                   </span>
@@ -350,10 +371,10 @@ export function NavigationHeader({ user }: NavigationHeaderProps) {
                       href={link.href}
                       onClick={() => setIsMenuOpen(false)}
                       className={cn(
-                        "block px-4 py-3 text-base font-medium transition-colors",
+                        'block px-4 py-3 text-base font-medium transition-colors',
                         isActive(pathname, link.href)
-                          ? "bg-muted text-foreground"
-                          : "text-foreground/85 hover:bg-accent hover:text-foreground"
+                          ? 'bg-muted text-foreground'
+                          : 'text-foreground/85 hover:bg-accent hover:text-foreground',
                       )}
                     >
                       {link.label}
@@ -362,7 +383,10 @@ export function NavigationHeader({ user }: NavigationHeaderProps) {
                 ))}
               </motion.ul>
 
-              <motion.div variants={drawerItemVariants} className="mt-8 flex flex-col gap-2">
+              <motion.div
+                variants={drawerItemVariants}
+                className="mt-8 flex flex-col gap-2"
+              >
                 {isLoggedIn ? (
                   <>
                     {userMenuLinks.map((item) => (
@@ -372,7 +396,10 @@ export function NavigationHeader({ user }: NavigationHeaderProps) {
                         variant="ghost"
                         className="justify-start rounded-lg py-4 text-base font-medium"
                       >
-                        <Link href={item.href} onClick={() => setIsMenuOpen(false)}>
+                        <Link
+                          href={item.href}
+                          onClick={() => setIsMenuOpen(false)}
+                        >
                           <item.icon className="size-4" />
                           <span>{item.label}</span>
                         </Link>
@@ -418,5 +445,5 @@ export function NavigationHeader({ user }: NavigationHeaderProps) {
         )}
       </AnimatePresence>
     </header>
-  );
+  )
 }

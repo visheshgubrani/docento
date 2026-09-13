@@ -1,9 +1,9 @@
-import { Footer, Header } from "@/components/marketing";
+import { Footer, Header } from '@/components/marketing'
 
 export default function LegalLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <>
@@ -11,5 +11,5 @@ export default function LegalLayout({
       <main>{children}</main>
       <Footer />
     </>
-  );
+  )
 }

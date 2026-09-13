@@ -47,7 +47,7 @@ const sanitizeFileName = (value: string) =>
 
 const resolveSubmissionExtension = (
   fileName: string | undefined,
-  contentType: string
+  contentType: string,
 ) => {
   const extFromName = fileName ? path.extname(sanitizeFileName(fileName)) : ''
   if (extFromName) return extFromName.toLowerCase()
@@ -58,7 +58,7 @@ const buildAssignmentSubmissionKey = (
   assignmentId: string,
   endUserId: string,
   fileName: string | undefined,
-  contentType: string
+  contentType: string,
 ) => {
   const safeName = fileName ? sanitizeFileName(fileName) : ''
   const extension = resolveSubmissionExtension(fileName, contentType)
@@ -72,12 +72,12 @@ const buildAssignmentSubmissionKey = (
 const isAllowedSubmissionFileUrl = (
   fileUrl: string,
   assignmentId: string,
-  endUserId: string
+  endUserId: string,
 ) => {
   const baseUrl = getR2PublicBaseUrl()
   if (!baseUrl) return true
   return fileUrl.startsWith(
-    `${baseUrl}/assignments/${assignmentId}/submissions/${endUserId}/`
+    `${baseUrl}/assignments/${assignmentId}/submissions/${endUserId}/`,
   )
 }
 
@@ -90,7 +90,7 @@ const hasSubmissionBeenGraded = (grade: number | null | undefined) =>
 export const getAssignment = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -107,7 +107,7 @@ export const getAssignment = async (
     return res.status(200).json(
       new ApiResponse(200, 'Assignment fetched successfully', {
         assignment: assignment || null,
-      })
+      }),
     )
   } catch (error) {
     console.error('[GET_ASSIGNMENT_ERROR]', error)
@@ -119,7 +119,7 @@ export const getAssignment = async (
 export const getAssignmentForStudent = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const endUser = req.endUser!
@@ -155,9 +155,12 @@ export const getAssignmentForStudent = async (
       },
     })
 
-    const isSubmissionGraded = hasSubmissionBeenGraded(existingSubmission?.grade)
+    const isSubmissionGraded = hasSubmissionBeenGraded(
+      existingSubmission?.grade,
+    )
     const canResubmit =
-      !isSubmissionGraded && (!assignment.dueDate || new Date() <= assignment.dueDate)
+      !isSubmissionGraded &&
+      (!assignment.dueDate || new Date() <= assignment.dueDate)
 
     return res.status(200).json(
       new ApiResponse(200, 'Assignment fetched successfully', {
@@ -165,7 +168,7 @@ export const getAssignmentForStudent = async (
         permissions: {
           canResubmit,
         },
-      })
+      }),
     )
   } catch (error) {
     console.error('[GET_ASSIGNMENT_FOR_STUDENT_ERROR]', error)
@@ -177,7 +180,7 @@ export const getAssignmentForStudent = async (
 export const createAssignment = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -196,8 +199,8 @@ export const createAssignment = async (
       return next(
         new ApiError(
           400,
-          'This lesson already has an assignment. Use PATCH to update it.'
-        )
+          'This lesson already has an assignment. Use PATCH to update it.',
+        ),
       )
     }
 
@@ -218,7 +221,7 @@ export const createAssignment = async (
     return res.status(201).json(
       new ApiResponse(201, 'Assignment created successfully', {
         assignment,
-      })
+      }),
     )
   } catch (error) {
     console.error('[CREATE_ASSIGNMENT_ERROR]', error)
@@ -230,16 +233,14 @@ export const createAssignment = async (
 export const updateAssignment = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
     const { title, description, dueDate, totalPoints } = req.body
 
     if (!title && !description && dueDate === undefined && !totalPoints) {
-      return next(
-        new ApiError(400, 'At least one field is required to update')
-      )
+      return next(new ApiError(400, 'At least one field is required to update'))
     }
 
     const assignment = await prisma.assignment.findUnique({
@@ -269,7 +270,7 @@ export const updateAssignment = async (
     return res.status(200).json(
       new ApiResponse(200, 'Assignment updated successfully', {
         assignment: updated,
-      })
+      }),
     )
   } catch (error) {
     console.error('[UPDATE_ASSIGNMENT_ERROR]', error)
@@ -281,7 +282,7 @@ export const updateAssignment = async (
 export const deleteAssignment = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -301,7 +302,7 @@ export const deleteAssignment = async (
     return res.status(200).json(
       new ApiResponse(200, 'Assignment deleted successfully', {
         deleted: true,
-      })
+      }),
     )
   } catch (error) {
     console.error('[DELETE_ASSIGNMENT_ERROR]', error)
@@ -315,7 +316,7 @@ export const deleteAssignment = async (
 export const createAssignmentUploadPresign = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const endUser = req.endUser!
@@ -331,8 +332,8 @@ export const createAssignmentUploadPresign = async (
       return next(
         new ApiError(
           400,
-          'Unsupported contentType. Allowed: pdf, doc, docx, zip, txt, rtf, odt'
-        )
+          'Unsupported contentType. Allowed: pdf, doc, docx, zip, txt, rtf, odt',
+        ),
       )
     }
 
@@ -362,7 +363,10 @@ export const createAssignmentUploadPresign = async (
 
     if (hasSubmissionBeenGraded(existingSubmission?.grade)) {
       return next(
-        new ApiError(409, 'This assignment has already been graded and cannot be updated')
+        new ApiError(
+          409,
+          'This assignment has already been graded and cannot be updated',
+        ),
       )
     }
 
@@ -382,7 +386,7 @@ export const createAssignmentUploadPresign = async (
       assignment.id,
       endUser.id,
       fileName,
-      contentType
+      contentType,
     )
     const fileUrl = `${publicBaseUrl}/${key}`
 
@@ -410,7 +414,7 @@ export const createAssignmentUploadPresign = async (
           'Content-Type': contentType,
         },
         expiresIn: 900,
-      })
+      }),
     )
   } catch (error) {
     console.error('[CREATE_ASSIGNMENT_UPLOAD_PRESIGN_ERROR]', error)
@@ -422,7 +426,7 @@ export const createAssignmentUploadPresign = async (
 export const submitAssignment = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const endUser = req.endUser!
@@ -447,7 +451,7 @@ export const submitAssignment = async (
 
     if (!normalizedContent && !normalizedFileUrl) {
       return next(
-        new ApiError(400, 'Either content (text) or fileUrl is required')
+        new ApiError(400, 'Either content (text) or fileUrl is required'),
       )
     }
 
@@ -462,9 +466,7 @@ export const submitAssignment = async (
 
     // Check due date
     if (assignment.dueDate && new Date() > assignment.dueDate) {
-      return next(
-        new ApiError(400, 'Submission deadline has passed')
-      )
+      return next(new ApiError(400, 'Submission deadline has passed'))
     }
 
     const existingSubmission = await prisma.assignmentSubmission.findUnique({
@@ -478,7 +480,10 @@ export const submitAssignment = async (
 
     if (hasSubmissionBeenGraded(existingSubmission?.grade)) {
       return next(
-        new ApiError(409, 'This assignment has already been graded and cannot be updated')
+        new ApiError(
+          409,
+          'This assignment has already been graded and cannot be updated',
+        ),
       )
     }
 
@@ -490,13 +495,17 @@ export const submitAssignment = async (
       }
 
       if (
-        !isAllowedSubmissionFileUrl(normalizedFileUrl, assignment.id, endUser.id)
+        !isAllowedSubmissionFileUrl(
+          normalizedFileUrl,
+          assignment.id,
+          endUser.id,
+        )
       ) {
         return next(
           new ApiError(
             400,
-            'fileUrl is not a valid assignment upload URL for this student'
-          )
+            'fileUrl is not a valid assignment upload URL for this student',
+          ),
         )
       }
     }
@@ -525,7 +534,7 @@ export const submitAssignment = async (
     return res.status(201).json(
       new ApiResponse(201, 'Assignment submitted successfully', {
         submission,
-      })
+      }),
     )
   } catch (error) {
     console.error('[SUBMIT_ASSIGNMENT_ERROR]', error)
@@ -537,7 +546,7 @@ export const submitAssignment = async (
 export const getMySubmission = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const endUser = req.endUser!
@@ -563,7 +572,7 @@ export const getMySubmission = async (
     return res.status(200).json(
       new ApiResponse(200, 'Submission fetched successfully', {
         submission: submission || null,
-      })
+      }),
     )
   } catch (error) {
     console.error('[GET_MY_SUBMISSION_ERROR]', error)
@@ -575,7 +584,7 @@ export const getMySubmission = async (
 export const listSubmissions = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -623,7 +632,7 @@ export const listSubmissions = async (
         submissions,
         total: submissions.length,
         assignment,
-      })
+      }),
     )
   } catch (error) {
     console.error('[LIST_SUBMISSIONS_ERROR]', error)
@@ -635,7 +644,7 @@ export const listSubmissions = async (
 export const gradeSubmission = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { submissionId } = req.params
@@ -661,8 +670,8 @@ export const gradeSubmission = async (
       return next(
         new ApiError(
           400,
-          `Grade must be between 0 and ${submission.assignment.totalPoints}`
-        )
+          `Grade must be between 0 and ${submission.assignment.totalPoints}`,
+        ),
       )
     }
 
@@ -699,7 +708,7 @@ export const gradeSubmission = async (
     return res.status(200).json(
       new ApiResponse(200, 'Submission graded successfully', {
         submission: graded,
-      })
+      }),
     )
   } catch (error) {
     console.error('[GRADE_SUBMISSION_ERROR]', error)

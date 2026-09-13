@@ -1,9 +1,9 @@
 /**
  * Clipmux Video Transcription Utilities
- * 
+ *
  * This module provides transcription/caption functionality for Clipmux videos.
  * Note: Clipmux transcription API details may vary - update endpoints as needed.
- * 
+ *
  * During migration from Cloudflare, you may need to:
  * 1. Keep existing Cloudflare transcriptions working for old videos
  * 2. Use Clipmux transcription for new videos
@@ -12,7 +12,18 @@
 
 // Supported languages for caption generation
 export const SUPPORTED_LANGUAGES = [
-  'en', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'ja', 'ko', 'zh', 'ru', 'ar'
+  'en',
+  'es',
+  'fr',
+  'de',
+  'it',
+  'pt',
+  'nl',
+  'ja',
+  'ko',
+  'zh',
+  'ru',
+  'ar',
 ] as const
 
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number]
@@ -35,7 +46,9 @@ const getClipmuxCredentials = () => {
   const apiUrl = process.env.CLIPMUX_API_URL
 
   if (!apiKey || !apiUrl) {
-    throw new Error('Clipmux credentials not configured (CLIPMUX_API_KEY, CLIPMUX_API_URL)')
+    throw new Error(
+      'Clipmux credentials not configured (CLIPMUX_API_KEY, CLIPMUX_API_URL)',
+    )
   }
 
   return { apiKey, apiUrl }
@@ -43,27 +56,24 @@ const getClipmuxCredentials = () => {
 
 /**
  * Trigger transcription generation for a video
- * 
+ *
  * TODO: Update endpoint based on actual Clipmux transcription API
  */
 export const generateTranscription = async (
   videoId: string,
-  language: SupportedLanguage = 'en'
+  language: SupportedLanguage = 'en',
 ): Promise<TranscriptionResult> => {
   const { apiKey, apiUrl } = getClipmuxCredentials()
 
   // NOTE: Update this endpoint based on Clipmux's actual transcription API
-  const response = await fetch(
-    `${apiUrl}/v1/video/${videoId}/transcription`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ language }),
-    }
-  )
+  const response = await fetch(`${apiUrl}/v1/video/${videoId}/transcription`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ language }),
+  })
 
   if (!response.ok) {
     // If Clipmux doesn't support transcription yet, you can:
@@ -71,7 +81,7 @@ export const generateTranscription = async (
     // 2. Fallback to a third-party service (OpenAI Whisper, etc.)
     throw new Error(
       `Transcription not available: ${response.statusText}. ` +
-      `Consider using OpenAI Whisper API as a fallback.`
+        `Consider using OpenAI Whisper API as a fallback.`,
     )
   }
 
@@ -86,12 +96,12 @@ export const generateTranscription = async (
 
 /**
  * Get the status of transcription for a video
- * 
+ *
  * TODO: Update endpoint based on actual Clipmux transcription API
  */
 export const getTranscriptionStatus = async (
   videoId: string,
-  language: string = 'en'
+  language: string = 'en',
 ): Promise<TranscriptionResult | null> => {
   const { apiKey, apiUrl } = getClipmuxCredentials()
 
@@ -99,9 +109,9 @@ export const getTranscriptionStatus = async (
     `${apiUrl}/v1/video/${videoId}/transcription?language=${language}`,
     {
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
-    }
+    },
   )
 
   if (!response.ok) {
@@ -114,12 +124,12 @@ export const getTranscriptionStatus = async (
 
 /**
  * Fetch the VTT transcription file content
- * 
+ *
  * TODO: Update endpoint based on actual Clipmux transcription API
  */
 export const fetchTranscription = async (
   videoId: string,
-  language: string = 'en'
+  language: string = 'en',
 ): Promise<string> => {
   const { apiKey, apiUrl } = getClipmuxCredentials()
 
@@ -127,9 +137,9 @@ export const fetchTranscription = async (
     `${apiUrl}/v1/video/${videoId}/transcription/vtt?language=${language}`,
     {
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
-    }
+    },
   )
 
   if (!response.ok) {
@@ -141,12 +151,12 @@ export const fetchTranscription = async (
 
 /**
  * Delete transcription for a video
- * 
+ *
  * TODO: Update endpoint based on actual Clipmux transcription API
  */
 export const deleteTranscription = async (
   videoId: string,
-  language: string = 'en'
+  language: string = 'en',
 ): Promise<boolean> => {
   const { apiKey, apiUrl } = getClipmuxCredentials()
 
@@ -155,9 +165,9 @@ export const deleteTranscription = async (
     {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
-    }
+    },
   )
 
   return response.ok
@@ -165,7 +175,7 @@ export const deleteTranscription = async (
 
 /**
  * Parse VTT content to plain text (removes timestamps and formatting)
- * 
+ *
  * This utility is compatible with both Cloudflare and Clipmux VTT formats
  */
 export const vttToPlainText = (vttContent: string): string => {

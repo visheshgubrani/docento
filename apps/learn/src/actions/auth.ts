@@ -41,7 +41,9 @@ const clearAuthCookies = async () => {
 
 const canIgnoreCookieMutationError = (error: unknown) =>
   error instanceof Error &&
-  error.message.includes('Cookies can only be modified in a Server Action or Route Handler')
+  error.message.includes(
+    'Cookies can only be modified in a Server Action or Route Handler',
+  )
 
 const clearAuthCookiesSafely = async () => {
   try {
@@ -85,10 +87,7 @@ export async function signUp(formData: {
   }
 }
 
-export async function signIn(formData: {
-  email: string
-  password: string
-}) {
+export async function signIn(formData: { email: string; password: string }) {
   try {
     const response = await fetchAPI<AuthResponse>('/auth/sign-in', {
       method: 'POST',
@@ -96,7 +95,10 @@ export async function signIn(formData: {
     })
 
     if (response.data.accessToken && response.data.refreshToken) {
-      await setAuthCookies(response.data.accessToken, response.data.refreshToken)
+      await setAuthCookies(
+        response.data.accessToken,
+        response.data.refreshToken,
+      )
     }
 
     return { success: true, data: response.data }
@@ -138,10 +140,13 @@ export async function refreshAccessToken(): Promise<string | null> {
       return null
     }
 
-    const response = await fetchAPI<RefreshTokenResponse>('/auth/refresh-token', {
-      method: 'POST',
-      body: JSON.stringify({ refreshToken }),
-    })
+    const response = await fetchAPI<RefreshTokenResponse>(
+      '/auth/refresh-token',
+      {
+        method: 'POST',
+        body: JSON.stringify({ refreshToken }),
+      },
+    )
 
     if (response.data.accessToken) {
       try {
@@ -206,7 +211,10 @@ export async function getProfile(): Promise<ProfileResponse['data'] | null> {
   }
 }
 
-export async function updateMyProfile(formData: { name?: string; email?: string }) {
+export async function updateMyProfile(formData: {
+  name?: string
+  email?: string
+}) {
   try {
     const response = await fetchAPI<UpdateProfileResponse>('/student/me', {
       method: 'PATCH',
@@ -225,15 +233,21 @@ export async function updateMyProfile(formData: { name?: string; email?: string 
 
 export async function requestPasswordReset(email: string) {
   try {
-    const response = await fetchAPI<PasswordResetRequestResponse>('/auth/forgot-password', {
-      method: 'POST',
-      body: JSON.stringify({ email }),
-    })
+    const response = await fetchAPI<PasswordResetRequestResponse>(
+      '/auth/forgot-password',
+      {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      },
+    )
     return { success: true, data: response.data }
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Password reset request failed',
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Password reset request failed',
     }
   }
 }

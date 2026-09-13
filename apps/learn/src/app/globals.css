@@ -1,8 +1,8 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 @plugin "@tailwindcss/typography/src/index.js";
-@import "./typography.css";
+@import './typography.css';
 
 @custom-variant dark (&:is(.dark *));
 

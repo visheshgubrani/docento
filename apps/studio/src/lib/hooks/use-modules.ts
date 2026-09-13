@@ -33,7 +33,7 @@ export function useCreateModule(projectId: string, courseId: string) {
 export function useUpdateModule(
   projectId: string,
   courseId: string,
-  moduleId: string
+  moduleId: string,
 ) {
   const queryClient = useQueryClient()
 

@@ -1,10 +1,6 @@
 'use client'
 
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import {
   createProjectApiKey,
@@ -26,11 +22,7 @@ export function useProjectApiKeys(projectId: string) {
 export function useCreateProjectApiKey(projectId: string) {
   const queryClient = useQueryClient()
 
-  return useMutation<
-    { apiKey: string; key: ApiKey },
-    Error,
-    { name: string }
-  >({
+  return useMutation<{ apiKey: string; key: ApiKey }, Error, { name: string }>({
     mutationFn: ({ name }) => createProjectApiKey(projectId, name),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -66,4 +58,3 @@ export function useUpdateProjectApiKeyName(projectId: string) {
     },
   })
 }
-

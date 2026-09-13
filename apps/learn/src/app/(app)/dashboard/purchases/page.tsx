@@ -1,39 +1,39 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { HiArrowRight, HiShoppingBag } from "react-icons/hi2";
-import { getPurchaseHistoryData } from "@/actions/dashboard";
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { HiArrowRight, HiShoppingBag } from 'react-icons/hi2'
+import { getPurchaseHistoryData } from '@/actions/dashboard'
 
 export const metadata: Metadata = {
-  title: "Purchase History",
-  description: "Review your course purchases and order details.",
-};
+  title: 'Purchase History',
+  description: 'Review your course purchases and order details.',
+}
 
 function formatPaidAmount(amount: number, currency: string) {
-  const majorAmount = amount / 100;
+  const majorAmount = amount / 100
 
   try {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: currency || "INR",
-      currencyDisplay: "symbol",
-    }).format(majorAmount);
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: currency || 'INR',
+      currencyDisplay: 'symbol',
+    }).format(majorAmount)
   } catch {
-    return `₹${majorAmount.toLocaleString("en-IN")}`;
+    return `₹${majorAmount.toLocaleString('en-IN')}`
   }
 }
 
 function formatOrderDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
 }
 
 function formatPaymentType(provider: string) {
   if (!provider) {
-    return "Unknown";
+    return 'Unknown'
   }
 
   return provider
@@ -41,17 +41,17 @@ function formatPaymentType(provider: string) {
     .split(/[_\s-]+/)
     .filter(Boolean)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+    .join(' ')
 }
 
 export default async function PurchaseHistoryPage() {
-  const result = await getPurchaseHistoryData();
+  const result = await getPurchaseHistoryData()
 
   if (!result.success) {
-    redirect("/login");
+    redirect('/login')
   }
 
-  const { orders } = result.data;
+  const { orders } = result.data
 
   return (
     <main className="mx-auto w-full max-w-7xl px-6 py-10 lg:px-10 lg:py-14">
@@ -70,9 +70,12 @@ export default async function PurchaseHistoryPage() {
             <HiShoppingBag className="size-7 text-primary" />
           </div>
 
-          <h2 className="font-display text-2xl font-bold text-foreground">No purchases yet</h2>
+          <h2 className="font-display text-2xl font-bold text-foreground">
+            No purchases yet
+          </h2>
           <p className="mt-3 max-w-sm text-base text-foreground/80">
-            Once you purchase a course, your payment records and order details will appear here.
+            Once you purchase a course, your payment records and order details
+            will appear here.
           </p>
 
           <Link
@@ -87,7 +90,7 @@ export default async function PurchaseHistoryPage() {
         <section>
           <div className="mb-5 flex justify-end">
             <span className="inline-flex items-center rounded-full bg-muted-foreground/15 px-4 py-1 text-sm font-medium text-foreground/75">
-              {orders.length} {orders.length === 1 ? "purchase" : "purchases"}
+              {orders.length} {orders.length === 1 ? 'purchase' : 'purchases'}
             </span>
           </div>
 
@@ -106,18 +109,21 @@ export default async function PurchaseHistoryPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {orders.map((order) => {
-                    const normalizedStatus = order.status.toUpperCase();
+                    const normalizedStatus = order.status.toUpperCase()
                     const statusClassName =
-                      normalizedStatus === "COMPLETED"
-                        ? "text-emerald-700 bg-emerald-50 border-emerald-200"
-                        : normalizedStatus === "PENDING"
-                          ? "text-amber-700 bg-amber-50 border-amber-200"
-                          : "text-red-700 bg-red-50 border-red-200";
+                      normalizedStatus === 'COMPLETED'
+                        ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                        : normalizedStatus === 'PENDING'
+                          ? 'text-amber-700 bg-amber-50 border-amber-200'
+                          : 'text-red-700 bg-red-50 border-red-200'
 
-                    const courseHref = `/courses/${order.course.id}`;
+                    const courseHref = `/courses/${order.course.id}`
 
                     return (
-                      <tr key={order.id} className="align-top text-sm text-foreground/85">
+                      <tr
+                        key={order.id}
+                        className="align-top text-sm text-foreground/85"
+                      >
                         <td className="px-6 py-5">
                           <div className="flex items-start gap-3">
                             <span className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-border bg-muted/50">
@@ -131,8 +137,10 @@ export default async function PurchaseHistoryPage() {
                                 {order.course.title}
                               </Link>
                               <p className="mt-1 text-xs text-foreground/60 line-clamp-1">
-                                {order.isFreeEnrollment ? "Enrollment ref" : "Order ref"}:{" "}
-                                {order.providerTxId || order.id}
+                                {order.isFreeEnrollment
+                                  ? 'Enrollment ref'
+                                  : 'Order ref'}
+                                : {order.providerTxId || order.id}
                               </p>
                             </div>
                           </div>
@@ -175,22 +183,22 @@ export default async function PurchaseHistoryPage() {
                           </Link>
                         </td>
                       </tr>
-                    );
+                    )
                   })}
                 </tbody>
               </table>
 
               <ul className="divide-y divide-border md:hidden">
                 {orders.map((order) => {
-                  const normalizedStatus = order.status.toUpperCase();
+                  const normalizedStatus = order.status.toUpperCase()
                   const statusClassName =
-                    normalizedStatus === "COMPLETED"
-                      ? "text-emerald-700 bg-emerald-50 border-emerald-200"
-                      : normalizedStatus === "PENDING"
-                        ? "text-amber-700 bg-amber-50 border-amber-200"
-                        : "text-red-700 bg-red-50 border-red-200";
+                    normalizedStatus === 'COMPLETED'
+                      ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                      : normalizedStatus === 'PENDING'
+                        ? 'text-amber-700 bg-amber-50 border-amber-200'
+                        : 'text-red-700 bg-red-50 border-red-200'
 
-                  const courseHref = `/courses/${order.course.id}`;
+                  const courseHref = `/courses/${order.course.id}`
 
                   return (
                     <li key={order.id} className="space-y-4 px-4 py-5">
@@ -209,8 +217,10 @@ export default async function PurchaseHistoryPage() {
                                 {order.course.title}
                               </Link>
                               <p className="mt-1 text-xs text-foreground/60 line-clamp-1">
-                                {order.isFreeEnrollment ? "Enrollment ref" : "Order ref"}:{" "}
-                                {order.providerTxId || order.id}
+                                {order.isFreeEnrollment
+                                  ? 'Enrollment ref'
+                                  : 'Order ref'}
+                                : {order.providerTxId || order.id}
                               </p>
                             </div>
                           </div>
@@ -260,7 +270,7 @@ export default async function PurchaseHistoryPage() {
                         </div>
                       </div>
                     </li>
-                  );
+                  )
                 })}
               </ul>
             </div>
@@ -268,5 +278,5 @@ export default async function PurchaseHistoryPage() {
         </section>
       )}
     </main>
-  );
+  )
 }

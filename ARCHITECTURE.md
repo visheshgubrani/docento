@@ -61,8 +61,8 @@ progress. See [ADR 4](./docs/adr/0004-academy-owned-courses.md).
 
 **Access is the union of live grants.** A purchase, an instructor's decision, a
 coupon, and an organization seat are all grants, and revoking one does not
-disturb the others. Enrollment records *learning*; a grant records
-*permission*. See [ADR 9](./docs/adr/0009-commerce-separation.md).
+disturb the others. Enrollment records _learning_; a grant records
+_permission_. See [ADR 9](./docs/adr/0009-commerce-separation.md).
 
 ---
 
@@ -80,10 +80,8 @@ packages/
   contracts/      Apache-2.0. Zod schemas; the public API's source of truth.
   sdk/            Apache-2.0. Typed client, generated from contracts.
   integrations/   AI, media, storage, payments, email, jobs.
-  ui/             Shared primitives and design tokens.
   config/         Base configuration and validated environment.
 docs/adr/     Architecture decision records.
-docker/       Compose files.
 ```
 
 ### The rule that matters most
@@ -153,17 +151,17 @@ and two academies may have learners with the same email address.
 These are served by **two Better Auth instances with separate tables and separate
 cookie namespaces**:
 
-| | Staff | Learner |
-| --- | --- | --- |
-| Base path | `/api/auth/staff` | `/api/auth/learners` |
-| Tables | `staff_*` | `learner_*` |
-| Scope | Spans workspaces | Carries `academyId` in every row and unique key |
-| Cookie prefix | `docento-staff` | `docento-learner` |
+|               | Staff             | Learner                                         |
+| ------------- | ----------------- | ----------------------------------------------- |
+| Base path     | `/api/auth/staff` | `/api/auth/learners`                            |
+| Tables        | `staff_*`         | `learner_*`                                     |
+| Scope         | Spans workspaces  | Carries `academyId` in every row and unique key |
+| Cookie prefix | `docento-staff`   | `docento-learner`                               |
 
 Isolation is **structural** — a learner session from one academy is a row in
 that academy's table, and a query in another academy's context cannot return it
 regardless of how the filter is written. The alternative, one instance with a
-scoped adapter, makes isolation *behavioral*: every read path must remember to
+scoped adapter, makes isolation _behavioral_: every read path must remember to
 filter, and one forgotten `where` clause is a cross-tenant leak.
 
 Equality of email never merges a staff identity with a learner identity, or two
@@ -180,13 +178,13 @@ route-level permission checks.
 Principals are discriminated: **staff**, **learner**, **service key**, or
 **anonymous**.
 
-| Interface | Required to be |
-| --- | --- |
-| Workspace and academy management | A staff permission, or an explicitly scoped service key |
-| Public catalog | Public published data only |
-| Learner operations | An academy-bound learner session, or a delegated credential |
-| AI jobs and events | An authorized actor **plus** access to the job's academy and resources |
-| Provider callbacks | Verified with the connection's own signature |
+| Interface                        | Required to be                                                         |
+| -------------------------------- | ---------------------------------------------------------------------- |
+| Workspace and academy management | A staff permission, or an explicitly scoped service key                |
+| Public catalog                   | Public published data only                                             |
+| Learner operations               | An academy-bound learner session, or a delegated credential            |
+| AI jobs and events               | An authorized actor **plus** access to the job's academy and resources |
+| Provider callbacks               | Verified with the connection's own signature                           |
 
 Three rules that are easy to get wrong:
 
@@ -327,16 +325,26 @@ See [ADR 7](./docs/adr/0007-durable-jobs-on-postgres.md).
 
 ## Deployment
 
-The default stack is one `docker compose up`: proxy, Studio, Learn, API, worker,
-and Postgres, with persistent volumes for the database and uploads.
+Today the repository ships **one** container definition: `postgres`, in
+`docker-compose.yml` at the repository root. That is the whole required stack,
+and it is deliberate — the difference between one dependency and two is the
+difference between a five-minute install and an afternoon of YAML.
 
-Optional: Redis, object storage, external AI, payment providers, and OpenVOD.
-None is required for a working install.
+Running the applications in containers is the target, not the current state:
+
+| Component                  | Today                                                    | Target                                                         |
+| -------------------------- | -------------------------------------------------------- | -------------------------------------------------------------- |
+| Postgres                   | `docker compose up -d`                                   | unchanged                                                      |
+| API, worker, Studio, Learn | `pnpm dev` against that Postgres                         | an `app` compose profile, built from one workspace-aware image |
+| Uploads                    | `LOCAL_STORAGE_DIR` on the host, default `.data/uploads` | a shared volume when API and worker run as separate containers |
 
 **Deployment invariant:** when the API and worker run as separate containers
 with local storage, both must mount the same uploads volume. The failure mode is
-a worker that silently cannot find files, so the compose file demonstrates the
-correct wiring rather than leaving it to the documentation.
+a worker that silently cannot find files, so the compose file must demonstrate
+the wiring rather than leaving it to the documentation.
+
+Optional: Redis, object storage, external AI providers, and OpenVOD. None is
+required for a working install.
 
 Configuration is validated at startup with a clear failure message. An unused
 provider never crashes the process at import time.
@@ -345,13 +353,13 @@ provider never crashes the process at import time.
 
 ## Where to go next
 
-| To understand | Read |
-| --- | --- |
-| Why a decision was made | [`docs/adr/`](./docs/adr/) |
-| How to contribute | [CONTRIBUTING.md](./CONTRIBUTING.md) |
-| What is being built and when | [ROADMAP.md](./ROADMAP.md) |
-| How decisions get made | [GOVERNANCE.md](./GOVERNANCE.md) |
-| Reporting a vulnerability | [SECURITY.md](./SECURITY.md) |
+| To understand                | Read                                 |
+| ---------------------------- | ------------------------------------ |
+| Why a decision was made      | [`docs/adr/`](./docs/adr/)           |
+| How to contribute            | [CONTRIBUTING.md](./CONTRIBUTING.md) |
+| What is being built and when | [ROADMAP.md](./ROADMAP.md)           |
+| How decisions get made       | [GOVERNANCE.md](./GOVERNANCE.md)     |
+| Reporting a vulnerability    | [SECURITY.md](./SECURITY.md)         |
 
 If something in this document is wrong or misleading, that is a bug. Open an
 issue or a pull request against it.

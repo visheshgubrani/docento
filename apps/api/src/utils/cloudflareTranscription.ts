@@ -1,13 +1,24 @@
 /**
  * Cloudflare Streams Caption/Transcription Utilities
- * 
+ *
  * Uses Cloudflare's AI-powered caption generation for video transcription.
  * Docs: https://developers.cloudflare.com/stream/edit-videos/adding-captions/
  */
 
 // Supported languages for caption generation
 export const SUPPORTED_LANGUAGES = [
-  'cs', 'nl', 'en', 'fr', 'de', 'it', 'ja', 'ko', 'pl', 'pt', 'ru', 'es'
+  'cs',
+  'nl',
+  'en',
+  'fr',
+  'de',
+  'it',
+  'ja',
+  'ko',
+  'pl',
+  'pt',
+  'ru',
+  'es',
 ] as const
 
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number]
@@ -31,7 +42,9 @@ const getCloudflareCredentials = () => {
   const apiToken = process.env.CLOUDFLARE_API_TOKEN
 
   if (!accountId || !apiToken) {
-    throw new Error('Cloudflare credentials not configured (CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN)')
+    throw new Error(
+      'Cloudflare credentials not configured (CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN)',
+    )
   }
 
   return { accountId, apiToken }
@@ -42,7 +55,7 @@ const getCloudflareCredentials = () => {
  */
 export const generateCaptions = async (
   videoId: string,
-  language: SupportedLanguage = 'en'
+  language: SupportedLanguage = 'en',
 ): Promise<CaptionResult> => {
   const { accountId, apiToken } = getCloudflareCredentials()
 
@@ -53,7 +66,7 @@ export const generateCaptions = async (
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },
-    }
+    },
   )
 
   const data: CloudflareResponse<CaptionResult> = await response.json()
@@ -71,7 +84,7 @@ export const generateCaptions = async (
  */
 export const getCaptionStatus = async (
   videoId: string,
-  language: string = 'en'
+  language: string = 'en',
 ): Promise<CaptionResult | null> => {
   const { accountId, apiToken } = getCloudflareCredentials()
 
@@ -81,7 +94,7 @@ export const getCaptionStatus = async (
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },
-    }
+    },
   )
 
   const data: CloudflareResponse<CaptionResult[]> = await response.json()
@@ -99,7 +112,7 @@ export const getCaptionStatus = async (
  */
 export const fetchTranscription = async (
   videoId: string,
-  language: string = 'en'
+  language: string = 'en',
 ): Promise<string> => {
   const { accountId, apiToken } = getCloudflareCredentials()
 
@@ -109,7 +122,7 @@ export const fetchTranscription = async (
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },
-    }
+    },
   )
 
   if (!response.ok) {
@@ -124,7 +137,7 @@ export const fetchTranscription = async (
  */
 export const deleteCaptions = async (
   videoId: string,
-  language: string = 'en'
+  language: string = 'en',
 ): Promise<boolean> => {
   const { accountId, apiToken } = getCloudflareCredentials()
 
@@ -135,7 +148,7 @@ export const deleteCaptions = async (
       headers: {
         Authorization: `Bearer ${apiToken}`,
       },
-    }
+    },
   )
 
   const data: CloudflareResponse<string> = await response.json()

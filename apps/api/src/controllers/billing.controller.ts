@@ -8,7 +8,7 @@ import crypto from 'crypto'
 export const createSaaSOrder = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const userId = req.user!.id
@@ -50,7 +50,7 @@ export const createSaaSOrder = async (
 export const verifySaaSPayment = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const userId = req.user!.id
@@ -69,7 +69,7 @@ export const verifySaaSPayment = async (
 
     if (generated_signature !== razorpay_signature) {
       return next(
-        new ApiError(400, 'Payment verification failed. Signature mismatch.')
+        new ApiError(400, 'Payment verification failed. Signature mismatch.'),
       )
     }
 
@@ -102,7 +102,7 @@ export const verifySaaSPayment = async (
 export const getSubscription = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const userId = req.user!.id

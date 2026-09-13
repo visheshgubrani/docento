@@ -42,16 +42,14 @@ type TopbarProps = {
 }
 
 const formatSegment = (segment: string) =>
-  segment
-    .replace(/-/g, ' ')
-    .replace(/\b\w/g, (char) => char.toUpperCase())
+  segment.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
 
 export function Topbar({ user, onSignOut, onMenuClick }: TopbarProps) {
   const pathname = usePathname()
 
   const segments = useMemo(
     () => pathname.split('/').filter(Boolean),
-    [pathname]
+    [pathname],
   )
 
   const breadcrumbItems = useMemo(() => {
@@ -118,7 +116,9 @@ export function Topbar({ user, onSignOut, onMenuClick }: TopbarProps) {
                     {isLast ? (
                       <BreadcrumbPage>{item.label}</BreadcrumbPage>
                     ) : (
-                      <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
+                      <BreadcrumbLink href={item.href}>
+                        {item.label}
+                      </BreadcrumbLink>
                     )}
                   </BreadcrumbItem>
                   {!isLast && <BreadcrumbSeparator />}
@@ -156,11 +156,7 @@ export function Topbar({ user, onSignOut, onMenuClick }: TopbarProps) {
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-60"
-            align="end"
-            forceMount
-          >
+          <DropdownMenuContent className="w-60" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
                 <p className="text-sm font-medium leading-none text-slate-900 dark:text-slate-100">

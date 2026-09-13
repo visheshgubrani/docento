@@ -1,23 +1,23 @@
-"use client";
+'use client'
 
-import { useDeferredValue, useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from 'react'
 import {
   ChevronDown,
   Copy,
   EllipsisVertical,
   Loader2,
   Search,
-} from "lucide-react";
+} from 'lucide-react'
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -25,28 +25,28 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { useToast } from "@/components/ui/use-toast";
-import type { CourseEnrollment } from "@/lib/api";
-import { downloadExcelFile } from "@/lib/excel-export";
-import { useCourseEnrollments } from "@/lib/hooks/use-course-enrollments";
-import { downloadPdfReport } from "@/lib/pdf-export";
-import { useProjectRouteId } from "@/lib/hooks/use-project-route-id";
-import { FaUserGraduate } from "react-icons/fa6";
-import { IoMdDownload } from "react-icons/io";
-import { useParams } from "next/navigation";
+} from '@/components/ui/table'
+import { useToast } from '@/components/ui/use-toast'
+import type { CourseEnrollment } from '@/lib/api'
+import { downloadCsv, type CsvColumn } from '@/lib/csv-export'
+import { useCourseEnrollments } from '@/lib/hooks/use-course-enrollments'
+import { downloadPdfReport } from '@/lib/pdf-export'
+import { useProjectRouteId } from '@/lib/hooks/use-project-route-id'
+import { FaUserGraduate } from 'react-icons/fa6'
+import { IoMdDownload } from 'react-icons/io'
+import { useParams } from 'next/navigation'
 
-const lastActiveFormatter = new Intl.DateTimeFormat("en-US", {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
+const lastActiveFormatter = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
 
 function formatLastActive(timestamp?: string | null) {
-  if (!timestamp) return "Not tracked";
+  if (!timestamp) return 'Not tracked'
   try {
-    return lastActiveFormatter.format(new Date(timestamp));
+    return lastActiveFormatter.format(new Date(timestamp))
   } catch {
-    return "Not tracked";
+    return 'Not tracked'
   }
 }
 
@@ -55,25 +55,25 @@ function getDisplayName(enrollment: CourseEnrollment) {
     enrollment.endUser?.managedUser?.name?.trim() ||
     enrollment.endUser?.email ||
     enrollment.endUser?.externalId ||
-    "Unnamed user"
-  );
+    'Unnamed user'
+  )
 }
 
 function getContact(enrollment: CourseEnrollment) {
   return (
     enrollment.endUser?.email ||
     enrollment.endUser?.externalId ||
-    "Not provided"
-  );
+    'Not provided'
+  )
 }
 
 function getInitials(text: string) {
-  const [first, second] = text.trim().split(" ");
-  return `${first?.[0] ?? ""}${second?.[0] ?? ""}`.toUpperCase() || "ST";
+  const [first, second] = text.trim().split(' ')
+  return `${first?.[0] ?? ''}${second?.[0] ?? ''}`.toUpperCase() || 'ST'
 }
 
 function truncateId(id: string) {
-  return id.length > 10 ? `${id.slice(0, 7)}...` : id;
+  return id.length > 10 ? `${id.slice(0, 7)}...` : id
 }
 
 function StudentTableSkeleton() {
@@ -102,20 +102,20 @@ function StudentTableSkeleton() {
         </TableRow>
       ))}
     </>
-  );
+  )
 }
 
 export default function CourseStudentsPage() {
-  const projectId = useProjectRouteId();
-  const params = useParams();
-  const courseId = params.courseId as string;
-  const { toast } = useToast();
+  const projectId = useProjectRouteId()
+  const params = useParams()
+  const courseId = params.courseId as string
+  const { toast } = useToast()
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('')
   const [downloadingFormat, setDownloadingFormat] = useState<
-    "pdf" | "excel" | null
-  >(null);
-  const deferredSearch = useDeferredValue(searchTerm);
+    'pdf' | 'csv' | null
+  >(null)
+  const deferredSearch = useDeferredValue(searchTerm)
 
   const {
     data: enrollmentsData,
@@ -127,38 +127,38 @@ export default function CourseStudentsPage() {
   } = useCourseEnrollments(projectId, courseId, {
     page: 1,
     limit: 50,
-    status: "active",
-  });
+    status: 'active',
+  })
 
   const enrollments = useMemo(
     () => enrollmentsData?.enrollments ?? [],
-    [enrollmentsData?.enrollments]
-  );
+    [enrollmentsData?.enrollments],
+  )
   const enrollmentCount =
-    enrollmentsData?.pagination?.total ?? enrollments.length;
+    enrollmentsData?.pagination?.total ?? enrollments.length
 
   // Filter enrollments by search term on client-side
   const filteredEnrollments = useMemo(() => {
-    if (!deferredSearch.trim()) return enrollments;
-    const searchLower = deferredSearch.toLowerCase();
+    if (!deferredSearch.trim()) return enrollments
+    const searchLower = deferredSearch.toLowerCase()
     return enrollments.filter((enrollment) => {
-      const name = enrollment.endUser?.managedUser?.name?.toLowerCase() || "";
-      const email = enrollment.endUser?.email?.toLowerCase() || "";
-      const externalId = enrollment.endUser?.externalId?.toLowerCase() || "";
+      const name = enrollment.endUser?.managedUser?.name?.toLowerCase() || ''
+      const email = enrollment.endUser?.email?.toLowerCase() || ''
+      const externalId = enrollment.endUser?.externalId?.toLowerCase() || ''
       return (
         name.includes(searchLower) ||
         email.includes(searchLower) ||
         externalId.includes(searchLower)
-      );
-    });
-  }, [enrollments, deferredSearch]);
+      )
+    })
+  }, [enrollments, deferredSearch])
 
   const displayCount = deferredSearch.trim()
     ? filteredEnrollments.length
-    : enrollmentCount;
+    : enrollmentCount
   const exportRows = filteredEnrollments.map((enrollment) => {
     const lastActive =
-      enrollment.endUser?.delegatedUser?.lastSeenAt ?? enrollment.enrolledAt;
+      enrollment.endUser?.delegatedUser?.lastSeenAt ?? enrollment.enrolledAt
 
     return {
       name: getDisplayName(enrollment),
@@ -167,93 +167,104 @@ export default function CourseStudentsPage() {
       progress: `${enrollment.progress}%`,
       enrolledAt: formatLastActive(enrollment.enrolledAt),
       lastActive: formatLastActive(lastActive),
-    };
-  });
+    }
+  })
 
   const copyId = async (id: string) => {
     try {
-      await navigator.clipboard.writeText(id);
+      await navigator.clipboard.writeText(id)
       toast({
-        title: "ID copied",
-        description: "User ID copied to clipboard.",
-      });
+        title: 'ID copied',
+        description: 'User ID copied to clipboard.',
+      })
     } catch {
       toast({
-        title: "Unable to copy ID",
-        description: "Please try again.",
-        variant: "destructive",
-      });
+        title: 'Unable to copy ID',
+        description: 'Please try again.',
+        variant: 'destructive',
+      })
     }
-  };
+  }
 
-  const handleDownload = async (format: "pdf" | "excel") => {
+  const handleDownload = async (format: 'pdf' | 'csv') => {
     if (filteredEnrollments.length === 0) {
       toast({
-        title: "No students to export",
-        description: "Enroll students or adjust your search first.",
-        variant: "destructive",
-      });
-      return;
+        title: 'No students to export',
+        description: 'Enroll students or adjust your search first.',
+        variant: 'destructive',
+      })
+      return
     }
 
-    setDownloadingFormat(format);
+    setDownloadingFormat(format)
 
     try {
-      if (format === "pdf") {
+      if (format === 'pdf') {
         await downloadPdfReport({
-          title: "Course Students",
+          title: 'Course Students',
           subtitle: `${filteredEnrollments.length} student${
-            filteredEnrollments.length === 1 ? "" : "s"
+            filteredEnrollments.length === 1 ? '' : 's'
           } exported`,
           filename: `course-${courseId}-students.pdf`,
           columns: [
-            { key: "name", label: "Student", weight: 1.4 },
-            { key: "contact", label: "Contact", weight: 1.5 },
-            { key: "userId", label: "User ID", weight: 1.2 },
-            { key: "progress", label: "Progress", weight: 0.8, align: "center" },
-            { key: "enrolledAt", label: "Enrolled", weight: 1.2, align: "right" },
+            { key: 'name', label: 'Student', weight: 1.4 },
+            { key: 'contact', label: 'Contact', weight: 1.5 },
+            { key: 'userId', label: 'User ID', weight: 1.2 },
             {
-              key: "lastActive",
-              label: "Last Active",
+              key: 'progress',
+              label: 'Progress',
+              weight: 0.8,
+              align: 'center',
+            },
+            {
+              key: 'enrolledAt',
+              label: 'Enrolled',
               weight: 1.2,
-              align: "right",
+              align: 'right',
+            },
+            {
+              key: 'lastActive',
+              label: 'Last Active',
+              weight: 1.2,
+              align: 'right',
             },
           ],
           rows: exportRows,
-        });
-      } else {
-        await downloadExcelFile({
-          filename: `course-${courseId}-students.xlsx`,
-          sheetName: "Course Students",
-          rows: exportRows.map((row) => ({
-            Student: row.name,
-            Contact: row.contact,
-            "User ID": row.userId,
-            Progress: row.progress,
-            Enrolled: row.enrolledAt,
-            "Last Active": row.lastActive,
-          })),
-        });
+        })
+
+        toast({
+          title: 'Students downloaded',
+          description: 'Your PDF export is ready.',
+        })
+        return
       }
 
+      downloadCsv(`${courseId}-students.csv`, exportRows, [
+        { label: 'Student', value: (row) => row.name },
+        { label: 'Contact', value: (row) => row.contact },
+        { label: 'User ID', value: (row) => row.userId },
+        { label: 'Progress', value: (row) => row.progress },
+        { label: 'Enrolled', value: (row) => row.enrolledAt },
+        { label: 'Last Active', value: (row) => row.lastActive },
+      ])
+
       toast({
-        title: "Students downloaded",
-        description:
-          format === "pdf"
-            ? "Your PDF export is ready."
-            : "Your Excel export is ready.",
-      });
+        title: 'Students downloaded',
+        description: 'Your CSV export is ready.',
+      })
     } catch (error) {
       toast({
-        title: "Unable to download students",
+        title: 'Unable to download students',
         description:
-          error instanceof Error ? error.message : "Please try again in a moment.",
-        variant: "destructive",
-      });
+          error instanceof Error
+            ? error.message
+            : 'Please try again in a moment.',
+        variant: 'destructive',
+      })
     } finally {
-      setDownloadingFormat(null);
+      setDownloadingFormat(null)
     }
-  };
+  }
 
   return (
     <div className="space-y-8">
@@ -296,24 +307,24 @@ export default function CourseStudentsPage() {
               )}
               {downloadingFormat
                 ? `Downloading ${
-                    downloadingFormat === "pdf" ? "PDF" : "Excel"
+                    downloadingFormat === 'pdf' ? 'PDF' : 'CSV'
                   }...`
-                : "Download"}
+                : 'Download'}
               <ChevronDown className="size-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem
               disabled={downloadingFormat !== null}
-              onClick={() => handleDownload("pdf")}
+              onClick={() => handleDownload('pdf')}
             >
               Download PDF
             </DropdownMenuItem>
             <DropdownMenuItem
               disabled={downloadingFormat !== null}
-              onClick={() => handleDownload("excel")}
+              onClick={() => handleDownload('csv')}
             >
-              Download Excel
+              Download CSV
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -323,10 +334,10 @@ export default function CourseStudentsPage() {
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold text-foreground/80">
           {isEnrollmentsLoading
-            ? "Loading students..."
+            ? 'Loading students...'
             : displayCount === 1
-            ? "Showing 1 student"
-            : `Showing ${displayCount} students`}
+              ? 'Showing 1 student'
+              : `Showing ${displayCount} students`}
         </p>
         {isEnrollmentsFetching && !isEnrollmentsLoading && (
           <span className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -369,7 +380,7 @@ export default function CourseStudentsPage() {
                 Unable to load students
               </p>
               <p className="text-sm text-muted-foreground">
-                {enrollmentsError?.message ?? "Please try again in a moment."}
+                {enrollmentsError?.message ?? 'Please try again in a moment.'}
               </p>
             </div>
             <Button variant="outline" onClick={() => refetch()}>
@@ -389,7 +400,7 @@ export default function CourseStudentsPage() {
             <p className="text-lg text-foreground/70 max-w-sm">
               {searchTerm
                 ? `No students match "${searchTerm}". Try a different search term.`
-                : "Students will appear here once they enroll in this course."}
+                : 'Students will appear here once they enroll in this course.'}
             </p>
           </div>
         </div>
@@ -414,11 +425,11 @@ export default function CourseStudentsPage() {
             </TableHeader>
             <TableBody>
               {filteredEnrollments.map((enrollment) => {
-                const displayName = getDisplayName(enrollment);
-                const contact = getContact(enrollment);
+                const displayName = getDisplayName(enrollment)
+                const contact = getContact(enrollment)
                 const lastActive =
                   enrollment.endUser?.delegatedUser?.lastSeenAt ??
-                  enrollment.enrolledAt;
+                  enrollment.enrolledAt
 
                 return (
                   <TableRow
@@ -483,12 +494,12 @@ export default function CourseStudentsPage() {
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                );
+                )
               })}
             </TableBody>
           </Table>
         </div>
       )}
     </div>
-  );
+  )
 }

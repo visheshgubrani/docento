@@ -35,10 +35,7 @@ type QuizLessonEditorProps = {
   module?: CourseModule
 }
 
-export function QuizLessonEditor({
-  lesson,
-  module,
-}: QuizLessonEditorProps) {
+export function QuizLessonEditor({ lesson, module }: QuizLessonEditorProps) {
   const lessonLabel = lesson.contentType === 'MOCK_TEST' ? 'Mock test' : 'Quiz'
 
   const [questions, setQuestions] = useState<DraftQuestion[]>(() => [
@@ -52,15 +49,15 @@ export function QuizLessonEditor({
   const handlePromptChange = (id: string, prompt: string) => {
     setQuestions((prev) =>
       prev.map((question) =>
-        question.id === id ? { ...question, prompt } : question
-      )
+        question.id === id ? { ...question, prompt } : question,
+      ),
     )
   }
 
   const handleAnswerChange = (
     id: string,
     answerIndex: number,
-    value: string
+    value: string,
   ) => {
     setQuestions((prev) =>
       prev.map((question) =>
@@ -68,11 +65,11 @@ export function QuizLessonEditor({
           ? {
               ...question,
               answers: question.answers.map((answer, index) =>
-                index === answerIndex ? value : answer
+                index === answerIndex ? value : answer,
               ),
             }
-          : question
-      )
+          : question,
+      ),
     )
   }
 
@@ -81,10 +78,10 @@ export function QuizLessonEditor({
   }
 
   return (
-    <Card className='border border-slate-200/80 shadow-sm dark:border-slate-800'>
+    <Card className="border border-slate-200/80 shadow-sm dark:border-slate-800">
       <CardHeader>
-        <CardTitle className='flex items-center gap-2 text-xl font-semibold'>
-          <ListChecks className='h-5 w-5 text-muted-foreground' />
+        <CardTitle className="flex items-center gap-2 text-xl font-semibold">
+          <ListChecks className="h-5 w-5 text-muted-foreground" />
           {lessonLabel} builder
         </CardTitle>
         <CardDescription>
@@ -92,7 +89,7 @@ export function QuizLessonEditor({
           {lesson.title}
         </CardDescription>
       </CardHeader>
-      <CardContent className='space-y-4'>
+      <CardContent className="space-y-4">
         {questions.map((question, index) => (
           <QuizQuestionCard
             key={question.id}
@@ -103,11 +100,11 @@ export function QuizLessonEditor({
           />
         ))}
         <Button
-          variant='outline'
-          className='w-full gap-2'
+          variant="outline"
+          className="w-full gap-2"
           onClick={addQuestion}
         >
-          <Plus className='h-4 w-4' />
+          <Plus className="h-4 w-4" />
           Add question
         </Button>
       </CardContent>
@@ -127,15 +124,15 @@ function QuizQuestionCard({
   onAnswerChange: (id: string, answerIndex: number, value: string) => void
 }) {
   return (
-    <Card className='border border-slate-200 dark:border-slate-800'>
+    <Card className="border border-slate-200 dark:border-slate-800">
       <CardHeader>
-        <CardTitle className='text-base font-semibold'>
+        <CardTitle className="text-base font-semibold">
           Question {index + 1}
         </CardTitle>
         <CardDescription>Write the prompt and answer choices.</CardDescription>
       </CardHeader>
-      <CardContent className='space-y-4'>
-        <div className='space-y-2'>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
           <Label htmlFor={`question-${question.id}`}>Question text</Label>
           <Textarea
             id={`question-${question.id}`}
@@ -146,9 +143,9 @@ function QuizQuestionCard({
             placeholder="What is the output of console.log(2 + '2')?"
           />
         </div>
-        <div className='space-y-2'>
+        <div className="space-y-2">
           <Label>Answers</Label>
-          <div className='space-y-2'>
+          <div className="space-y-2">
             {question.answers.map((answer, answerIndex) => (
               <Input
                 key={`${question.id}-${answerIndex}`}

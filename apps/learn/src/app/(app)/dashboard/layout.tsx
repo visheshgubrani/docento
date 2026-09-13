@@ -1,14 +1,14 @@
-import { Header } from "@/components/marketing";
+import { Header } from '@/components/marketing'
 
 export default function DashboardLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <>
       <Header />
       {children}
     </>
-  );
+  )
 }

@@ -13,18 +13,14 @@ import {
 const createEnrollment = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project!
     const course = req.course! // Use from resolveCourseContext middleware
     const bodySchema = z.object({
       endUserId: z.string().min(1, 'endUserId is required'),
-      durationInDays: z
-        .number()
-        .int()
-        .positive()
-        .optional(),
+      durationInDays: z.number().int().positive().optional(),
     })
 
     const parsed = bodySchema.safeParse(req.body)
@@ -46,8 +42,8 @@ const createEnrollment = async (
       return next(
         new ApiError(
           404,
-          'EndUser not found or does not belong to this project.'
-        )
+          'EndUser not found or does not belong to this project.',
+        ),
       )
     }
 
@@ -66,7 +62,7 @@ const createEnrollment = async (
       return res.status(200).json(
         new ApiResponse(200, 'User is already enrolled.', {
           enrollment: existingEnrollment,
-        })
+        }),
       )
     }
 
@@ -77,7 +73,7 @@ const createEnrollment = async (
     const enrolledAt = new Date()
     const expiresAt = computeEnrollmentExpiresAt(
       enrolledAt,
-      resolvedDurationInDays
+      resolvedDurationInDays,
     )
 
     // Create enrollment
@@ -124,7 +120,7 @@ const createEnrollment = async (
     return res.status(201).json(
       new ApiResponse(201, 'Enrollment created successfully.', {
         enrollment: newEnrollment,
-      })
+      }),
     )
   } catch (error) {
     console.error('[CREATE_ENROLLMENT_ERROR]', error)
@@ -135,7 +131,7 @@ const createEnrollment = async (
 const listEnrollments = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const course = req.course! //  Use from resolveCourseContext middleware
@@ -201,7 +197,7 @@ const listEnrollments = async (
           totalPages: Math.ceil(totalEnrollments / limit),
           hasMore: page * limit < totalEnrollments,
         },
-      })
+      }),
     )
   } catch (error) {
     console.error('[LIST_ENROLLMENTS_ERROR]', error)
@@ -213,7 +209,7 @@ const listEnrollments = async (
 const deleteEnrollment = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const course = req.course!
@@ -248,7 +244,7 @@ const deleteEnrollment = async (
 const updateEnrollment = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const course = req.course!
@@ -313,7 +309,7 @@ const updateEnrollment = async (
     return res.status(200).json(
       new ApiResponse(200, 'Enrollment updated successfully', {
         enrollment: updated,
-      })
+      }),
     )
   } catch (error) {
     console.error('[UPDATE_ENROLLMENT_ERROR]', error)

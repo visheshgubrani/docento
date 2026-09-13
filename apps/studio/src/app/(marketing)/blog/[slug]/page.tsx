@@ -1,32 +1,31 @@
-import { getPost } from "@/lib/blog";
-import { siteConfig } from "@/lib/site";
-import { formatDate } from "@/lib/utils";
-import type { Metadata } from "next";
-import Image from "next/image";
-import { notFound } from "next/navigation";
-import { Suspense } from "react";
-import Link from "next/link";
-import { RxTriangleLeft } from "react-icons/rx";
-import Newsletter from "@/components/newsletter";
+import { getPost } from '@/lib/blog'
+import { siteConfig } from '@/lib/site'
+import { formatDate } from '@/lib/utils'
+import type { Metadata } from 'next'
+import Image from 'next/image'
+import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
+import Link from 'next/link'
+import { RxTriangleLeft } from 'react-icons/rx'
 
 export async function generateMetadata({
   params,
 }: {
   params: {
-    slug: string;
-  };
+    slug: string
+  }
 }): Promise<Metadata | undefined> {
-  const { slug } = await params;
+  const { slug } = await params
 
-  const post = await getPost(slug);
-  if (!post) return;
+  const post = await getPost(slug)
+  if (!post) return
 
   const {
     title,
     publishedAt: publishedTime,
     summary: description,
     image,
-  } = post.metadata;
+  } = post.metadata
 
   return {
     title,
@@ -34,7 +33,7 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      type: "article",
+      type: 'article',
       publishedTime,
       url: `${siteConfig.url}/blog/${post.slug}`,
       images: [
@@ -44,28 +43,31 @@ export async function generateMetadata({
       ],
     },
     twitter: {
-      card: "summary_large_image",
+      card: 'summary_large_image',
       title,
       description,
       images: [image],
     },
-  };
+  }
 }
 
 export default async function Blog({
   params,
 }: {
   params: {
-    slug: string;
-  };
+    slug: string
+  }
 }) {
-  const { slug } = await params;
+  const { slug } = await params
 
-  const post = await getPost(slug);
-  if (!post) return;
+  const post = await getPost(slug)
+  if (!post) return
 
   return (
-    <section id="blog" className="relative bg-white w-full z-10 overflow-hidden">
+    <section
+      id="blog"
+      className="relative bg-white w-full z-10 overflow-hidden"
+    >
       <div
         aria-hidden="true"
         className="absolute -top-14 left-[calc(50%-4rem)] -z-10 transform-gpu blur-3xl sm:left-[calc(50%-18rem)]  lg:left-48 xl:left-[calc(50%-24rem)]"
@@ -73,7 +75,7 @@ export default async function Blog({
         <div
           style={{
             clipPath:
-              "polygon(73.6% 51.7%, 91.7% 11.8%, 100% 46.4%, 97.4% 82.2%, 92.5% 84.9%, 75.7% 64%, 55.3% 47.5%, 46.5% 49.4%, 45% 62.9%, 50.3% 87.2%, 21.3% 64.1%, 0.1% 100%, 5.4% 51.1%, 21.4% 63.9%, 58.9% 0.2%, 73.6% 51.7%)",
+              'polygon(73.6% 51.7%, 91.7% 11.8%, 100% 46.4%, 97.4% 82.2%, 92.5% 84.9%, 75.7% 64%, 55.3% 47.5%, 46.5% 49.4%, 45% 62.9%, 50.3% 87.2%, 21.3% 64.1%, 0.1% 100%, 5.4% 51.1%, 21.4% 63.9%, 58.9% 0.2%, 73.6% 51.7%)',
           }}
           className="aspect-1108/632 w-290 bg-linear-to-r from-[#ddfcff] via-[#fcfcdd] to-[#f1ebff] to-20% opacity-70"
         />
@@ -83,8 +85,8 @@ export default async function Blog({
         suppressHydrationWarning
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BlogPosting",
+            '@context': 'https://schema.org',
+            '@type': 'BlogPosting',
             headline: post.metadata.title,
             datePublished: post.metadata.publishedAt,
             dateModified: post.metadata.publishedAt,
@@ -94,7 +96,7 @@ export default async function Blog({
               : `${siteConfig.url}/blog/${post.slug}/opengraph-image`,
             url: `${siteConfig.url}/blog/${post.slug}`,
             author: {
-              "@type": "Person",
+              '@type': 'Person',
               name: siteConfig.name,
             },
           }),
@@ -109,7 +111,7 @@ export default async function Blog({
                 href="/blog"
                 className="group inline-flex items-center text-sm font-medium text-foreground/80 hover:text-foreground transition-all duration-200 ease-in-out"
               >
-                <RxTriangleLeft className="size-[22px] group-hover:-translate-x-1 transition-all duration-200 ease-in-out" />{" "}
+                <RxTriangleLeft className="size-[22px] group-hover:-translate-x-1 transition-all duration-200 ease-in-out" />{' '}
                 Back to Blog
               </Link>
             </div>
@@ -155,7 +157,6 @@ export default async function Blog({
           </div>
         </div>
       </div>
-      <Newsletter />
     </section>
-  );
+  )
 }

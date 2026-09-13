@@ -1,8 +1,8 @@
-@import "../styles/_variables.scss";
-@import "../styles/_keyframe-animations.scss";
+@import '../styles/_variables.scss';
+@import '../styles/_keyframe-animations.scss';
 
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
 
 /* @custom-variant dark (&:is(.dark *)); */
@@ -320,7 +320,7 @@
   .hero-heading span::before,
   .hero-heading span::after {
     animation: none;
-    content: "";
+    content: '';
   }
 }
 

@@ -20,7 +20,7 @@ const VALID_LESSON_CONTENT_TYPES = [
 
 const normalizeOptionalBoolean = (
   value: unknown,
-  fieldName: string
+  fieldName: string,
 ): boolean | undefined => {
   if (value === undefined) return undefined
   if (typeof value === 'boolean') return value
@@ -37,7 +37,7 @@ const normalizeOptionalBoolean = (
 const createLesson = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const module = req.module!
   const {
@@ -65,7 +65,7 @@ const createLesson = async (
     const parsedDuration = Number(duration)
     if (Number.isNaN(parsedDuration) || parsedDuration < 0) {
       return next(
-        new ApiError(400, 'Duration must be a positive number in minutes')
+        new ApiError(400, 'Duration must be a positive number in minutes'),
       )
     }
     normalizedDuration = Math.round(parsedDuration)
@@ -118,14 +118,14 @@ const createLesson = async (
   return res.status(201).json(
     new ApiResponse(201, 'Lesson created successfully', {
       lesson,
-    })
+    }),
   )
 }
 
 const updateLesson = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const lesson = req.lesson!
   const {
@@ -174,7 +174,10 @@ const updateLesson = async (
     data: dataToUpdate,
   })
 
-  if (dataToUpdate.contentType === 'QUIZ' || dataToUpdate.contentType === 'MOCK_TEST') {
+  if (
+    dataToUpdate.contentType === 'QUIZ' ||
+    dataToUpdate.contentType === 'MOCK_TEST'
+  ) {
     await prisma.quiz.updateMany({
       where: { lessonId: lesson.id },
       data: {
@@ -186,14 +189,14 @@ const updateLesson = async (
   return res.status(200).json(
     new ApiResponse(200, 'Lesson updated successfully', {
       lesson: updated,
-    })
+    }),
   )
 }
 
 const deleteLesson = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const lesson = req.lesson!
 
@@ -221,7 +224,7 @@ const getLessons = async (req: Request, res: Response, next: NextFunction) => {
   return res.status(200).json(
     new ApiResponse(200, 'Lessons fetched successfully', {
       lessons,
-    })
+    }),
   )
 }
 
@@ -249,14 +252,14 @@ const getLesson = async (req: Request, res: Response, next: NextFunction) => {
   return res.status(200).json(
     new ApiResponse(200, 'Lesson fetched successfully', {
       lesson: lessonWithDetails,
-    })
+    }),
   )
 }
 
 const reorderLessons = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const module = req.module!
   const { lessonOrders } = req.body // Array of { id, order }
@@ -268,7 +271,9 @@ const reorderLessons = async (
   // Validate structure
   for (const item of lessonOrders) {
     if (!item.id || typeof item.order !== 'number' || item.order < 1) {
-      return next(new ApiError(400, 'Each item must have id and a positive order number'))
+      return next(
+        new ApiError(400, 'Each item must have id and a positive order number'),
+      )
     }
   }
 
@@ -323,7 +328,7 @@ const reorderLessons = async (
 const createThumbnailUpload = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -333,7 +338,7 @@ const createThumbnailUpload = async (
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
     if (!contentType || !allowedTypes.includes(contentType)) {
       return next(
-        new ApiError(400, 'contentType must be one of: jpeg, png, webp, gif')
+        new ApiError(400, 'contentType must be one of: jpeg, png, webp, gif'),
       )
     }
 
@@ -379,7 +384,7 @@ const createThumbnailUpload = async (
           'Content-Type': contentType,
         },
         expiresIn: 900,
-      })
+      }),
     )
   } catch (error) {
     next(error)
@@ -393,7 +398,7 @@ const createThumbnailUpload = async (
 const updateThumbnail = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -418,7 +423,7 @@ const updateThumbnail = async (
     return res.status(200).json(
       new ApiResponse(200, 'Thumbnail updated successfully', {
         lesson: updated,
-      })
+      }),
     )
   } catch (error) {
     next(error)
@@ -432,7 +437,7 @@ const updateThumbnail = async (
 const createPdfUpload = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -484,7 +489,7 @@ const createPdfUpload = async (
           'Content-Type': contentType,
         },
         expiresIn: 900,
-      })
+      }),
     )
   } catch (error) {
     next(error)
@@ -495,11 +500,7 @@ const createPdfUpload = async (
  * DELETE /lessons/:lessonId/pdf
  * Delete the PDF file from a lesson
  */
-const deletePdf = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const deletePdf = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const lesson = req.lesson!
 
@@ -512,16 +513,14 @@ const deletePdf = async (
     })
 
     return res.status(200).json(
-
       new ApiResponse(200, 'PDF deleted successfully', {
         lesson: updated,
-      })
+      }),
     )
   } catch (error) {
     next(error)
   }
 }
-
 
 export {
   createLesson,

@@ -113,58 +113,58 @@ export default function DashboardPage() {
   }).format(new Date())
 
   return (
-    <div className='space-y-8'>
-      <div className='rounded-2xl border border-slate-200/60 bg-gradient-to-br from-slate-50 via-white to-slate-50 px-6 py-5 shadow-sm dark:border-slate-800/60 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 sm:flex sm:items-center sm:justify-between'>
+    <div className="space-y-8">
+      <div className="rounded-2xl border border-slate-200/60 bg-gradient-to-br from-slate-50 via-white to-slate-50 px-6 py-5 shadow-sm dark:border-slate-800/60 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 sm:flex sm:items-center sm:justify-between">
         <div>
-          <p className='text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400'>
+          <p className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
             Welcome back
           </p>
-          <h1 className='text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-50'>
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
             {userName}!
           </h1>
-          <p className='text-sm text-muted-foreground'>{currentDate}</p>
+          <p className="text-sm text-muted-foreground">{currentDate}</p>
         </div>
-        <Button className='mt-4 inline-flex items-center gap-2 sm:mt-0'>
-          <Plus className='h-4 w-4' />
+        <Button className="mt-4 inline-flex items-center gap-2 sm:mt-0">
+          <Plus className="h-4 w-4" />
           Create something new
         </Button>
       </div>
 
-      <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Card
             key={stat.label}
-            className='relative overflow-hidden border-0 bg-gradient-to-br from-white via-white to-slate-50 shadow-sm transition-all hover:shadow-lg dark:from-slate-900 dark:via-slate-900 dark:to-slate-950'
+            className="relative overflow-hidden border-0 bg-gradient-to-br from-white via-white to-slate-50 shadow-sm transition-all hover:shadow-lg dark:from-slate-900 dark:via-slate-900 dark:to-slate-950"
           >
             <div
               className={cn(
                 'absolute inset-0 rounded-2xl border border-slate-200/60 dark:border-slate-800/60',
-                `bg-gradient-to-br ${stat.gradient}`
+                `bg-gradient-to-br ${stat.gradient}`,
               )}
-              aria-hidden='true'
+              aria-hidden="true"
             />
-            <div className='relative h-full rounded-2xl bg-gradient-to-br from-white/70 via-white/40 to-white/20 p-1 dark:from-slate-950/60 dark:via-slate-950/40 dark:to-slate-950/10'>
-              <div className='flex h-full flex-col rounded-2xl bg-white/80 p-5 backdrop-blur dark:bg-slate-950/80'>
-                <CardHeader className='flex flex-row items-start justify-between space-y-0 pb-4'>
+            <div className="relative h-full rounded-2xl bg-gradient-to-br from-white/70 via-white/40 to-white/20 p-1 dark:from-slate-950/60 dark:via-slate-950/40 dark:to-slate-950/10">
+              <div className="flex h-full flex-col rounded-2xl bg-white/80 p-5 backdrop-blur dark:bg-slate-950/80">
+                <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
                   <div>
-                    <CardTitle className='text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400'>
+                    <CardTitle className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                       {stat.label}
                     </CardTitle>
-                    <p className='text-3xl font-bold tracking-tight text-slate-900 dark:text-white'>
+                    <p className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
                       {stat.value}
                     </p>
                   </div>
-                  <span className='rounded-full bg-slate-900/5 p-2 text-slate-900 dark:bg-slate-100/10 dark:text-white'>
-                    <stat.icon className='h-5 w-5' />
+                  <span className="rounded-full bg-slate-900/5 p-2 text-slate-900 dark:bg-slate-100/10 dark:text-white">
+                    <stat.icon className="h-5 w-5" />
                   </span>
                 </CardHeader>
-                <CardContent className='mt-auto space-y-2 p-0'>
-                  <p className='text-xs text-muted-foreground'>
+                <CardContent className="mt-auto space-y-2 p-0">
+                  <p className="text-xs text-muted-foreground">
                     {stat.sublabel}
                   </p>
                   <Badge
-                    variant='outline'
-                    className='w-max border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300'
+                    variant="outline"
+                    className="w-max border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300"
                   >
                     {stat.delta}
                   </Badge>
@@ -175,41 +175,41 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className='grid gap-4 lg:grid-cols-3'>
-        <Card className='lg:col-span-2'>
-          <CardHeader className='flex flex-row items-center justify-between gap-2'>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between gap-2">
             <div>
-              <CardTitle className='text-lg font-semibold'>
+              <CardTitle className="text-lg font-semibold">
                 Recent Activity
               </CardTitle>
               <CardDescription>Your latest actions and updates</CardDescription>
             </div>
-            <Button variant='ghost' size='sm' className='gap-2 text-xs'>
+            <Button variant="ghost" size="sm" className="gap-2 text-xs">
               View all
-              <ExternalLink className='h-4 w-4' />
+              <ExternalLink className="h-4 w-4" />
             </Button>
           </CardHeader>
           <CardContent>
-            <ScrollArea className='h-[280px] pr-4'>
-              <div className='space-y-4'>
+            <ScrollArea className="h-[280px] pr-4">
+              <div className="space-y-4">
                 {activities.map((activity) => (
                   <div
                     key={activity.title}
-                    className='flex items-start gap-4 rounded-xl border border-transparent bg-slate-50/60 p-4 transition-colors hover:border-slate-200 hover:bg-white dark:bg-slate-900/40 dark:hover:border-slate-800 dark:hover:bg-slate-900'
+                    className="flex items-start gap-4 rounded-xl border border-transparent bg-slate-50/60 p-4 transition-colors hover:border-slate-200 hover:bg-white dark:bg-slate-900/40 dark:hover:border-slate-800 dark:hover:bg-slate-900"
                   >
-                    <div className='flex h-10 w-10 items-center justify-center rounded-full bg-slate-900/10 text-slate-900 dark:bg-slate-100/10 dark:text-slate-100'>
-                      <activity.icon className='h-5 w-5' />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-900/10 text-slate-900 dark:bg-slate-100/10 dark:text-slate-100">
+                      <activity.icon className="h-5 w-5" />
                     </div>
-                    <div className='space-y-1'>
-                      <div className='flex items-center gap-2'>
-                        <p className='text-sm font-semibold text-slate-900 dark:text-slate-100'>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                           {activity.title}
                         </p>
                         <Badge variant={activity.badgeVariant}>
                           {activity.badge}
                         </Badge>
                       </div>
-                      <p className='text-xs text-muted-foreground'>
+                      <p className="text-xs text-muted-foreground">
                         {activity.time}
                       </p>
                     </div>
@@ -222,13 +222,13 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className='text-lg font-semibold'>
+            <CardTitle className="text-lg font-semibold">
               Quick Actions
             </CardTitle>
             <CardDescription>Common tasks and shortcuts</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className='grid gap-3 sm:grid-cols-2'>
+            <div className="grid gap-3 sm:grid-cols-2">
               {quickActions.map((action) => (
                 <Button
                   key={action.label}
@@ -236,13 +236,13 @@ export default function DashboardPage() {
                   className={cn(
                     'h-auto justify-start gap-3 rounded-xl border border-slate-200 bg-white py-4 text-left text-sm font-semibold shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-950',
                     action.variant === 'default' &&
-                    'bg-slate-900 text-white hover:bg-slate-900/90 dark:bg-slate-100 dark:text-slate-900'
+                      'bg-slate-900 text-white hover:bg-slate-900/90 dark:bg-slate-100 dark:text-slate-900',
                   )}
                 >
-                  <action.icon className='h-5 w-5' />
+                  <action.icon className="h-5 w-5" />
                   <span>
                     {action.label}
-                    <p className='mt-1 text-xs font-normal text-slate-500 dark:text-slate-400'>
+                    <p className="mt-1 text-xs font-normal text-slate-500 dark:text-slate-400">
                       {action.description}
                     </p>
                   </span>

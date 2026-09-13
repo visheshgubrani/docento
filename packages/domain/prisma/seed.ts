@@ -1,5 +1,23 @@
-import { staffAuth } from '../src/auth/staff.js'
-import { prisma } from '../src/db.js'
+import { existsSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+/**
+ * Load `.env` before anything reads configuration.
+ *
+ * The auth realms bind their secrets at module load (`staff.ts` reads `env`
+ * the moment it is imported), so the environment has to be in place before the
+ * imports below run. That is why they are dynamic: a static import would be
+ * hoisted above this block and the seed would fail with "Invalid input:
+ * expected string, received undefined" on a correctly configured machine.
+ *
+ * Node's built-in loader is used rather than a dotenv dependency, matching
+ * `src/test/setup.ts`. In a container the variables are already present and the
+ * file simply does not exist.
+ */
+const envPath = resolve(process.cwd(), '.env')
+if (existsSync(envPath)) {
+  process.loadEnvFile(envPath)
+}
 
 /**
  * Seed a development install.
@@ -35,14 +53,24 @@ async function main() {
 
   console.log('Seeding development data...\n')
 
+  // Imported here, not at the top: both read configuration at module load.
+  const { prisma } = await import('../src/db.js')
+  const { staffAuth } = await import('../src/auth/staff.js')
+
   // --- Owner ---------------------------------------------------------------
   // Created through Better Auth rather than by inserting a row, so the password
   // is hashed with the same algorithm the sign-in path verifies against.
-  let owner = await prisma.staffUser.findUnique({ where: { email: OWNER_EMAIL } })
+  let owner = await prisma.staffUser.findUnique({
+    where: { email: OWNER_EMAIL },
+  })
 
   if (!owner) {
     const result = await staffAuth.api.signUpEmail({
-      body: { email: OWNER_EMAIL, password: DEMO_PASSWORD, name: 'Workspace Owner' },
+      body: {
+        email: OWNER_EMAIL,
+        password: DEMO_PASSWORD,
+        name: 'Workspace Owner',
+      },
     })
     owner = await prisma.staffUser.findUniqueOrThrow({
       where: { id: result.user.id },
@@ -60,7 +88,9 @@ async function main() {
   })
 
   const existingMember = await prisma.member.findUnique({
-    where: { workspaceId_userId: { workspaceId: workspace.id, userId: owner.id } },
+    where: {
+      workspaceId_userId: { workspaceId: workspace.id, userId: owner.id },
+    },
   })
 
   if (!existingMember) {
@@ -72,7 +102,9 @@ async function main() {
 
   // --- Academy -------------------------------------------------------------
   const academy = await prisma.academy.upsert({
-    where: { workspaceId_slug: { workspaceId: workspace.id, slug: ACADEMY_SLUG } },
+    where: {
+      workspaceId_slug: { workspaceId: workspace.id, slug: ACADEMY_SLUG },
+    },
     update: {},
     create: {
       workspaceId: workspace.id,
@@ -100,7 +132,9 @@ async function main() {
 
   // --- Demo course ---------------------------------------------------------
   let course = await prisma.course.findUnique({
-    where: { academyId_slug: { academyId: academy.id, slug: 'getting-started' } },
+    where: {
+      academyId_slug: { academyId: academy.id, slug: 'getting-started' },
+    },
   })
 
   if (!course) {
@@ -139,7 +173,9 @@ async function main() {
         },
       },
     })
-    console.log(`  created course       ${course.slug} (draft, 1 module, 2 lessons)`)
+    console.log(
+      `  created course       ${course.slug} (draft, 1 module, 2 lessons)`,
+    )
   } else {
     console.log(`  course exists        ${course.slug}`)
   }
@@ -156,13 +192,13 @@ async function main() {
       '\n  The password above is a development default. Set SEED_PASSWORD to change it.',
     )
   }
+
+  // Released here rather than in a `.finally()` on the promise: the client is
+  // imported inside this function, so it is not in scope out there.
+  await prisma.$disconnect()
 }
 
-main()
-  .catch((error) => {
-    console.error('\nSeed failed:', error)
-    process.exitCode = 1
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+main().catch((error) => {
+  console.error('\nSeed failed:', error)
+  process.exitCode = 1
+})

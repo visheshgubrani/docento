@@ -24,8 +24,19 @@ const nextConfig: NextConfig = {
       protocol: 'https' as const,
       hostname,
     })),
-    dangerouslyAllowSVG: true,
-    contentDispositionType: 'attachment',
+    /**
+     * SVG is deliberately not allowed through `next/image`.
+     *
+     * An SVG is a script container. `contentDispositionType: 'attachment'`
+     * changes how a response is presented, not what it can do once a browser
+     * renders it inline, so it is not the guard it looks like. Logos and
+     * thumbnails are author-supplied, and one academy must never be able to run
+     * script against another's staff session — so the format is refused at the
+     * image layer rather than trusted because of its content type.
+     *
+     * Rasterise first, or serve the SVG from a separate origin.
+     */
+    dangerouslyAllowSVG: false,
   },
 }
 

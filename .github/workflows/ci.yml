@@ -72,6 +72,15 @@ jobs:
       - name: Apply database migrations
         run: pnpm db:deploy
 
+      - name: Seed a development install
+        # The seed is part of the operator path, so it is part of the gate. It
+        # also proves the documented first-run flow works from an empty database
+        # rather than being discovered to be broken by the first contributor.
+        run: pnpm db:seed
+
+      - name: Check formatting
+        run: pnpm format:check
+
       - name: Lint
         run: pnpm lint
 
@@ -80,6 +89,11 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+      - name: Architecture boundaries
+        # Repeated here rather than only in its own job so a boundary violation
+        # is reported next to the change that caused it.
+        run: pnpm boundaries
 
   build:
     name: Build

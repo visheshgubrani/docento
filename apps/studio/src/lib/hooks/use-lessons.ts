@@ -16,7 +16,7 @@ import {
 export function useCreateLesson(
   projectId: string,
   courseId: string,
-  moduleId: string
+  moduleId: string,
 ) {
   const queryClient = useQueryClient()
 
@@ -37,7 +37,7 @@ export function useUpdateLesson(
   projectId: string,
   courseId: string,
   moduleId: string,
-  lessonId: string
+  lessonId: string,
 ) {
   const queryClient = useQueryClient()
 
@@ -58,7 +58,7 @@ export function useUpdateLesson(
 export function useDeleteLesson(
   projectId: string,
   courseId: string,
-  moduleId: string
+  moduleId: string,
 ) {
   const queryClient = useQueryClient()
 
@@ -79,7 +79,7 @@ export function useDeleteLesson(
 export function useReorderLessons(
   projectId: string,
   courseId: string,
-  moduleId: string
+  moduleId: string,
 ) {
   const queryClient = useQueryClient()
 

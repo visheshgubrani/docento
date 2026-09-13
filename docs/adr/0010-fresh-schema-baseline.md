@@ -53,14 +53,14 @@ The public API surface is new. There is no compatibility layer, no versioned
 shim, and no obligation to match the closed-source API's shapes. The opportunity
 is taken to fix the structural problems that were cheap to fix once:
 
-| Previously | Now |
-| --- | --- |
+| Previously                                                         | Now                                                                                                                                 |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Simple integer positions with unique `(parent, order)` constraints | Integer positions with transactional reorder plus a revision check, so concurrent edits conflict loudly instead of corrupting order |
-| `Course.slug` globally unique | Unique per academy |
-| `Float` price, `Int` amounts with a default currency | Integer minor units on an `Offer` ([ADR 9](./0009-commerce-separation.md)) |
-| Loose `videoUrl` / `videoId` / `videoStatus` columns on the lesson | A `VideoAsset` row recording the provider that produced it ([ADR 8](./0008-local-first-media.md)) |
-| OpenAPI hand-written as JSDoc comments across route files | Generated from Zod contracts, which are the single source of truth |
-| Fire-and-forget webhook delivery with no record | Transactional outbox with delivery history and replay ([ADR 7](./0007-durable-jobs-on-postgres.md)) |
+| `Course.slug` globally unique                                      | Unique per academy                                                                                                                  |
+| `Float` price, `Int` amounts with a default currency               | Integer minor units on an `Offer` ([ADR 9](./0009-commerce-separation.md))                                                          |
+| Loose `videoUrl` / `videoId` / `videoStatus` columns on the lesson | A `VideoAsset` row recording the provider that produced it ([ADR 8](./0008-local-first-media.md))                                   |
+| OpenAPI hand-written as JSDoc comments across route files          | Generated from Zod contracts, which are the single source of truth                                                                  |
+| Fire-and-forget webhook delivery with no record                    | Transactional outbox with delivery history and replay ([ADR 7](./0007-durable-jobs-on-postgres.md))                                 |
 
 ## Consequences
 

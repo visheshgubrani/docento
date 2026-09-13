@@ -1,7 +1,7 @@
-"use client";
+'use client'
 
-import { useDeferredValue, useMemo, useState } from "react";
-import Link from "next/link";
+import { useDeferredValue, useMemo, useState } from 'react'
+import Link from 'next/link'
 import {
   EllipsisVertical,
   Loader2,
@@ -10,32 +10,32 @@ import {
   BookOpen,
   LayoutGrid,
   List,
-} from "lucide-react";
-import { IoSearch } from "react-icons/io5";
-import { FaFilter } from "react-icons/fa";
-import { BsImageAlt } from "react-icons/bs";
-import { CreateCourseModal } from "@/components/courses/create-course-modal";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { ImBooks } from "react-icons/im";
+} from 'lucide-react'
+import { IoSearch } from 'react-icons/io5'
+import { FaFilter } from 'react-icons/fa'
+import { BsImageAlt } from 'react-icons/bs'
+import { CreateCourseModal } from '@/components/courses/create-course-modal'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { ImBooks } from 'react-icons/im'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import type { CourseSummary } from "@/lib/api";
+} from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
+import { Separator } from '@/components/ui/separator'
+import type { CourseSummary } from '@/lib/api'
 import {
   useProjectCourses,
   useDeleteCourse,
   useToggleCoursePublishAction,
-} from "@/lib/hooks/use-courses";
-import { useProjectRouteId } from "@/lib/hooks/use-project-route-id";
-import { useProject } from "@/lib/hooks/use-projects";
-import { useToast } from "@/components/ui/use-toast";
+} from '@/lib/hooks/use-courses'
+import { useProjectRouteId } from '@/lib/hooks/use-project-route-id'
+import { useProject } from '@/lib/hooks/use-projects'
+import { useToast } from '@/components/ui/use-toast'
 import {
   Dialog,
   DialogContent,
@@ -43,55 +43,55 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/dialog'
+import { cn } from '@/lib/utils'
 
-const currencyFormatter = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-});
+const currencyFormatter = new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
+})
 
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+})
 
 function formatPrice(value: number) {
   if (!value) {
-    return "Free";
+    return 'Free'
   }
-  return currencyFormatter.format(value);
+  return currencyFormatter.format(value)
 }
 
 function formatDate(date: string) {
   try {
-    return dateFormatter.format(new Date(date));
+    return dateFormatter.format(new Date(date))
   } catch {
-    return "N/A";
+    return 'N/A'
   }
 }
 
-type StatusFilter = "all" | "published" | "draft";
-type ViewMode = "list" | "grid";
+type StatusFilter = 'all' | 'published' | 'draft'
+type ViewMode = 'list' | 'grid'
 
 export default function ProjectCoursesPage() {
-  const projectId = useProjectRouteId();
-  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
-  const deferredSearch = useDeferredValue(searchTerm);
+  const projectId = useProjectRouteId()
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const deferredSearch = useDeferredValue(searchTerm)
 
-  const { data: project, isLoading: isProjectLoading } = useProject(projectId);
+  const { data: project, isLoading: isProjectLoading } = useProject(projectId)
   const {
     data: coursesData,
     isLoading: isCoursesLoading,
     isError: isCoursesError,
     error: coursesError,
-  } = useProjectCourses(projectId);
+  } = useProjectCourses(projectId)
 
-  const courses = coursesData ?? [];
+  const courses = coursesData ?? []
 
   // Compute counts for filters
   const filterCounts = useMemo(() => {
@@ -99,35 +99,35 @@ export default function ProjectCoursesPage() {
       all: courses.length,
       published: courses.filter((c) => c.isPublished).length,
       draft: courses.filter((c) => !c.isPublished).length,
-    };
-  }, [courses]);
+    }
+  }, [courses])
 
   // Client-side filtering (search + status)
   const filteredCourses = useMemo(() => {
-    let filtered = courses;
+    let filtered = courses
 
     // Apply status filter
-    if (statusFilter === "published") {
-      filtered = filtered.filter((c) => c.isPublished);
-    } else if (statusFilter === "draft") {
-      filtered = filtered.filter((c) => !c.isPublished);
+    if (statusFilter === 'published') {
+      filtered = filtered.filter((c) => c.isPublished)
+    } else if (statusFilter === 'draft') {
+      filtered = filtered.filter((c) => !c.isPublished)
     }
 
     // Apply search filter
     if (deferredSearch.trim()) {
-      const search = deferredSearch.toLowerCase();
+      const search = deferredSearch.toLowerCase()
       filtered = filtered.filter((course) =>
-        course.title.toLowerCase().includes(search)
-      );
+        course.title.toLowerCase().includes(search),
+      )
     }
 
-    return filtered;
-  }, [courses, deferredSearch, statusFilter]);
+    return filtered
+  }, [courses, deferredSearch, statusFilter])
 
-  const isFiltering = searchTerm !== deferredSearch;
+  const isFiltering = searchTerm !== deferredSearch
 
   if (!projectId) {
-    return <div>Invalid project.</div>;
+    return <div>Invalid project.</div>
   }
 
   return (
@@ -178,34 +178,34 @@ export default function ProjectCoursesPage() {
           {/* Status Filter Tabs */}
           <div className="flex items-center bg-muted-foreground/15 border border-sidebar/30 rounded-sm overflow-hidden">
             <button
-              onClick={() => setStatusFilter("all")}
+              onClick={() => setStatusFilter('all')}
               className={cn(
-                "px-4 py-2 text-sm font-medium transition-colors cursor-pointer",
-                statusFilter === "all"
-                  ? "bg-white font-semibold text-foreground"
-                  : "text-foreground/80 hover:bg-muted/50"
+                'px-4 py-2 text-sm font-medium transition-colors cursor-pointer',
+                statusFilter === 'all'
+                  ? 'bg-white font-semibold text-foreground'
+                  : 'text-foreground/80 hover:bg-muted/50',
               )}
             >
               All ({filterCounts.all})
             </button>
             <button
-              onClick={() => setStatusFilter("published")}
+              onClick={() => setStatusFilter('published')}
               className={cn(
-                "px-4 py-2 text-sm font-medium transition-colors cursor-pointer border-l border-sidebar/30",
-                statusFilter === "published"
-                  ? "bg-white font-semibold text-foreground"
-                  : "text-foreground/80 hover:bg-muted/50"
+                'px-4 py-2 text-sm font-medium transition-colors cursor-pointer border-l border-sidebar/30',
+                statusFilter === 'published'
+                  ? 'bg-white font-semibold text-foreground'
+                  : 'text-foreground/80 hover:bg-muted/50',
               )}
             >
               Published ({filterCounts.published})
             </button>
             <button
-              onClick={() => setStatusFilter("draft")}
+              onClick={() => setStatusFilter('draft')}
               className={cn(
-                "px-4 py-2 text-sm font-medium transition-colors cursor-pointer border-l border-sidebar/30",
-                statusFilter === "draft"
-                  ? "bg-white font-semibold text-foreground"
-                  : "text-foreground/80 hover:bg-muted/50"
+                'px-4 py-2 text-sm font-medium transition-colors cursor-pointer border-l border-sidebar/30',
+                statusFilter === 'draft'
+                  ? 'bg-white font-semibold text-foreground'
+                  : 'text-foreground/80 hover:bg-muted/50',
               )}
             >
               Draft ({filterCounts.draft})
@@ -215,24 +215,24 @@ export default function ProjectCoursesPage() {
           {/* View Mode Toggle */}
           <div className="flex items-center bg-foreground/15 border border-sidebar/30 rounded-sm overflow-hidden">
             <button
-              onClick={() => setViewMode("list")}
+              onClick={() => setViewMode('list')}
               className={cn(
-                "p-[9px] transition-colors cursor-pointer",
-                viewMode === "list"
-                  ? "bg-white font-semibold text-foreground"
-                  : "text-foreground/80 hover:bg-muted/50"
+                'p-[9px] transition-colors cursor-pointer',
+                viewMode === 'list'
+                  ? 'bg-white font-semibold text-foreground'
+                  : 'text-foreground/80 hover:bg-muted/50',
               )}
               aria-label="List view"
             >
               <List className="size-5" />
             </button>
             <button
-              onClick={() => setViewMode("grid")}
+              onClick={() => setViewMode('grid')}
               className={cn(
-                "p-[9px] transition-colors cursor-pointer border-l border-sidebar/30",
-                viewMode === "grid"
-                  ? "bg-white font-semibold text-foreground"
-                  : "text-foreground/80 hover:bg-muted/50"
+                'p-[9px] transition-colors cursor-pointer border-l border-sidebar/30',
+                viewMode === 'grid'
+                  ? 'bg-white font-semibold text-foreground'
+                  : 'text-foreground/80 hover:bg-muted/50',
               )}
               aria-label="Grid view"
             >
@@ -246,7 +246,7 @@ export default function ProjectCoursesPage() {
       <div className="mt-8">
         {isCoursesError ? (
           <CourseErrorCard
-            message={coursesError?.message ?? "Unexpected error"}
+            message={coursesError?.message ?? 'Unexpected error'}
           />
         ) : isCoursesLoading ? (
           <CourseTableSkeleton />
@@ -259,7 +259,7 @@ export default function ProjectCoursesPage() {
           ) : (
             <NoSearchResults searchTerm={searchTerm} />
           )
-        ) : viewMode === "list" ? (
+        ) : viewMode === 'list' ? (
           <CourseTable courses={filteredCourses} projectId={projectId} />
         ) : (
           <CourseGrid courses={filteredCourses} projectId={projectId} />
@@ -272,7 +272,7 @@ export default function ProjectCoursesPage() {
         onOpenChange={setCreateModalOpen}
       />
     </div>
-  );
+  )
 }
 
 function CourseErrorCard({ message }: { message: string }) {
@@ -283,15 +283,15 @@ function CourseErrorCard({ message }: { message: string }) {
         <p className="text-sm text-destructive">{message}</p>
       </CardContent>
     </Card>
-  );
+  )
 }
 
 function CourseTable({
   courses,
   projectId,
 }: {
-  courses: CourseSummary[];
-  projectId: string;
+  courses: CourseSummary[]
+  projectId: string
 }) {
   return (
     <div className="rounded-sm border border-muted-foreground/30 overflow-hidden">
@@ -315,7 +315,7 @@ function CourseTable({
         ))}
       </div>
     </div>
-  );
+  )
 }
 
 function CourseThumbnail({
@@ -323,19 +323,19 @@ function CourseThumbnail({
   title,
   className,
 }: {
-  thumbnail: string | null | undefined;
-  title: string;
-  className?: string;
+  thumbnail: string | null | undefined
+  title: string
+  className?: string
 }) {
-  const [hasError, setHasError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   if (!thumbnail || hasError) {
     return (
       <div
         className={cn(
-          "w-24 aspect-video rounded-xs bg-muted/50 flex items-center justify-center overflow-hidden",
-          className
+          'w-24 aspect-video rounded-xs bg-muted/50 flex items-center justify-center overflow-hidden',
+          className,
         )}
       >
         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-accent-100/80 to-accent-200/80">
@@ -347,14 +347,14 @@ function CourseThumbnail({
           />
         </div>
       </div>
-    );
+    )
   }
 
   return (
     <div
       className={cn(
-        "w-24 aspect-video rounded-xs bg-muted/50 flex items-center justify-center overflow-hidden relative",
-        className
+        'w-24 aspect-video rounded-xs bg-muted/50 flex items-center justify-center overflow-hidden relative',
+        className,
       )}
     >
       {isLoading && (
@@ -371,20 +371,20 @@ function CourseThumbnail({
         onLoad={() => setIsLoading(false)}
       />
     </div>
-  );
+  )
 }
 
 function CourseRow({
   course,
   projectId,
 }: {
-  course: CourseSummary;
-  projectId: string;
+  course: CourseSummary
+  projectId: string
 }) {
-  const enrollments = course._count?.enrollments ?? 0;
-  const lessonsCount = course._count?.lessons ?? 0;
-  const createdAt = formatDate(course.createdAt);
-  const builderHref = `/p/${projectId}/courses/${course.id}/information`;
+  const enrollments = course._count?.enrollments ?? 0
+  const lessonsCount = course._count?.lessons ?? 0
+  const createdAt = formatDate(course.createdAt)
+  const builderHref = `/p/${projectId}/courses/${course.id}/information`
 
   return (
     <div className="group">
@@ -427,14 +427,14 @@ function CourseRow({
         {/* Status */}
         <div className="text-center">
           <Badge
-            variant={course.isPublished ? "default" : "secondary"}
+            variant={course.isPublished ? 'default' : 'secondary'}
             className={cn(
               course.isPublished
-                ? "bg-accent-foreground/40 text-foreground/80"
-                : "bg-muted-foreground text-white"
+                ? 'bg-accent-foreground/40 text-foreground/80'
+                : 'bg-muted-foreground text-white',
             )}
           >
-            {course.isPublished ? "Published" : "Draft"}
+            {course.isPublished ? 'Published' : 'Draft'}
           </Badge>
         </div>
 
@@ -472,27 +472,27 @@ function CourseRow({
             {formatPrice(course.price)} · {enrollments} enrolled
           </span>
           <Badge
-            variant={course.isPublished ? "default" : "secondary"}
+            variant={course.isPublished ? 'default' : 'secondary'}
             className={cn(
               course.isPublished
-                ? "bg-accent-foreground/40 text-foreground/80"
-                : "bg-muted-foreground text-white"
+                ? 'bg-accent-foreground/40 text-foreground/80'
+                : 'bg-muted-foreground text-white',
             )}
           >
-            {course.isPublished ? "Published" : "Draft"}
+            {course.isPublished ? 'Published' : 'Draft'}
           </Badge>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 function CourseGrid({
   courses,
   projectId,
 }: {
-  courses: CourseSummary[];
-  projectId: string;
+  courses: CourseSummary[]
+  projectId: string
 }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -500,19 +500,19 @@ function CourseGrid({
         <CourseCard key={course.id} course={course} projectId={projectId} />
       ))}
     </div>
-  );
+  )
 }
 
 function CourseCard({
   course,
   projectId,
 }: {
-  course: CourseSummary;
-  projectId: string;
+  course: CourseSummary
+  projectId: string
 }) {
-  const enrollments = course._count?.enrollments ?? 0;
-  const lessonsCount = course._count?.lessons ?? 0;
-  const builderHref = `/p/${projectId}/courses/${course.id}/information`;
+  const enrollments = course._count?.enrollments ?? 0
+  const lessonsCount = course._count?.lessons ?? 0
+  const builderHref = `/p/${projectId}/courses/${course.id}/information`
 
   return (
     <Card className="group rounded-lg overflow-hidden border border-gray-200 bg-white hover:shadow-xl hover:border-gray-300 ease-in-out transition-all duration-300">
@@ -525,15 +525,15 @@ function CourseCard({
         {/* Status Badge - Top Left */}
         <div className="absolute group top-3 left-3">
           <Badge
-            variant={course.isPublished ? "default" : "secondary"}
+            variant={course.isPublished ? 'default' : 'secondary'}
             className={cn(
-              "text-xs font-medium px-2.5 py-1 rounded-full shadow-md",
+              'text-xs font-medium px-2.5 py-1 rounded-full shadow-md',
               course.isPublished
-                ? "bg-accent-600 group-hover:bg-accent-700 text-white border-0"
-                : "bg-gray-500 hover:bg-gray-600 text-white border-0"
+                ? 'bg-accent-600 group-hover:bg-accent-700 text-white border-0'
+                : 'bg-gray-500 hover:bg-gray-600 text-white border-0',
             )}
           >
-            {course.isPublished ? "Published" : "Draft"}
+            {course.isPublished ? 'Published' : 'Draft'}
           </Badge>
         </div>
         {/* Actions - Top Right */}
@@ -566,7 +566,7 @@ function CourseCard({
             {formatPrice(course.price)}
           </span>
           <span className="text-sm text-gray-500">
-            {lessonsCount} {lessonsCount === 1 ? "lesson" : "lessons"}
+            {lessonsCount} {lessonsCount === 1 ? 'lesson' : 'lessons'}
           </span>
           <span className="text-sm text-gray-500 flex items-center gap-1.5">
             <BookOpen className="size-4" />
@@ -575,18 +575,18 @@ function CourseCard({
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }
 
 function CourseCardThumbnail({
   thumbnail,
   title,
 }: {
-  thumbnail: string | null | undefined;
-  title: string;
+  thumbnail: string | null | undefined
+  title: string
 }) {
-  const [hasError, setHasError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   if (!thumbnail || hasError) {
     return (
@@ -598,7 +598,7 @@ function CourseCardThumbnail({
           className="aspect-video opacity-60"
         />
       </div>
-    );
+    )
   }
   return (
     <div className="w-full h-full relative">
@@ -616,60 +616,60 @@ function CourseCardThumbnail({
         onLoad={() => setIsLoading(false)}
       />
     </div>
-  );
+  )
 }
 
 function CourseActions({
   course,
   projectId,
 }: {
-  course: CourseSummary;
-  projectId: string;
+  course: CourseSummary
+  projectId: string
 }) {
-  const { toast } = useToast();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { toast } = useToast()
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   const { mutateAsync: deleteCourse, isPending: isDeleting } =
-    useDeleteCourse(projectId);
+    useDeleteCourse(projectId)
   const { mutateAsync: togglePublish, isPending: isToggling } =
-    useToggleCoursePublishAction(projectId);
+    useToggleCoursePublishAction(projectId)
 
   const handlePublish = async () => {
     try {
-      await togglePublish(course.id);
+      await togglePublish(course.id)
       toast({
-        title: course.isPublished ? "Course unpublished" : "Course published",
+        title: course.isPublished ? 'Course unpublished' : 'Course published',
         description: `"${course.title}" has been ${
-          course.isPublished ? "unpublished" : "published"
+          course.isPublished ? 'unpublished' : 'published'
         } successfully.`,
-      });
+      })
     } catch (error) {
       toast({
-        title: "Error",
+        title: 'Error',
         description: `Failed to ${
-          course.isPublished ? "unpublish" : "publish"
+          course.isPublished ? 'unpublish' : 'publish'
         } course. Please try again.`,
-        variant: "destructive",
-      });
+        variant: 'destructive',
+      })
     }
-  };
+  }
 
   const handleDeleteConfirm = async () => {
     try {
-      await deleteCourse(course.id);
+      await deleteCourse(course.id)
       toast({
-        title: "Course deleted",
+        title: 'Course deleted',
         description: `"${course.title}" has been deleted successfully.`,
-      });
-      setShowDeleteDialog(false);
+      })
+      setShowDeleteDialog(false)
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to delete course. Please try again.",
-        variant: "destructive",
-      });
+        title: 'Error',
+        description: 'Failed to delete course. Please try again.',
+        variant: 'destructive',
+      })
     }
-  };
+  }
 
   return (
     <>
@@ -699,10 +699,10 @@ function CourseActions({
             disabled={isToggling}
           >
             {isToggling
-              ? "Processing..."
+              ? 'Processing...'
               : course.isPublished
-              ? "Unpublish Course"
-              : "Publish Course"}
+                ? 'Unpublish Course'
+                : 'Publish Course'}
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => setShowDeleteDialog(true)}
@@ -739,13 +739,13 @@ function CourseActions({
               disabled={isDeleting}
               className="bg-destructive hover:bg-destructive/90 text-white cursor-pointer"
             >
-              {isDeleting ? "Deleting..." : "Delete Course"}
+              {isDeleting ? 'Deleting...' : 'Delete Course'}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
-  );
+  )
 }
 
 function CourseTableSkeleton() {
@@ -803,15 +803,15 @@ function CourseTableSkeleton() {
         ))}
       </div>
     </div>
-  );
+  )
 }
 
 function CourseEmptyState({
   projectName,
   onCreateCourse,
 }: {
-  projectName?: string;
-  onCreateCourse: () => void;
+  projectName?: string
+  onCreateCourse: () => void
 }) {
   return (
     <div className="flex w-full bg-white rounded-lg flex-col items-center justify-center py-16 px-4">
@@ -824,7 +824,7 @@ function CourseEmptyState({
       <p className="text-sm text-foreground/60 mt-1 text-center max-w-sm mb-6">
         {projectName
           ? `Start creating courses for ${projectName}. Build engaging content for your learners.`
-          : "Get started by creating your first course. Build engaging content for your learners."}
+          : 'Get started by creating your first course. Build engaging content for your learners.'}
       </p>
       <Button
         onClick={onCreateCourse}
@@ -834,7 +834,7 @@ function CourseEmptyState({
         Create Your First Course
       </Button>
     </div>
-  );
+  )
 }
 
 function NoSearchResults({ searchTerm }: { searchTerm: string }) {
@@ -850,5 +850,5 @@ function NoSearchResults({ searchTerm }: { searchTerm: string }) {
         No courses match "{searchTerm}". Try a different search term.
       </p>
     </div>
-  );
+  )
 }

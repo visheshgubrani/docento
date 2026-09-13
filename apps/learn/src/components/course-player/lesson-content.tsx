@@ -1,37 +1,37 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { ClipMuxPlayer } from "@clipmux/player";
+import Link from 'next/link'
+import { ClipMuxPlayer } from '@clipmux/player'
 import {
   HiDocumentText,
   HiPlayCircle,
   HiSparkles,
   HiLink,
-} from "react-icons/hi2";
+} from 'react-icons/hi2'
 import {
   type LessonPlayback,
   type StorefrontLesson,
   type StorefrontLessonDetail,
-} from "@/lib/lms-api-client";
-import { QuizLessonContent } from "@/components/course-player/quiz-lesson-content";
-import { TextLessonContent } from "@/components/course-player/text-lesson-content";
-import { AssignmentLessonContent } from "@/components/course-player/assignment-lesson-content";
-import { MdLock } from "react-icons/md";
+} from '@/lib/lms-api-client'
+import { QuizLessonContent } from '@/components/course-player/quiz-lesson-content'
+import { TextLessonContent } from '@/components/course-player/text-lesson-content'
+import { AssignmentLessonContent } from '@/components/course-player/assignment-lesson-content'
+import { MdLock } from 'react-icons/md'
 
 type LessonContentProps = {
-  courseId: string;
-  coursePrice?: number | null;
-  lesson: StorefrontLesson;
-  lessonDetail?: StorefrontLessonDetail | null;
-  playback?: LessonPlayback | null;
-  playbackLoading?: boolean;
-  playbackError?: string | null;
-  isLoading?: boolean;
-  canAccess: boolean;
-  isAuthenticated: boolean;
-  onVideoEnded?: () => void;
-  onAssignmentSubmitted?: () => void;
-};
+  courseId: string
+  coursePrice?: number | null
+  lesson: StorefrontLesson
+  lessonDetail?: StorefrontLessonDetail | null
+  playback?: LessonPlayback | null
+  playbackLoading?: boolean
+  playbackError?: string | null
+  isLoading?: boolean
+  canAccess: boolean
+  isAuthenticated: boolean
+  onVideoEnded?: () => void
+  onAssignmentSubmitted?: () => void
+}
 
 function AccessGateSkeleton() {
   return (
@@ -44,7 +44,7 @@ function AccessGateSkeleton() {
         <div className="h-9 w-36 animate-pulse rounded-full bg-muted/60" />
       </div>
     </div>
-  );
+  )
 }
 
 function AccessGate({
@@ -52,16 +52,16 @@ function AccessGate({
   isAuthenticated,
   coursePrice,
 }: {
-  courseId: string;
-  isAuthenticated: boolean;
-  coursePrice?: number | null;
+  courseId: string
+  isAuthenticated: boolean
+  coursePrice?: number | null
 }) {
-  const isFreeCourse = !coursePrice || coursePrice <= 0;
-  const gateTitle = isFreeCourse ? "Enrollment required" : "Purchase required";
+  const isFreeCourse = !coursePrice || coursePrice <= 0
+  const gateTitle = isFreeCourse ? 'Enrollment required' : 'Purchase required'
   const gateDescription = isFreeCourse
-    ? "This lesson is locked. Enroll to proceed and watch the rest of the course."
-    : "This lesson is locked. Purchase the course to continue.";
-  const actionLabel = isFreeCourse ? "Enroll to Continue" : "Purchase Course";
+    ? 'This lesson is locked. Enroll to proceed and watch the rest of the course.'
+    : 'This lesson is locked. Purchase the course to continue.'
+  const actionLabel = isFreeCourse ? 'Enroll to Continue' : 'Purchase Course'
 
   return (
     <div className="flex min-h-[420px] w-full flex-col items-center justify-center rounded-xl border border-border bg-muted-foreground/15 p-8 text-center dark:bg-muted/45 sm:p-10 md:min-h-[500px] md:p-12">
@@ -89,7 +89,7 @@ function AccessGate({
         </Link>
       </div>
     </div>
-  );
+  )
 }
 
 function TypePanel({
@@ -97,17 +97,19 @@ function TypePanel({
   title,
   description,
 }: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
+  icon: React.ReactNode
+  title: string
+  description: string
 }) {
   return (
     <div className="rounded-xl border border-border bg-muted/20 p-5 sm:p-6">
-      <div className="inline-flex rounded-md bg-primary/15 p-2 text-primary">{icon}</div>
+      <div className="inline-flex rounded-md bg-primary/15 p-2 text-primary">
+        {icon}
+      </div>
       <h3 className="mt-3 text-lg font-semibold text-foreground">{title}</h3>
       <p className="mt-2 text-sm text-foreground/70">{description}</p>
     </div>
-  );
+  )
 }
 
 function VideoLesson({
@@ -117,14 +119,16 @@ function VideoLesson({
   playbackError,
   onVideoEnded,
 }: {
-  lesson: StorefrontLesson;
-  playback?: LessonPlayback | null;
-  playbackLoading?: boolean;
-  playbackError?: string | null;
-  onVideoEnded?: () => void;
+  lesson: StorefrontLesson
+  playback?: LessonPlayback | null
+  playbackLoading?: boolean
+  playbackError?: string | null
+  onVideoEnded?: () => void
 }) {
   if (playbackLoading) {
-    return <div className="h-[340px] animate-pulse rounded-lg border border-border bg-muted/40" />;
+    return (
+      <div className="h-[340px] animate-pulse rounded-lg border border-border bg-muted/40" />
+    )
   }
 
   if (playback) {
@@ -137,28 +141,30 @@ function VideoLesson({
           title={lesson.title}
           subtitles={playback.subtitleUrl ?? undefined}
           chapters={playback.chapters ?? undefined}
-          theme={{ primaryColor: "#84cc16", accentColor: "#f59e0b" }}
+          theme={{ primaryColor: '#84cc16', accentColor: '#f59e0b' }}
           onEnded={onVideoEnded}
         />
       </div>
-    );
+    )
   }
 
   return (
     <TypePanel
       icon={<HiPlayCircle className="size-5" />}
       title="Video unavailable"
-      description={playbackError ?? "Playback is not available for this lesson right now."}
+      description={
+        playbackError ?? 'Playback is not available for this lesson right now.'
+      }
     />
-  );
+  )
 }
 
 function TextLesson({
   lesson,
   lessonDetail,
 }: {
-  lesson: StorefrontLesson;
-  lessonDetail?: StorefrontLessonDetail | null;
+  lesson: StorefrontLesson
+  lessonDetail?: StorefrontLessonDetail | null
 }) {
   return (
     <div className="rounded-xl border border-border bg-background p-5">
@@ -168,12 +174,12 @@ function TextLesson({
           fallback={
             lessonDetail?.description ??
             lesson.description ??
-            "Text content has not been added for this lesson yet."
+            'Text content has not been added for this lesson yet.'
           }
         />
       </div>
     </div>
-  );
+  )
 }
 
 function MockTestLesson() {
@@ -183,7 +189,7 @@ function MockTestLesson() {
       title="Mock test lesson"
       description="Mock tests are delivered in the student dashboard where attempt history and scoring are tracked."
     />
-  );
+  )
 }
 
 function FallbackLesson() {
@@ -193,44 +199,44 @@ function FallbackLesson() {
       title="Lesson content"
       description="This lesson type is not currently supported in this player yet."
     />
-  );
+  )
 }
 
 function extractYouTubeId(url: string): string | null {
   try {
-    const parsed = new URL(url);
+    const parsed = new URL(url)
     if (
-      (parsed.hostname === "www.youtube.com" ||
-        parsed.hostname === "youtube.com") &&
-      parsed.searchParams.has("v")
+      (parsed.hostname === 'www.youtube.com' ||
+        parsed.hostname === 'youtube.com') &&
+      parsed.searchParams.has('v')
     ) {
-      return parsed.searchParams.get("v");
+      return parsed.searchParams.get('v')
     }
-    if (parsed.hostname === "youtu.be") {
-      return parsed.pathname.slice(1).split("/")[0] || null;
+    if (parsed.hostname === 'youtu.be') {
+      return parsed.pathname.slice(1).split('/')[0] || null
     }
     if (
-      (parsed.hostname === "www.youtube.com" ||
-        parsed.hostname === "youtube.com") &&
-      parsed.pathname.startsWith("/embed/")
+      (parsed.hostname === 'www.youtube.com' ||
+        parsed.hostname === 'youtube.com') &&
+      parsed.pathname.startsWith('/embed/')
     ) {
-      return parsed.pathname.replace("/embed/", "").split("/")[0] || null;
+      return parsed.pathname.replace('/embed/', '').split('/')[0] || null
     }
   } catch {
     // not a valid URL
   }
-  return null;
+  return null
 }
 
 function YouTubeLesson({
   lesson,
   lessonDetail,
 }: {
-  lesson: StorefrontLesson;
-  lessonDetail?: StorefrontLessonDetail | null;
+  lesson: StorefrontLesson
+  lessonDetail?: StorefrontLessonDetail | null
 }) {
-  const url = lessonDetail?.videoUrl || "";
-  const youtubeId = extractYouTubeId(url);
+  const url = lessonDetail?.videoUrl || ''
+  const youtubeId = extractYouTubeId(url)
 
   if (youtubeId) {
     return (
@@ -245,7 +251,7 @@ function YouTubeLesson({
           />
         </div>
       </div>
-    );
+    )
   }
 
   if (url) {
@@ -266,7 +272,7 @@ function YouTubeLesson({
           {url}
         </a>
       </div>
-    );
+    )
   }
 
   return (
@@ -275,7 +281,7 @@ function YouTubeLesson({
       title="External video"
       description="No external video link has been set for this lesson."
     />
-  );
+  )
 }
 
 export function LessonContent({
@@ -294,10 +300,12 @@ export function LessonContent({
 }: LessonContentProps) {
   if (isLoading) {
     if (!canAccess) {
-      return <AccessGateSkeleton />;
+      return <AccessGateSkeleton />
     }
 
-    return <div className="h-[340px] animate-pulse rounded-xl border border-border bg-muted/40" />;
+    return (
+      <div className="h-[340px] animate-pulse rounded-xl border border-border bg-muted/40" />
+    )
   }
 
   if (!canAccess) {
@@ -307,12 +315,12 @@ export function LessonContent({
         isAuthenticated={isAuthenticated}
         coursePrice={coursePrice}
       />
-    );
+    )
   }
 
-  const lessonType = lesson.contentType.toUpperCase();
+  const lessonType = lesson.contentType.toUpperCase()
 
-  if (lessonType === "VIDEO") {
+  if (lessonType === 'VIDEO') {
     return (
       <VideoLesson
         lesson={lesson}
@@ -321,15 +329,15 @@ export function LessonContent({
         playbackError={playbackError}
         onVideoEnded={onVideoEnded}
       />
-    );
+    )
   }
 
-  if (lessonType === "TEXT") {
-    return <TextLesson lesson={lesson} lessonDetail={lessonDetail} />;
+  if (lessonType === 'TEXT') {
+    return <TextLesson lesson={lesson} lessonDetail={lessonDetail} />
   }
 
-  if (lessonType === "QUIZ") return <QuizLessonContent lessonId={lesson.id} />;
-  if (lessonType === "ASSIGNMENT") {
+  if (lessonType === 'QUIZ') return <QuizLessonContent lessonId={lesson.id} />
+  if (lessonType === 'ASSIGNMENT') {
     return (
       <AssignmentLessonContent
         lessonId={lesson.id}
@@ -337,10 +345,10 @@ export function LessonContent({
         lessonDescription={lessonDetail?.description ?? lesson.description}
         onSubmissionSuccess={onAssignmentSubmitted}
       />
-    );
+    )
   }
-  if (lessonType === "MOCK_TEST") return <MockTestLesson />;
-  if (lessonType === "YOUTUBE")
-    return <YouTubeLesson lesson={lesson} lessonDetail={lessonDetail} />;
-  return <FallbackLesson />;
+  if (lessonType === 'MOCK_TEST') return <MockTestLesson />
+  if (lessonType === 'YOUTUBE')
+    return <YouTubeLesson lesson={lesson} lessonDetail={lessonDetail} />
+  return <FallbackLesson />
 }

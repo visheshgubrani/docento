@@ -9,7 +9,7 @@ import { logger } from '../utils/logger'
 const checkCourseCompletion = async (
   courseId: string,
   endUserId: string,
-  projectId: string
+  projectId: string,
 ) => {
   try {
     // 1. Get ALL lessons
@@ -31,7 +31,7 @@ const checkCourseCompletion = async (
 
     // 3. Calculate Percentage (e.g., 50%)
     const progressPercent = Math.round(
-      (completedCount / allLessons.length) * 100
+      (completedCount / allLessons.length) * 100,
     )
 
     // 4. Update Enrollment with REAL progress
@@ -61,7 +61,7 @@ const checkCourseCompletion = async (
 const updateProgress = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -141,7 +141,7 @@ const updateProgress = async (
       await checkCourseCompletion(
         enrollment.courseId,
         endUser.id,
-        endUser.projectId
+        endUser.projectId,
       )
     }
 

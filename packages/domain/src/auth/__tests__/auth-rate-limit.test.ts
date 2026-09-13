@@ -56,9 +56,10 @@ describe('staff realm', () => {
     // the limiter must count failures, not successes.
     for (let i = 0; i < RATE_LIMIT_RULES.signIn.limit; i += 1) {
       const message = await attempt()
-      expect(message, `attempt ${i + 1} should fail on credentials`).not.toMatch(
-        /Too many attempts/,
-      )
+      expect(
+        message,
+        `attempt ${i + 1} should fail on credentials`,
+      ).not.toMatch(/Too many attempts/)
     }
 
     // The next one is refused by the limiter, before credentials are checked.
@@ -68,14 +69,22 @@ describe('staff realm', () => {
   it('keeps a valid sign-in working while under the limit', async () => {
     await staffAuth.api
       .signUpEmail({
-        body: { email: `ok-${Date.now()}@example.com`, password: 'correct-horse-1', name: 'OK' },
+        body: {
+          email: `ok-${Date.now()}@example.com`,
+          password: 'correct-horse-1',
+          name: 'OK',
+        },
       })
       .catch(() => undefined)
 
     // A successful path is not throttled at the first attempt.
     await expect(
       staffAuth.api.signUpEmail({
-        body: { email: `ok2-${Date.now()}@example.com`, password: 'correct-horse-2', name: 'OK' },
+        body: {
+          email: `ok2-${Date.now()}@example.com`,
+          password: 'correct-horse-2',
+          name: 'OK',
+        },
       }),
     ).resolves.toBeTruthy()
   })
@@ -115,15 +124,15 @@ describe('learner realm', () => {
 
     await exhaust(academyId)
 
-    const blocked = await getLearnerAuth(academyId).api
-      .signInEmail({ body: { email: EMAIL, password: 'wrong' } })
+    const blocked = await getLearnerAuth(academyId)
+      .api.signInEmail({ body: { email: EMAIL, password: 'wrong' } })
       .then(() => 'ok')
       .catch((error: unknown) => (error as Error).message)
 
     expect(blocked).toMatch(/Too many attempts/)
 
-    const fresh = await getLearnerAuth(other.id).api
-      .signInEmail({ body: { email: EMAIL, password: 'wrong' } })
+    const fresh = await getLearnerAuth(other.id)
+      .api.signInEmail({ body: { email: EMAIL, password: 'wrong' } })
       .then(() => 'ok')
       .catch((error: unknown) => (error as Error).message)
 

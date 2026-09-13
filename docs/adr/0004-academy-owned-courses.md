@@ -11,7 +11,7 @@ If a workspace can contain multiple academies
 whether a course belongs to the academy or to the workspace.
 
 The tempting design is a shared library: `Course` belongs to the workspace, and
-is *published into* one or more academies through a join table. The appeal is
+is _published into_ one or more academies through a join table. The appeal is
 obvious — author once, sell under three brands.
 
 It also drags in a series of hard problems that have to be solved immediately,

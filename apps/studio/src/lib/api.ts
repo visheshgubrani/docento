@@ -30,7 +30,7 @@ const getPostHogHeaders = async (): Promise<Record<string, string>> => {
 
 async function apiFetch<T = unknown>(
   path: string,
-  { skipJson, ...options }: FetchOptions = {}
+  { skipJson, ...options }: FetchOptions = {},
 ): Promise<T> {
   const headers = new Headers(options.headers)
   const posthogHeaders = await getPostHogHeaders()
@@ -285,7 +285,7 @@ export async function fetchProject(projectId: string): Promise<Project> {
 }
 
 export async function createProject(
-  input: CreateProjectInput
+  input: CreateProjectInput,
 ): Promise<Project> {
   const payload = await apiFetch<{ project: Project }>('/projects', {
     method: 'POST',
@@ -305,18 +305,25 @@ export type UpdateProjectInput = {
 
 export async function updateProject(
   projectId: string,
-  input: UpdateProjectInput
+  input: UpdateProjectInput,
 ): Promise<Project> {
-  const payload = await apiFetch<{ project: Project }>(`/projects/${projectId}`, {
-    method: 'PATCH',
-    body: JSON.stringify(input),
-  })
+  const payload = await apiFetch<{ project: Project }>(
+    `/projects/${projectId}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify(input),
+    },
+  )
 
   return payload.project
 }
 
 const mapRevenueStats = (
-  entries: { currency?: string; amount?: number; _sum?: { amount?: number | null } }[] = []
+  entries: {
+    currency?: string
+    amount?: number
+    _sum?: { amount?: number | null }
+  }[] = [],
 ): RevenueStat[] =>
   entries.map((entry) => ({
     currency: entry.currency ?? 'USD',
@@ -325,7 +332,11 @@ const mapRevenueStats = (
 
 type AnalyticsOverviewPayload = {
   totalRevenue?: number
-  revenueByCurrency?: { currency?: string; amount?: number; _sum?: { amount?: number | null } }[]
+  revenueByCurrency?: {
+    currency?: string
+    amount?: number
+    _sum?: { amount?: number | null }
+  }[]
   totalStudents?: number
   activeCourses?: number
   totalEnrollments?: number
@@ -337,12 +348,16 @@ type AnalyticsEngagementPayload = {
   lessonsCompleted7d?: number
   newEnrollments7d?: number
   revenue7d?: number
-  revenueByCurrency7d?: { currency?: string; amount?: number; _sum?: { amount?: number | null } }[]
+  revenueByCurrency7d?: {
+    currency?: string
+    amount?: number
+    _sum?: { amount?: number | null }
+  }[]
   averageProgress?: number
 }
 
 export async function fetchProjectAnalyticsOverview(
-  projectId: string
+  projectId: string,
 ): Promise<ProjectAnalyticsOverview> {
   if (!projectId) {
     throw new ApiError('Project ID is required to fetch analytics', 400)
@@ -368,17 +383,21 @@ export async function fetchProjectAnalyticsOverview(
 }
 
 export async function fetchProjectAnalyticsEngagement(
-  projectId: string
+  projectId: string,
 ): Promise<ProjectEngagementMetrics> {
   if (!projectId) {
-    throw new ApiError('Project ID is required to fetch engagement analytics', 400)
+    throw new ApiError(
+      'Project ID is required to fetch engagement analytics',
+      400,
+    )
   }
 
   const payload = await apiFetch<
-    AnalyticsEngagementPayload | {
-      windowStart?: string
-      metrics?: AnalyticsEngagementPayload
-    }
+    | AnalyticsEngagementPayload
+    | {
+        windowStart?: string
+        metrics?: AnalyticsEngagementPayload
+      }
   >(`/projects/${projectId}/analytics/engagement`)
 
   const engagementPayload = payload as AnalyticsEngagementPayload & {
@@ -401,28 +420,28 @@ export async function fetchProjectAnalyticsEngagement(
 }
 
 export async function fetchProjectAnalyticsRecentSales(
-  projectId: string
+  projectId: string,
 ): Promise<ProjectTransaction[]> {
   if (!projectId) {
     throw new ApiError('Project ID is required to fetch recent sales', 400)
   }
 
   const payload = await apiFetch<{ transactions?: ProjectTransaction[] }>(
-    `/projects/${projectId}/analytics/recent-sales`
+    `/projects/${projectId}/analytics/recent-sales`,
   )
 
   return payload.transactions ?? []
 }
 
 export async function fetchProjectAnalyticsStudents(
-  projectId: string
+  projectId: string,
 ): Promise<ProjectStudentAnalytics[]> {
   if (!projectId) {
     throw new ApiError('Project ID is required to fetch student analytics', 400)
   }
 
   const payload = await apiFetch<{ students?: ProjectStudentAnalytics[] }>(
-    `/projects/${projectId}/analytics/students`
+    `/projects/${projectId}/analytics/students`,
   )
 
   return payload.students ?? []
@@ -430,12 +449,12 @@ export async function fetchProjectAnalyticsStudents(
 
 export async function fetchProjectAnalyticsCourseInsights(
   projectId: string,
-  courseId: string
+  courseId: string,
 ): Promise<CourseAnalyticsInsights> {
   if (!projectId || !courseId) {
     throw new ApiError(
       'Project ID and Course ID are required to fetch course analytics',
-      400
+      400,
     )
   }
 
@@ -462,14 +481,14 @@ export async function fetchProjectAnalyticsCourseInsights(
 }
 
 export async function fetchAllowedOrigins(
-  projectId: string
+  projectId: string,
 ): Promise<string[]> {
   if (!projectId) {
     throw new ApiError('Project ID is required to fetch allowed origins', 400)
   }
 
   const payload = await apiFetch<{ origins?: string[] }>(
-    `/projects/${projectId}/allowed-origins`
+    `/projects/${projectId}/allowed-origins`,
   )
 
   return payload.origins ?? []
@@ -477,7 +496,7 @@ export async function fetchAllowedOrigins(
 
 export async function addAllowedOrigin(
   projectId: string,
-  origin: string
+  origin: string,
 ): Promise<string[]> {
   if (!projectId) {
     throw new ApiError('Project ID is required to add an origin', 400)
@@ -497,7 +516,7 @@ export async function addAllowedOrigin(
     {
       method: 'POST',
       body: JSON.stringify({ origin: trimmed }),
-    }
+    },
   )
 
   return payload.origins ?? []
@@ -505,7 +524,7 @@ export async function addAllowedOrigin(
 
 export async function deleteAllowedOrigin(
   projectId: string,
-  origin: string
+  origin: string,
 ): Promise<string[]> {
   if (!projectId) {
     throw new ApiError('Project ID is required to delete an origin', 400)
@@ -521,21 +540,21 @@ export async function deleteAllowedOrigin(
     {
       method: 'DELETE',
       body: JSON.stringify({ origin: trimmed }),
-    }
+    },
   )
 
   return payload.origins ?? []
 }
 
 export async function fetchProjectPaymentSettings(
-  projectId: string
+  projectId: string,
 ): Promise<ProjectPaymentSettings> {
   if (!projectId) {
     throw new ApiError('Project ID is required to fetch payment settings', 400)
   }
 
   const payload = await apiFetch<ProjectPaymentSettings>(
-    `/projects/${projectId}/payments`
+    `/projects/${projectId}/payments`,
   )
 
   return {
@@ -546,7 +565,7 @@ export async function fetchProjectPaymentSettings(
 
 export async function saveProjectPaymentSettings(
   projectId: string,
-  input: SaveProjectPaymentSettingsInput
+  input: SaveProjectPaymentSettingsInput,
 ): Promise<void> {
   if (!projectId) {
     throw new ApiError('Project ID is required to save payment settings', 400)
@@ -566,14 +585,14 @@ export async function saveProjectPaymentSettings(
 }
 
 export async function fetchProjectCoupons(
-  projectId: string
+  projectId: string,
 ): Promise<ProjectCoupon[]> {
   if (!projectId) {
     throw new ApiError('Project ID is required to fetch coupons', 400)
   }
 
   const payload = await apiFetch<{ coupons?: ProjectCoupon[] }>(
-    `/projects/${projectId}/coupons`
+    `/projects/${projectId}/coupons`,
   )
 
   return payload.coupons ?? []
@@ -581,7 +600,7 @@ export async function fetchProjectCoupons(
 
 export async function createProjectCoupon(
   projectId: string,
-  input: CreateProjectCouponInput
+  input: CreateProjectCouponInput,
 ): Promise<ProjectCoupon> {
   if (!projectId) {
     throw new ApiError('Project ID is required to create a coupon', 400)
@@ -613,7 +632,7 @@ export async function createProjectCoupon(
         usageLimit: input.usageLimit ?? null,
         expiresAt: input.expiresAt ?? null,
       }),
-    }
+    },
   )
 
   return payload.coupon
@@ -622,12 +641,12 @@ export async function createProjectCoupon(
 export async function updateProjectCouponStatus(
   projectId: string,
   couponId: string,
-  status: ProjectCouponStatus
+  status: ProjectCouponStatus,
 ): Promise<ProjectCoupon> {
   if (!projectId || !couponId) {
     throw new ApiError(
       'Project ID and coupon ID are required to update coupon status',
-      400
+      400,
     )
   }
 
@@ -636,14 +655,14 @@ export async function updateProjectCouponStatus(
     {
       method: 'PATCH',
       body: JSON.stringify({ status }),
-    }
+    },
   )
 
   return payload.coupon
 }
 
 export async function fetchProjectCollaborators(
-  projectId: string
+  projectId: string,
 ): Promise<ProjectCollaborators> {
   if (!projectId) {
     throw new ApiError('Project ID is required to fetch collaborators', 400)
@@ -664,7 +683,7 @@ export async function fetchProjectCollaborators(
 
 export async function inviteProjectCollaborator(
   projectId: string,
-  input: InviteCollaboratorInput
+  input: InviteCollaboratorInput,
 ): Promise<InviteCollaboratorResult> {
   if (!projectId) {
     throw new ApiError('Project ID is required to invite collaborators', 400)
@@ -686,12 +705,12 @@ export async function inviteProjectCollaborator(
 
 export async function removeProjectCollaborator(
   projectId: string,
-  memberId: string
+  memberId: string,
 ): Promise<void> {
   if (!projectId || !memberId) {
     throw new ApiError(
       'Project ID and member ID are required to remove a collaborator',
-      400
+      400,
     )
   }
 
@@ -702,12 +721,12 @@ export async function removeProjectCollaborator(
 
 export async function revokeProjectInvitation(
   projectId: string,
-  invitationId: string
+  invitationId: string,
 ): Promise<void> {
   if (!projectId || !invitationId) {
     throw new ApiError(
       'Project ID and invitation ID are required to revoke an invitation',
-      400
+      400,
     )
   }
 
@@ -730,7 +749,7 @@ export type InvitationActionResult = {
 
 export async function respondToProjectInvitation(
   token: string,
-  action: InvitationAction
+  action: InvitationAction,
 ): Promise<InvitationActionResult> {
   const trimmedToken = token?.trim()
   if (!trimmedToken) {
@@ -754,14 +773,14 @@ export type SaveProjectWebhookInput = {
 }
 
 export async function fetchProjectWebhook(
-  projectId: string
+  projectId: string,
 ): Promise<ProjectWebhook> {
   if (!projectId) {
     throw new ApiError('Project ID is required to fetch webhook config', 400)
   }
 
   const payload = await apiFetch<ProjectWebhook>(
-    `/projects/${projectId}/webhooks`
+    `/projects/${projectId}/webhooks`,
   )
 
   return {
@@ -773,7 +792,7 @@ export async function fetchProjectWebhook(
 
 export async function saveProjectWebhook(
   projectId: string,
-  input: SaveProjectWebhookInput
+  input: SaveProjectWebhookInput,
 ): Promise<ProjectWebhook> {
   if (!projectId) {
     throw new ApiError('Project ID is required to save a webhook', 400)
@@ -788,7 +807,7 @@ export async function saveProjectWebhook(
     {
       method: 'POST',
       body: JSON.stringify(input),
-    }
+    },
   )
 
   return {
@@ -800,7 +819,7 @@ export async function saveProjectWebhook(
 
 export async function sendTestProjectWebhook(
   projectId: string,
-  event: ProjectWebhookEvent = 'enrollment.created'
+  event: ProjectWebhookEvent = 'enrollment.created',
 ): Promise<void> {
   if (!projectId) {
     throw new ApiError('Project ID is required to test a webhook', 400)
@@ -833,7 +852,7 @@ type CreateBillingOrderResponse = {
 }
 
 export async function createBillingOrder(
-  planId: BillingPlanId
+  planId: BillingPlanId,
 ): Promise<{ orderId: string; amount: number; keyId: string }> {
   if (!planId) {
     throw new ApiError('Plan ID is required to create an order', 400)
@@ -844,7 +863,7 @@ export async function createBillingOrder(
     {
       method: 'POST',
       body: JSON.stringify({ planId }),
-    }
+    },
   )
 
   return {
@@ -862,7 +881,7 @@ export type VerifyBillingPaymentInput = {
 }
 
 export async function verifyBillingPayment(
-  input: VerifyBillingPaymentInput
+  input: VerifyBillingPaymentInput,
 ): Promise<{ success?: boolean; message?: string }> {
   if (
     !input?.razorpay_order_id ||
@@ -877,13 +896,13 @@ export async function verifyBillingPayment(
     {
       method: 'POST',
       body: JSON.stringify(input),
-    }
+    },
   )
 }
 
 export async function fetchBillingSubscription(): Promise<BillingSubscription> {
   const payload = await apiFetch<{ subscription?: BillingSubscription }>(
-    `/billing/subscription`
+    `/billing/subscription`,
   )
 
   const subscription = payload.subscription
@@ -960,7 +979,7 @@ type FetchProjectEndUsersParams = {
 
 export async function fetchProjectEndUsers(
   projectId: string,
-  params: FetchProjectEndUsersParams = {}
+  params: FetchProjectEndUsersParams = {},
 ): Promise<EndUserList> {
   if (!projectId) {
     throw new ApiError('Project ID is required to fetch end users', 400)
@@ -999,7 +1018,7 @@ export type CreateEndUserInput = {
 
 export async function createEndUser(
   projectId: string,
-  input: CreateEndUserInput
+  input: CreateEndUserInput,
 ): Promise<EndUser> {
   if (!projectId) {
     throw new ApiError('Project ID is required to create an end user', 400)
@@ -1010,7 +1029,7 @@ export async function createEndUser(
     {
       method: 'POST',
       body: JSON.stringify(input),
-    }
+    },
   )
 
   return payload.endUser
@@ -1019,7 +1038,7 @@ export async function createEndUser(
 export async function updateEndUserStatus(
   projectId: string,
   endUserId: string,
-  status: EndUserStatus
+  status: EndUserStatus,
 ): Promise<EndUser> {
   if (!projectId || !endUserId) {
     throw new ApiError('Project ID and End User ID are required', 400)
@@ -1030,14 +1049,14 @@ export async function updateEndUserStatus(
     {
       method: 'PATCH',
       body: JSON.stringify({ status }),
-    }
+    },
   )
 
   return payload.endUser
 }
 
 export async function fetchProjectApiKeys(
-  projectId: string
+  projectId: string,
 ): Promise<ApiKeyList> {
   if (!projectId) {
     throw new ApiError('Project ID is required to fetch API keys', 400)
@@ -1058,7 +1077,7 @@ export async function fetchProjectApiKeys(
 
 export async function createProjectApiKey(
   projectId: string,
-  name: string
+  name: string,
 ): Promise<{ apiKey: string; key: ApiKey }> {
   if (!projectId) {
     throw new ApiError('Project ID is required to create an API key', 400)
@@ -1069,7 +1088,7 @@ export async function createProjectApiKey(
     {
       method: 'POST',
       body: JSON.stringify({ name }),
-    }
+    },
   )
 
   return payload
@@ -1077,12 +1096,12 @@ export async function createProjectApiKey(
 
 export async function deleteProjectApiKey(
   projectId: string,
-  keyId: string
+  keyId: string,
 ): Promise<void> {
   if (!projectId || !keyId) {
     throw new ApiError(
       'Project ID and Key ID are required to delete a key',
-      400
+      400,
     )
   }
 
@@ -1095,12 +1114,12 @@ export async function deleteProjectApiKey(
 export async function updateProjectApiKeyName(
   projectId: string,
   keyId: string,
-  name: string
+  name: string,
 ): Promise<ApiKey> {
   if (!projectId || !keyId) {
     throw new ApiError(
       'Project ID and Key ID are required to update a key',
-      400
+      400,
     )
   }
 
@@ -1113,7 +1132,7 @@ export async function updateProjectApiKeyName(
     {
       method: 'PATCH',
       body: JSON.stringify({ name }),
-    }
+    },
   )
 
   return payload.apiKey
@@ -1174,16 +1193,8 @@ export type CourseModuleLesson = {
 }
 
 export type LessonPrimaryContentType =
-  | 'VIDEO'
-  | 'TEXT'
-  | 'QUIZ'
-  | 'MOCK_TEST'
-  | 'ASSIGNMENT'
-  | 'YOUTUBE'
-export type LessonContentType =
-  | LessonPrimaryContentType
-  | 'FILE'
-  | 'RESOURCES'
+  'VIDEO' | 'TEXT' | 'QUIZ' | 'MOCK_TEST' | 'ASSIGNMENT' | 'YOUTUBE'
+export type LessonContentType = LessonPrimaryContentType | 'FILE' | 'RESOURCES'
 
 export type CourseModule = Module & {
   lessons: CourseModuleLesson[]
@@ -1205,7 +1216,7 @@ type FetchProjectCoursesParams = {
 
 export async function fetchProjectCourses(
   projectId: string,
-  params: FetchProjectCoursesParams = {}
+  params: FetchProjectCoursesParams = {},
 ): Promise<CourseSummary[]> {
   if (!projectId) {
     throw new ApiError('Project ID is required to fetch courses', 400)
@@ -1218,7 +1229,7 @@ export async function fetchProjectCourses(
 
   const queryString = searchParams.toString()
   const payload = await apiFetch<{ courses: CourseSummary[] }>(
-    `/projects/${projectId}/courses${queryString ? `?${queryString}` : ''}`
+    `/projects/${projectId}/courses${queryString ? `?${queryString}` : ''}`,
   )
 
   return payload.courses ?? []
@@ -1306,7 +1317,7 @@ export type LinkVideoInput = {
 
 export async function createCourse(
   projectId: string,
-  input: CreateCourseInput
+  input: CreateCourseInput,
 ): Promise<CourseSummary> {
   if (!projectId) {
     throw new ApiError('Project ID is required to create a course', 400)
@@ -1317,7 +1328,7 @@ export async function createCourse(
     {
       method: 'POST',
       body: JSON.stringify(input),
-    }
+    },
   )
 
   return payload.course
@@ -1325,14 +1336,14 @@ export async function createCourse(
 
 export async function fetchCourse(
   projectId: string,
-  courseId: string
+  courseId: string,
 ): Promise<CourseDetail> {
   if (!projectId || !courseId) {
     throw new ApiError('Project ID and Course ID are required', 400)
   }
 
   const payload = await apiFetch<{ course: CourseDetail }>(
-    `/projects/${projectId}/courses/${courseId}`
+    `/projects/${projectId}/courses/${courseId}`,
   )
 
   return payload.course
@@ -1341,7 +1352,7 @@ export async function fetchCourse(
 export async function updateCourse(
   projectId: string,
   courseId: string,
-  input: UpdateCourseInput
+  input: UpdateCourseInput,
 ): Promise<CourseSummary> {
   if (!projectId || !courseId) {
     throw new ApiError('Project ID and Course ID are required to update', 400)
@@ -1352,7 +1363,7 @@ export async function updateCourse(
     {
       method: 'PATCH',
       body: JSON.stringify(input),
-    }
+    },
   )
 
   return payload.course
@@ -1360,18 +1371,18 @@ export async function updateCourse(
 
 export async function toggleCoursePublish(
   projectId: string,
-  courseId: string
+  courseId: string,
 ): Promise<CourseSummary> {
   if (!projectId || !courseId) {
     throw new ApiError(
       'Project ID and Course ID are required to toggle publish state',
-      400
+      400,
     )
   }
 
   const payload = await apiFetch<{ course: CourseSummary }>(
     `/projects/${projectId}/courses/${courseId}/publish`,
-    { method: 'POST' }
+    { method: 'POST' },
   )
 
   return payload.course
@@ -1379,12 +1390,12 @@ export async function toggleCoursePublish(
 
 export async function deleteCourse(
   projectId: string,
-  courseId: string
+  courseId: string,
 ): Promise<void> {
   if (!projectId || !courseId) {
     throw new ApiError(
       'Project ID and Course ID are required to delete a course',
-      400
+      400,
     )
   }
 
@@ -1406,12 +1417,12 @@ export async function createCourseThumbnailUpload(
   projectId: string,
   courseId: string,
   fileName: string,
-  contentType: string
+  contentType: string,
 ): Promise<ThumbnailUploadSession> {
   if (!projectId || !courseId) {
     throw new ApiError(
       'Project ID and Course ID are required to upload thumbnail',
-      400
+      400,
     )
   }
 
@@ -1424,7 +1435,7 @@ export async function createCourseThumbnailUpload(
     {
       method: 'POST',
       body: JSON.stringify({ fileName, contentType }),
-    }
+    },
   )
 
   return payload
@@ -1434,12 +1445,12 @@ export async function createCourseInstructorAvatarUpload(
   projectId: string,
   courseId: string,
   fileName: string,
-  contentType: string
+  contentType: string,
 ): Promise<ThumbnailUploadSession> {
   if (!projectId || !courseId) {
     throw new ApiError(
       'Project ID and Course ID are required to upload instructor avatar',
-      400
+      400,
     )
   }
 
@@ -1452,7 +1463,7 @@ export async function createCourseInstructorAvatarUpload(
     {
       method: 'POST',
       body: JSON.stringify({ fileName, contentType }),
-    }
+    },
   )
 
   return payload
@@ -1461,12 +1472,12 @@ export async function createCourseInstructorAvatarUpload(
 export async function createModule(
   projectId: string,
   courseId: string,
-  input: CreateModuleInput
+  input: CreateModuleInput,
 ): Promise<CourseModule> {
   if (!projectId || !courseId) {
     throw new ApiError(
       'Project ID and Course ID are required to add modules',
-      400
+      400,
     )
   }
 
@@ -1482,7 +1493,7 @@ export async function createModule(
         title: input.title,
         description: input.description,
       }),
-    }
+    },
   )
 
   const createdModule = payload.module
@@ -1500,12 +1511,12 @@ export async function createLesson(
   projectId: string,
   courseId: string,
   moduleId: string,
-  input: CreateLessonInput
+  input: CreateLessonInput,
 ): Promise<CourseModuleLesson> {
   if (!projectId || !courseId || !moduleId) {
     throw new ApiError(
       'Project, Course, and Module IDs are required to add lessons',
-      400
+      400,
     )
   }
 
@@ -1513,10 +1524,14 @@ export async function createLesson(
     throw new ApiError('Lesson title and content type are required', 400)
   }
 
-  if (!['VIDEO', 'TEXT', 'QUIZ', 'MOCK_TEST', 'ASSIGNMENT', 'YOUTUBE'].includes(input.contentType)) {
+  if (
+    !['VIDEO', 'TEXT', 'QUIZ', 'MOCK_TEST', 'ASSIGNMENT', 'YOUTUBE'].includes(
+      input.contentType,
+    )
+  ) {
     throw new ApiError(
       'Lessons must be one of: VIDEO, TEXT, QUIZ, MOCK_TEST, ASSIGNMENT, or YOUTUBE',
-      400
+      400,
     )
   }
 
@@ -1531,7 +1546,7 @@ export async function createLesson(
         fileUrl: input.fileUrl?.trim() || undefined,
         videoUrl: input.videoUrl?.trim() || undefined,
       }),
-    }
+    },
   )
 
   return payload.lesson
@@ -1542,12 +1557,12 @@ export async function updateLesson(
   courseId: string,
   moduleId: string,
   lessonId: string,
-  input: UpdateLessonInput
+  input: UpdateLessonInput,
 ): Promise<CourseModuleLesson> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError(
       'Project, Course, Module, and Lesson IDs are required to update a lesson',
-      400
+      400,
     )
   }
 
@@ -1556,7 +1571,7 @@ export async function updateLesson(
     {
       method: 'PATCH',
       body: JSON.stringify(input),
-    }
+    },
   )
 
   return payload.lesson
@@ -1570,12 +1585,12 @@ export async function createVideoUploadSession(
   title: string,
   playbackPolicy: VideoPlaybackPolicy = 'signed',
   generateSubtitle = false,
-  generateChapters = false
+  generateChapters = false,
 ): Promise<VideoUploadSession> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError(
       'Project, Course, Module, and Lesson IDs are required to upload a video',
-      400
+      400,
     )
   }
 
@@ -1590,8 +1605,13 @@ export async function createVideoUploadSession(
     `/projects/${projectId}/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/upload`,
     {
       method: 'POST',
-      body: JSON.stringify({ title, playbackPolicy, generateSubtitle, generateChapters }),
-    }
+      body: JSON.stringify({
+        title,
+        playbackPolicy,
+        generateSubtitle,
+        generateChapters,
+      }),
+    },
   )
 
   return {
@@ -1609,12 +1629,12 @@ export async function linkVideoToLesson(
   courseId: string,
   moduleId: string,
   lessonId: string,
-  input: LinkVideoInput
+  input: LinkVideoInput,
 ): Promise<void> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError(
       'Project, Course, Module, and Lesson IDs are required to link a video',
-      400
+      400,
     )
   }
 
@@ -1623,7 +1643,7 @@ export async function linkVideoToLesson(
     {
       method: 'POST',
       body: JSON.stringify(input),
-    }
+    },
   )
 }
 
@@ -1631,12 +1651,12 @@ export async function fetchLessonPlaybackSession(
   projectId: string,
   courseId: string,
   moduleId: string,
-  lessonId: string
+  lessonId: string,
 ): Promise<VideoPlaybackSession> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError(
       'Project, Course, Module, and Lesson IDs are required to fetch playback.',
-      400
+      400,
     )
   }
 
@@ -1648,7 +1668,7 @@ export async function fetchLessonPlaybackSession(
     subtitle_url?: string | null
     chapters?: ChapterMarker[] | null
   }>(
-    `/projects/${projectId}/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/play`
+    `/projects/${projectId}/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/play`,
   )
 
   return {
@@ -1670,12 +1690,12 @@ export async function updateModule(
   projectId: string,
   courseId: string,
   moduleId: string,
-  input: UpdateModuleInput
+  input: UpdateModuleInput,
 ): Promise<Module> {
   if (!projectId || !courseId || !moduleId) {
     throw new ApiError(
       'Project, Course, and Module IDs are required to update a module',
-      400
+      400,
     )
   }
 
@@ -1684,7 +1704,7 @@ export async function updateModule(
     {
       method: 'PATCH',
       body: JSON.stringify(input),
-    }
+    },
   )
 
   return payload.module
@@ -1693,12 +1713,12 @@ export async function updateModule(
 export async function deleteModule(
   projectId: string,
   courseId: string,
-  moduleId: string
+  moduleId: string,
 ): Promise<void> {
   if (!projectId || !courseId || !moduleId) {
     throw new ApiError(
       'Project, Course, and Module IDs are required to delete a module',
-      400
+      400,
     )
   }
 
@@ -1707,7 +1727,7 @@ export async function deleteModule(
     {
       method: 'DELETE',
       skipJson: true,
-    }
+    },
   )
 }
 
@@ -1719,34 +1739,31 @@ export type ModuleOrderItem = {
 export async function reorderModules(
   projectId: string,
   courseId: string,
-  moduleOrders: ModuleOrderItem[]
+  moduleOrders: ModuleOrderItem[],
 ): Promise<void> {
   if (!projectId || !courseId) {
     throw new ApiError(
       'Project and Course IDs are required to reorder modules',
-      400
+      400,
     )
   }
 
-  await apiFetch(
-    `/projects/${projectId}/courses/${courseId}/modules/reorder`,
-    {
-      method: 'POST',
-      body: JSON.stringify({ moduleOrders }),
-    }
-  )
+  await apiFetch(`/projects/${projectId}/courses/${courseId}/modules/reorder`, {
+    method: 'POST',
+    body: JSON.stringify({ moduleOrders }),
+  })
 }
 
 export async function deleteLesson(
   projectId: string,
   courseId: string,
   moduleId: string,
-  lessonId: string
+  lessonId: string,
 ): Promise<void> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError(
       'Project, Course, Module, and Lesson IDs are required to delete a lesson',
-      400
+      400,
     )
   }
 
@@ -1755,7 +1772,7 @@ export async function deleteLesson(
     {
       method: 'DELETE',
       skipJson: true,
-    }
+    },
   )
 }
 
@@ -1768,12 +1785,12 @@ export async function reorderLessons(
   projectId: string,
   courseId: string,
   moduleId: string,
-  lessonOrders: LessonOrderItem[]
+  lessonOrders: LessonOrderItem[],
 ): Promise<void> {
   if (!projectId || !courseId || !moduleId) {
     throw new ApiError(
       'Project, Course, and Module IDs are required to reorder lessons',
-      400
+      400,
     )
   }
 
@@ -1782,7 +1799,7 @@ export async function reorderLessons(
     {
       method: 'POST',
       body: JSON.stringify({ lessonOrders }),
-    }
+    },
   )
 }
 
@@ -1824,7 +1841,7 @@ export type GeneratedCourseOutline = {
 
 export async function generateCourseOutline(
   projectId: string,
-  input: GenerateCourseOutlineInput
+  input: GenerateCourseOutlineInput,
 ): Promise<GeneratedCourseOutline> {
   if (!projectId) {
     throw new ApiError('Project ID is required to generate course outline', 400)
@@ -1839,7 +1856,7 @@ export async function generateCourseOutline(
     {
       method: 'POST',
       body: JSON.stringify(input),
-    }
+    },
   )
 
   return payload.outline
@@ -1849,12 +1866,12 @@ export async function deleteVideoFromLesson(
   projectId: string,
   courseId: string,
   moduleId: string,
-  lessonId: string
+  lessonId: string,
 ): Promise<void> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError(
       'Project, Course, Module, and Lesson IDs are required to delete video',
-      400
+      400,
     )
   }
 
@@ -1863,7 +1880,7 @@ export async function deleteVideoFromLesson(
     {
       method: 'DELETE',
       skipJson: true,
-    }
+    },
   )
 }
 
@@ -1888,12 +1905,12 @@ export async function createLessonImageUpload(
   moduleId: string,
   lessonId: string,
   fileName: string,
-  contentType: string
+  contentType: string,
 ): Promise<LessonImageUploadSession> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError(
       'Project, Course, Module, and Lesson IDs are required to upload an image',
-      400
+      400,
     )
   }
 
@@ -1910,7 +1927,7 @@ export async function createLessonImageUpload(
         type: contentType,
         fileName,
       }),
-    }
+    },
   )
 
   return payload
@@ -1937,14 +1954,14 @@ export async function fetchLessonUploads(
   projectId: string,
   courseId: string,
   moduleId: string,
-  lessonId: string
+  lessonId: string,
 ): Promise<Upload[]> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError('All IDs are required to fetch uploads', 400)
   }
 
   const payload = await apiFetch<{ uploads: Upload[] }>(
-    `/projects/${projectId}/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/uploads`
+    `/projects/${projectId}/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/uploads`,
   )
 
   return payload.uploads
@@ -1963,12 +1980,12 @@ export async function createLessonUpload(
   moduleId: string,
   lessonId: string,
   fileName: string,
-  contentType: string
+  contentType: string,
 ): Promise<CreateUploadSession> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError(
       'Project, Course, Module, and Lesson IDs are required to create upload',
-      400
+      400,
     )
   }
 
@@ -1985,7 +2002,7 @@ export async function createLessonUpload(
         type: contentType,
         fileName,
       }),
-    }
+    },
   )
 
   return payload
@@ -1996,7 +2013,7 @@ export async function deleteLessonUpload(
   courseId: string,
   moduleId: string,
   lessonId: string,
-  uploadId: string
+  uploadId: string,
 ): Promise<void> {
   if (!projectId || !courseId || !moduleId || !lessonId || !uploadId) {
     throw new ApiError('All IDs are required to delete upload', 400)
@@ -2007,10 +2024,9 @@ export async function deleteLessonUpload(
     {
       method: 'DELETE',
       skipJson: true,
-    }
+    },
   )
 }
-
 
 // ========== PDF Upload ==========
 
@@ -2031,12 +2047,12 @@ export async function createPdfUpload(
   moduleId: string,
   lessonId: string,
   fileName: string,
-  contentType: string
+  contentType: string,
 ): Promise<PdfUploadSession> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError(
       'Project, Course, Module, and Lesson IDs are required to create PDF upload',
-      400
+      400,
     )
   }
 
@@ -2052,7 +2068,7 @@ export async function createPdfUpload(
         fileName,
         contentType,
       }),
-    }
+    },
   )
 
   return payload
@@ -2062,12 +2078,12 @@ export async function deletePdfFromLesson(
   projectId: string,
   courseId: string,
   moduleId: string,
-  lessonId: string
+  lessonId: string,
 ): Promise<void> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError(
       'Project, Course, Module, and Lesson IDs are required to delete PDF',
-      400
+      400,
     )
   }
 
@@ -2076,7 +2092,7 @@ export async function deletePdfFromLesson(
     {
       method: 'DELETE',
       skipJson: true,
-    }
+    },
   )
 }
 
@@ -2145,14 +2161,14 @@ export async function getAssignment(
   projectId: string,
   courseId: string,
   moduleId: string,
-  lessonId: string
+  lessonId: string,
 ): Promise<Assignment | null> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError('All IDs are required to fetch assignment', 400)
   }
 
   const payload = await apiFetch<{ assignment: Assignment | null }>(
-    `/projects/${projectId}/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/assignments`
+    `/projects/${projectId}/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/assignments`,
   )
 
   return payload.assignment
@@ -2163,7 +2179,7 @@ export async function createAssignment(
   courseId: string,
   moduleId: string,
   lessonId: string,
-  data: CreateAssignmentInput
+  data: CreateAssignmentInput,
 ): Promise<Assignment> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError('All IDs are required to create assignment', 400)
@@ -2183,7 +2199,7 @@ export async function createAssignment(
         dueDate: data.dueDate || undefined,
         totalPoints: data.totalPoints,
       }),
-    }
+    },
   )
 
   return payload.assignment
@@ -2194,7 +2210,7 @@ export async function updateAssignment(
   courseId: string,
   moduleId: string,
   lessonId: string,
-  data: UpdateAssignmentInput
+  data: UpdateAssignmentInput,
 ): Promise<Assignment> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError('All IDs are required to update assignment', 400)
@@ -2210,9 +2226,11 @@ export async function updateAssignment(
           description: data.description.trim() || null,
         }),
         ...(data.dueDate !== undefined && { dueDate: data.dueDate || null }),
-        ...(data.totalPoints !== undefined && { totalPoints: data.totalPoints }),
+        ...(data.totalPoints !== undefined && {
+          totalPoints: data.totalPoints,
+        }),
       }),
-    }
+    },
   )
 
   return payload.assignment
@@ -2222,7 +2240,7 @@ export async function deleteAssignment(
   projectId: string,
   courseId: string,
   moduleId: string,
-  lessonId: string
+  lessonId: string,
 ): Promise<void> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError('All IDs are required to delete assignment', 400)
@@ -2233,7 +2251,7 @@ export async function deleteAssignment(
     {
       method: 'DELETE',
       skipJson: true,
-    }
+    },
   )
 }
 
@@ -2242,10 +2260,13 @@ export async function listAssignmentSubmissions(
   courseId: string,
   moduleId: string,
   lessonId: string,
-  status?: AssignmentSubmissionStatus
+  status?: AssignmentSubmissionStatus,
 ): Promise<AssignmentSubmissionsList> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
-    throw new ApiError('All IDs are required to list assignment submissions', 400)
+    throw new ApiError(
+      'All IDs are required to list assignment submissions',
+      400,
+    )
   }
 
   const searchParams = new URLSearchParams()
@@ -2259,7 +2280,7 @@ export async function listAssignmentSubmissions(
     total?: number
     assignment?: AssignmentSubmissionsList['assignment']
   }>(
-    `/projects/${projectId}/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/assignments/submissions${query ? `?${query}` : ''}`
+    `/projects/${projectId}/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/assignments/submissions${query ? `?${query}` : ''}`,
   )
 
   return {
@@ -2286,10 +2307,13 @@ export async function gradeAssignmentSubmission(
   moduleId: string,
   lessonId: string,
   submissionId: string,
-  input: GradeAssignmentSubmissionInput
+  input: GradeAssignmentSubmissionInput,
 ): Promise<AssignmentSubmission> {
   if (!projectId || !courseId || !moduleId || !lessonId || !submissionId) {
-    throw new ApiError('All IDs are required to grade assignment submission', 400)
+    throw new ApiError(
+      'All IDs are required to grade assignment submission',
+      400,
+    )
   }
 
   const payload = await apiFetch<{ submission: AssignmentSubmission }>(
@@ -2300,7 +2324,7 @@ export async function gradeAssignmentSubmission(
         grade: input.grade,
         feedback: input.feedback?.trim() || undefined,
       }),
-    }
+    },
   )
 
   return payload.submission
@@ -2309,11 +2333,7 @@ export async function gradeAssignmentSubmission(
 // ===== QUIZ TYPES =====
 
 export type QuestionType =
-  | 'MULTIPLE_CHOICE'
-  | 'MULTI_SELECT'
-  | 'TRUE_FALSE'
-  | 'SHORT_ANSWER'
-  | 'INTEGER'
+  'MULTIPLE_CHOICE' | 'MULTI_SELECT' | 'TRUE_FALSE' | 'SHORT_ANSWER' | 'INTEGER'
 
 export type Question = {
   id: string
@@ -2394,14 +2414,14 @@ export async function getQuiz(
   projectId: string,
   courseId: string,
   moduleId: string,
-  lessonId: string
+  lessonId: string,
 ): Promise<Quiz | null> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError('All IDs are required to fetch quiz', 400)
   }
 
   const payload = await apiFetch<{ quiz: Quiz | null }>(
-    `/projects/${projectId}/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/quizzes`
+    `/projects/${projectId}/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/quizzes`,
   )
 
   return payload.quiz
@@ -2412,7 +2432,7 @@ export async function createQuiz(
   courseId: string,
   moduleId: string,
   lessonId: string,
-  data: CreateQuizInput
+  data: CreateQuizInput,
 ): Promise<Quiz> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError('All IDs are required to create quiz', 400)
@@ -2423,7 +2443,7 @@ export async function createQuiz(
     {
       method: 'POST',
       body: JSON.stringify(data),
-    }
+    },
   )
 
   return payload.quiz
@@ -2434,7 +2454,7 @@ export async function updateQuiz(
   courseId: string,
   moduleId: string,
   lessonId: string,
-  data: UpdateQuizInput
+  data: UpdateQuizInput,
 ): Promise<Quiz> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError('All IDs are required to update quiz', 400)
@@ -2445,7 +2465,7 @@ export async function updateQuiz(
     {
       method: 'PATCH',
       body: JSON.stringify(data),
-    }
+    },
   )
 
   return payload.quiz
@@ -2455,7 +2475,7 @@ export async function deleteQuiz(
   projectId: string,
   courseId: string,
   moduleId: string,
-  lessonId: string
+  lessonId: string,
 ): Promise<void> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError('All IDs are required to delete quiz', 400)
@@ -2466,7 +2486,7 @@ export async function deleteQuiz(
     {
       method: 'DELETE',
       skipJson: true,
-    }
+    },
   )
 }
 
@@ -2477,7 +2497,7 @@ export async function createQuestion(
   courseId: string,
   moduleId: string,
   lessonId: string,
-  data: CreateQuestionInput
+  data: CreateQuestionInput,
 ): Promise<Question> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError('All IDs are required to create question', 400)
@@ -2488,7 +2508,7 @@ export async function createQuestion(
     {
       method: 'POST',
       body: JSON.stringify(data),
-    }
+    },
   )
 
   return payload.question
@@ -2500,7 +2520,7 @@ export async function updateQuestion(
   moduleId: string,
   lessonId: string,
   questionId: string,
-  data: UpdateQuestionInput
+  data: UpdateQuestionInput,
 ): Promise<Question> {
   if (!projectId || !courseId || !moduleId || !lessonId || !questionId) {
     throw new ApiError('All IDs are required to update question', 400)
@@ -2511,7 +2531,7 @@ export async function updateQuestion(
     {
       method: 'PATCH',
       body: JSON.stringify(data),
-    }
+    },
   )
 
   return payload.question
@@ -2522,7 +2542,7 @@ export async function deleteQuestion(
   courseId: string,
   moduleId: string,
   lessonId: string,
-  questionId: string
+  questionId: string,
 ): Promise<void> {
   if (!projectId || !courseId || !moduleId || !lessonId || !questionId) {
     throw new ApiError('All IDs are required to delete question', 400)
@@ -2533,7 +2553,7 @@ export async function deleteQuestion(
     {
       method: 'DELETE',
       skipJson: true,
-    }
+    },
   )
 }
 
@@ -2542,7 +2562,7 @@ export async function reorderQuestions(
   courseId: string,
   moduleId: string,
   lessonId: string,
-  questionOrders: { id: string; order: number }[]
+  questionOrders: { id: string; order: number }[],
 ): Promise<void> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError('All IDs are required to reorder questions', 400)
@@ -2554,7 +2574,7 @@ export async function reorderQuestions(
       method: 'POST',
       body: JSON.stringify({ questionOrders }),
       skipJson: true,
-    }
+    },
   )
 }
 
@@ -2565,7 +2585,7 @@ export async function generateQuizWithAI(
   courseId: string,
   moduleId: string,
   lessonId: string,
-  options: GenerateQuizOptions
+  options: GenerateQuizOptions,
 ): Promise<{ questions: Question[]; questionCount: number }> {
   if (!projectId || !courseId || !moduleId || !lessonId) {
     throw new ApiError('All IDs are required to generate quiz', 400)
@@ -2579,7 +2599,7 @@ export async function generateQuizWithAI(
     {
       method: 'POST',
       body: JSON.stringify(options),
-    }
+    },
   )
 
   return {
@@ -2635,10 +2655,13 @@ type FetchCourseEnrollmentsParams = {
 export async function fetchCourseEnrollments(
   projectId: string,
   courseId: string,
-  params: FetchCourseEnrollmentsParams = {}
+  params: FetchCourseEnrollmentsParams = {},
 ): Promise<CourseEnrollmentList> {
   if (!projectId || !courseId) {
-    throw new ApiError('Project ID and Course ID are required to fetch enrollments', 400)
+    throw new ApiError(
+      'Project ID and Course ID are required to fetch enrollments',
+      400,
+    )
   }
 
   const searchParams = new URLSearchParams()
@@ -2650,7 +2673,9 @@ export async function fetchCourseEnrollments(
   const payload = await apiFetch<{
     enrollments?: CourseEnrollment[]
     pagination?: CourseEnrollmentPagination
-  }>(`/projects/${projectId}/courses/${courseId}/enrollments${query ? `?${query}` : ''}`)
+  }>(
+    `/projects/${projectId}/courses/${courseId}/enrollments${query ? `?${query}` : ''}`,
+  )
 
   return {
     enrollments: payload.enrollments ?? [],

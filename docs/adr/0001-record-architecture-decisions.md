@@ -30,7 +30,7 @@ An ADR is required for a change to: the tenancy or identity model, the public
 API surface, the authorization model, the licensing boundary, the data model's
 core entities, or the dependency policy.
 
-An ADR is *not* required for a feature, a refactor, or an implementation detail,
+An ADR is _not_ required for a feature, a refactor, or an implementation detail,
 even a large one. The bar is "would reversing this be expensive, and would a
 new contributor plausibly question it?"
 
@@ -48,14 +48,14 @@ it," it does not need an ADR.
 
 **Index of accepted decisions:**
 
-| # | Decision |
-| --- | --- |
-| [2](./0002-workspace-and-academy-tenancy.md) | Workspaces contain academies |
-| [3](./0003-two-authentication-realms.md) | Two isolated authentication realms |
-| [4](./0004-academy-owned-courses.md) | Courses belong to one academy; copying is explicit |
-| [5](./0005-immutable-published-releases.md) | Published releases are immutable |
-| [6](./0006-licensing-boundary.md) | AGPL-3.0 application, Apache-2.0 SDK |
-| [7](./0007-durable-jobs-on-postgres.md) | Durable jobs on Postgres via pg-boss |
-| [8](./0008-local-first-media.md) | Local storage first, providers are pluggable |
-| [9](./0009-commerce-separation.md) | Offers, orders, grants, and enrollments are separate |
-| [10](./0010-fresh-schema-baseline.md) | Fresh schema baseline, no legacy compatibility |
+| #                                            | Decision                                             |
+| -------------------------------------------- | ---------------------------------------------------- |
+| [2](./0002-workspace-and-academy-tenancy.md) | Workspaces contain academies                         |
+| [3](./0003-two-authentication-realms.md)     | Two isolated authentication realms                   |
+| [4](./0004-academy-owned-courses.md)         | Courses belong to one academy; copying is explicit   |
+| [5](./0005-immutable-published-releases.md)  | Published releases are immutable                     |
+| [6](./0006-licensing-boundary.md)            | AGPL-3.0 application, Apache-2.0 SDK                 |
+| [7](./0007-durable-jobs-on-postgres.md)      | Durable jobs on Postgres via pg-boss                 |
+| [8](./0008-local-first-media.md)             | Local storage first, providers are pluggable         |
+| [9](./0009-commerce-separation.md)           | Offers, orders, grants, and enrollments are separate |
+| [10](./0010-fresh-schema-baseline.md)        | Fresh schema baseline, no legacy compatibility       |

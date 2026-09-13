@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 Guidance for working in this repository, human or agent. Read
-[ARCHITECTURE.md](./ARCHITECTURE.md) first — it explains *why* the constraints
+[ARCHITECTURE.md](./ARCHITECTURE.md) first — it explains _why_ the constraints
 below exist.
 
 ## Current state
@@ -78,7 +78,7 @@ enrollment, or authorization.
 **An Apache-2.0 package must never import an AGPL-3.0 package.**
 `packages/contracts` and `packages/sdk` are Apache-2.0 so they stay usable in
 proprietary software. Dependency direction is one-way. If you need shared code,
-it moves *down* into `contracts` — do not relax the rule.
+it moves _down_ into `contracts` — do not relax the rule.
 
 **Only `packages/domain` may import `@prisma/client`.** A second query path is
 how a tenant filter gets forgotten.
@@ -122,13 +122,13 @@ nothing that matters.
 
 Required when you touch the corresponding area:
 
-| You changed | Required test |
-| --- | --- |
+| You changed              | Required test                                                         |
+| ------------------------ | --------------------------------------------------------------------- |
 | Authorization or tenancy | Cross-tenant attempts must fail. A positive test alone is not enough. |
-| Money, checkout, refunds | Idempotency: the same request twice produces one business effect. |
-| Provider callbacks | Duplicate and out-of-order delivery. |
-| Quizzes or grading | Attempt limits; answer keys never leave the server. |
-| The schema | A migration that applies cleanly to an empty database. |
+| Money, checkout, refunds | Idempotency: the same request twice produces one business effect.     |
+| Provider callbacks       | Duplicate and out-of-order delivery.                                  |
+| Quizzes or grading       | Attempt limits; answer keys never leave the server.                   |
+| The schema               | A migration that applies cleanly to an empty database.                |
 
 ## Conventions
 
@@ -146,11 +146,11 @@ Required when you touch the corresponding area:
 Do not "fix" these without reading the reasoning first. Each is recorded where
 it lives.
 
-| Debt | Why it exists |
-| --- | --- |
-| `apps/api` excluded from the lint and typecheck gate | Legacy app replaced during the port. Scripts renamed; the reason is in its `package.json` and in ROADMAP.md. |
+| Debt                                                                | Why it exists                                                                                                    |
+| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `apps/api` excluded from the lint and typecheck gate                | Legacy app replaced during the port. Scripts renamed; the reason is in its `package.json` and in ROADMAP.md.     |
 | React Compiler rules downgraded to warnings in `studio` and `learn` | Real violations in code being replaced. Downgraded rather than disabled, so the work stays visible in every run. |
-| `apps/api` exempt from the Prisma-boundary rule | Same reason. The exemption is in `.dependency-cruiser.cjs` with a comment explaining when it is removed. |
+| `apps/api` exempt from the Prisma-boundary rule                     | Same reason. The exemption is in `.dependency-cruiser.cjs` with a comment explaining when it is removed.         |
 
 ## Before you push
 

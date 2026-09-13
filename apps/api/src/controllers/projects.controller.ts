@@ -20,7 +20,7 @@ const normalizeEndUserStatus = (status?: string): EndUserStatus | null => {
 const createProject = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const { name, authMode } = req.body
   if (!name) {
@@ -29,7 +29,7 @@ const createProject = async (
   if (authMode) {
     if (authMode !== 'MANAGED' && authMode !== 'DELEGATED') {
       return next(
-        new ApiError(400, 'Auth Mode can only be either managed or delegated')
+        new ApiError(400, 'Auth Mode can only be either managed or delegated'),
       )
     }
   }
@@ -64,7 +64,7 @@ const createProject = async (
   return res.status(201).json(
     new ApiResponse(201, 'Project Created Successfully', {
       project,
-    })
+    }),
   )
 }
 
@@ -78,10 +78,7 @@ const getProjects = async (req: Request, res: Response, next: NextFunction) => {
   // Fetch projects where user is owner OR active member
   const projects = await prisma.project.findMany({
     where: {
-      OR: [
-        { ownerId: user.id },
-        { members: { some: { userId: user.id } } },
-      ],
+      OR: [{ ownerId: user.id }, { members: { some: { userId: user.id } } }],
     },
     include: {
       members: {
@@ -109,13 +106,13 @@ const getProjects = async (req: Request, res: Response, next: NextFunction) => {
     webhookUrl: p.webhookUrl,
     ownerId: p.ownerId,
     // Calculated role: OWNER if user owns it, otherwise get from membership
-    role: p.ownerId === user.id ? 'OWNER' : (p.members[0]?.role || 'EDITOR'),
+    role: p.ownerId === user.id ? 'OWNER' : p.members[0]?.role || 'EDITOR',
   }))
 
   return res.status(200).json(
     new ApiResponse(200, 'Projects fetched Successfully', {
       projects: sanitizedProjects,
-    })
+    }),
   )
 }
 
@@ -137,17 +134,17 @@ const getProject = async (req: Request, res: Response, next: NextFunction) => {
     return next(new ApiError(400, 'Project not found'))
   }
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(200, 'Project fetched Successfully', { project: project })
-    )
+  return res.status(200).json(
+    new ApiResponse(200, 'Project fetched Successfully', {
+      project: project,
+    }),
+  )
 }
 
 const deleteProject = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const user = req.user
   if (!user) {
@@ -170,7 +167,7 @@ const deleteProject = async (
 const createApiKey = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const user = req.user
   if (!user) {
@@ -221,14 +218,14 @@ const createApiKey = async (
     new ApiResponse(201, 'Api Key generated Successfully', {
       apiKey: apiKeyString,
       key: createdKey,
-    })
+    }),
   )
 }
 
 const updateProject = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const project = req.project! // From authorizeProjectAccess middleware
   const { projectId } = req.params
@@ -245,7 +242,7 @@ const updateProject = async (
   // Ensure at least one field is being updated
   if (Object.keys(dataToUpdate).length === 0) {
     return next(
-      new ApiError(400, 'Please provide at least one field to update.')
+      new ApiError(400, 'Please provide at least one field to update.'),
     )
   }
 
@@ -262,7 +259,7 @@ const updateProject = async (
   return res.status(200).json(
     new ApiResponse(200, 'Project updated successfully', {
       project: updatedProject,
-    })
+    }),
   )
 }
 
@@ -315,14 +312,14 @@ const getApiKeys = async (req: Request, res: Response, next: NextFunction) => {
         name: project.owner?.name,
         email: project.owner?.email,
       },
-    })
+    }),
   )
 }
 
 const revokeApiKey = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const user = req.user
   if (!user) {
@@ -364,7 +361,7 @@ const revokeApiKey = async (
 const createEndUser = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project
@@ -384,8 +381,8 @@ const createEndUser = async (
         return next(
           new ApiError(
             400,
-            'Email and password are required for managed projects.'
-          )
+            'Email and password are required for managed projects.',
+          ),
         )
       }
 
@@ -396,7 +393,7 @@ const createEndUser = async (
 
       if (String(password).length < 8) {
         return next(
-          new ApiError(400, 'Password must be at least 8 characters.')
+          new ApiError(400, 'Password must be at least 8 characters.'),
         )
       }
 
@@ -455,14 +452,14 @@ const createEndUser = async (
       return res.status(201).json(
         new ApiResponse(201, 'End user created successfully', {
           endUser: endUserWithRelations,
-        })
+        }),
       )
     }
 
     // Delegated projects
     if (!externalId) {
       return next(
-        new ApiError(400, 'externalId is required for delegated projects.')
+        new ApiError(400, 'externalId is required for delegated projects.'),
       )
     }
 
@@ -514,7 +511,7 @@ const createEndUser = async (
     return res.status(201).json(
       new ApiResponse(201, 'End user created successfully', {
         endUser: delegatedEndUser,
-      })
+      }),
     )
   } catch (error) {
     console.error('[CREATE_END_USER_ERROR]', error)
@@ -585,14 +582,14 @@ const getEndUsers = async (req: Request, res: Response, next: NextFunction) => {
         total,
         totalPages: Math.ceil(total / Number(limit)),
       },
-    })
+    }),
   )
 }
 
 const updateApiKeyName = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const user = req.user
   if (!user) {
@@ -636,7 +633,7 @@ const updateApiKeyName = async (
     return res.status(200).json(
       new ApiResponse(200, 'Api Key updated successfully', {
         apiKey,
-      })
+      }),
     )
   } catch (error) {
     return next(new ApiError(404, 'API key not found for this project'))
@@ -701,14 +698,14 @@ const getEndUser = async (req: Request, res: Response, next: NextFunction) => {
   return res.status(200).json(
     new ApiResponse(200, 'End user fetched successfully', {
       endUser,
-    })
+    }),
   )
 }
 
 const updateEndUserStatus = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project!
@@ -771,7 +768,7 @@ const updateEndUserStatus = async (
     return res.status(200).json(
       new ApiResponse(200, 'End user status updated successfully', {
         endUser: updatedEndUser,
-      })
+      }),
     )
   } catch (error) {
     console.error('[UPDATE_END_USER_STATUS_ERROR]', error)
@@ -782,7 +779,7 @@ const updateEndUserStatus = async (
 const deleteEndUser = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const project = req.project!
   const { endUserId } = req.params
@@ -811,7 +808,7 @@ const deleteEndUser = async (
 const getAnalyticsOverview = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const project = req.project!
 
@@ -847,7 +844,7 @@ const getAnalyticsOverview = async (
         activeEnrollments,
         totalApiKeys,
       },
-    })
+    }),
   )
 }
 
@@ -855,7 +852,7 @@ const getAnalyticsOverview = async (
 export const getPaymentSettings = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project!
@@ -871,7 +868,7 @@ export const getPaymentSettings = async (
       new ApiResponse(200, 'Settings fetched', {
         keyId: keys.razorpayKeyId,
         isConfigured: !!keys.razorpayKeySecret, // Returns true/false only
-      })
+      }),
     )
   } catch (error) {
     next(error)
@@ -882,7 +879,7 @@ export const getPaymentSettings = async (
 export const updatePaymentSettings = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project!
@@ -902,7 +899,7 @@ export const updatePaymentSettings = async (
     } catch (e) {
       throw new ApiError(
         400,
-        'Invalid Razorpay Credentials. Please check and try again.'
+        'Invalid Razorpay Credentials. Please check and try again.',
       )
     }
 
@@ -918,7 +915,7 @@ export const updatePaymentSettings = async (
     })
 
     return res.json(
-      new ApiResponse(200, 'Payment settings updated successfully', {})
+      new ApiResponse(200, 'Payment settings updated successfully', {}),
     )
   } catch (error) {
     next(error)

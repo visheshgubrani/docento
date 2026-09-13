@@ -41,7 +41,12 @@ export function AssignmentLessonEditor({
 
       try {
         setIsLoading(true)
-        const fetched = await getAssignment(projectId, courseId, module.id, lesson.id)
+        const fetched = await getAssignment(
+          projectId,
+          courseId,
+          module.id,
+          lesson.id,
+        )
         setAssignment(fetched)
       } catch (error) {
         console.error('Failed to load assignment:', error)
@@ -60,10 +65,10 @@ export function AssignmentLessonEditor({
     : 'No due date'
 
   return (
-    <Card className='border border-slate-200/80 shadow-sm dark:border-slate-800'>
+    <Card className="border border-slate-200/80 shadow-sm dark:border-slate-800">
       <CardHeader>
-        <CardTitle className='flex items-center gap-2 text-xl font-semibold'>
-          <ClipboardList className='h-5 w-5 text-muted-foreground' />
+        <CardTitle className="flex items-center gap-2 text-xl font-semibold">
+          <ClipboardList className="h-5 w-5 text-muted-foreground" />
           Assignment builder
         </CardTitle>
         <CardDescription>
@@ -71,23 +76,23 @@ export function AssignmentLessonEditor({
           {lesson.title}
         </CardDescription>
       </CardHeader>
-      <CardContent className='space-y-4'>
+      <CardContent className="space-y-4">
         {isLoading ? (
-          <p className='text-sm text-muted-foreground'>Loading assignment...</p>
+          <p className="text-sm text-muted-foreground">Loading assignment...</p>
         ) : assignment ? (
-          <div className='rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-800 dark:bg-slate-900/50'>
-            <p className='font-semibold'>{assignment.title}</p>
-            <p className='mt-1 text-muted-foreground'>{dueDateLabel}</p>
-            <p className='text-muted-foreground'>
+          <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-800 dark:bg-slate-900/50">
+            <p className="font-semibold">{assignment.title}</p>
+            <p className="mt-1 text-muted-foreground">{dueDateLabel}</p>
+            <p className="text-muted-foreground">
               Total points: {assignment.totalPoints}
             </p>
           </div>
         ) : (
-          <p className='text-sm text-muted-foreground'>
+          <p className="text-sm text-muted-foreground">
             No assignment details created yet.
           </p>
         )}
-        <Button asChild className='w-full'>
+        <Button asChild className="w-full">
           <Link href={assignmentUrl}>
             {assignment ? 'Manage assignment' : 'Create assignment'}
           </Link>

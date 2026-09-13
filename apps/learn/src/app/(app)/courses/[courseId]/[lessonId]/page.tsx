@@ -1,13 +1,19 @@
-"use client";
+'use client'
 
-import { type MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { HiArrowDownTray, HiArrowLeft, HiArrowRight } from "react-icons/hi2";
-import { FiDownloadCloud } from "react-icons/fi";
-import { CoursePlayerHeader } from "@/components/course-player/header";
-import { LessonContent } from "@/components/course-player/lesson-content";
-import { CoursePlayerSidebar } from "@/components/course-player/sidebar-layout";
+import {
+  type MouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
+import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
+import { HiArrowDownTray, HiArrowLeft, HiArrowRight } from 'react-icons/hi2'
+import { FiDownloadCloud } from 'react-icons/fi'
+import { CoursePlayerHeader } from '@/components/course-player/header'
+import { LessonContent } from '@/components/course-player/lesson-content'
+import { CoursePlayerSidebar } from '@/components/course-player/sidebar-layout'
 import {
   fetchLessonPlayback,
   fetchStudentCourseContent,
@@ -20,42 +26,49 @@ import {
   type StorefrontCourseViewer,
   type StorefrontLessonDetail,
   type StorefrontLessonResource,
-} from "@/lib/lms-api-client";
-import { cn } from "@/lib/utils";
+} from '@/lib/lms-api-client'
+import { cn } from '@/lib/utils'
 
-function getResources(lesson: StorefrontLessonDetail | null): StorefrontLessonResource[] {
-  if (!lesson) return [];
+function getResources(
+  lesson: StorefrontLessonDetail | null,
+): StorefrontLessonResource[] {
+  if (!lesson) return []
 
-  const resources = [...(lesson.resources ?? [])];
+  const resources = [...(lesson.resources ?? [])]
   if (lesson.fileUrl) {
     resources.unshift({
       id: `${lesson.id}-file`,
-      title: "Lesson file",
+      title: 'Lesson file',
       fileUrl: lesson.fileUrl,
-      type: "FILE",
-    });
+      type: 'FILE',
+    })
   }
 
-  const seen = new Set<string>();
+  const seen = new Set<string>()
   return resources.filter((resource) => {
-    if (!resource.fileUrl) return false;
-    if (seen.has(resource.fileUrl)) return false;
-    seen.add(resource.fileUrl);
-    return true;
-  });
+    if (!resource.fileUrl) return false
+    if (seen.has(resource.fileUrl)) return false
+    seen.add(resource.fileUrl)
+    return true
+  })
 }
 
 function getLessonIdFromPath(pathname: string) {
-  const segments = pathname.split("/").filter(Boolean);
-  return segments[segments.length - 1] ?? "";
+  const segments = pathname.split('/').filter(Boolean)
+  return segments[segments.length - 1] ?? ''
 }
 
-function getCompletionMap(progressMap: StudentCourseContent["progressMap"] | undefined) {
-  if (!progressMap) return {};
+function getCompletionMap(
+  progressMap: StudentCourseContent['progressMap'] | undefined,
+) {
+  if (!progressMap) return {}
 
   return Object.fromEntries(
-    Object.entries(progressMap).map(([lessonId, progress]) => [lessonId, Boolean(progress?.isCompleted)])
-  );
+    Object.entries(progressMap).map(([lessonId, progress]) => [
+      lessonId,
+      Boolean(progress?.isCompleted),
+    ]),
+  )
 }
 
 function LessonDetailsSkeleton() {
@@ -78,7 +91,7 @@ function LessonDetailsSkeleton() {
         </div>
       </div>
     </section>
-  );
+  )
 }
 
 function LessonPageSkeleton({ isSidebarOpen }: { isSidebarOpen: boolean }) {
@@ -86,8 +99,8 @@ function LessonPageSkeleton({ isSidebarOpen }: { isSidebarOpen: boolean }) {
     <div className="min-h-screen bg-muted/10">
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 hidden h-dvh border-r border-border bg-background lg:block",
-          isSidebarOpen ? "w-80" : "w-16"
+          'fixed inset-y-0 left-0 z-40 hidden h-dvh border-r border-border bg-background lg:block',
+          isSidebarOpen ? 'w-80' : 'w-16',
         )}
       >
         <div className="my-3 flex h-14 items-center px-3">
@@ -105,10 +118,16 @@ function LessonPageSkeleton({ isSidebarOpen }: { isSidebarOpen: boolean }) {
             </div>
 
             {[0, 1, 2].map((module) => (
-              <div key={module} className="space-y-2 border-b border-border pb-4 last:border-b-0">
+              <div
+                key={module}
+                className="space-y-2 border-b border-border pb-4 last:border-b-0"
+              >
                 <div className="h-4 w-5/6 animate-pulse rounded bg-muted/70" />
                 {[0, 1, 2].map((lesson) => (
-                  <div key={`${module}-${lesson}`} className="flex items-center gap-2 py-1">
+                  <div
+                    key={`${module}-${lesson}`}
+                    className="flex items-center gap-2 py-1"
+                  >
                     <div className="h-4.5 w-4.5 animate-pulse rounded-sm bg-muted/70" />
                     <div className="h-4.5 w-4.5 animate-pulse rounded bg-muted/70" />
                     <div className="h-3.5 w-full animate-pulse rounded bg-muted/60" />
@@ -122,8 +141,8 @@ function LessonPageSkeleton({ isSidebarOpen }: { isSidebarOpen: boolean }) {
 
       <div
         className={cn(
-          "min-h-screen pl-0 transition-[padding] duration-300",
-          isSidebarOpen ? "lg:pl-80" : "lg:pl-16"
+          'min-h-screen pl-0 transition-[padding] duration-300',
+          isSidebarOpen ? 'lg:pl-80' : 'lg:pl-16',
         )}
       >
         <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-lg supports-backdrop-filter:bg-background/80">
@@ -158,100 +177,110 @@ function LessonPageSkeleton({ isSidebarOpen }: { isSidebarOpen: boolean }) {
         </main>
       </div>
     </div>
-  );
+  )
 }
 
 export default function LessonPage() {
-  const params = useParams();
-  const router = useRouter();
-  const courseId = (params?.courseId as string) || "";
-  const routeLessonId = (params?.lessonId as string) || "";
+  const params = useParams()
+  const router = useRouter()
+  const courseId = (params?.courseId as string) || ''
+  const routeLessonId = (params?.lessonId as string) || ''
 
-  const [activeLessonId, setActiveLessonId] = useState(routeLessonId);
-  const [course, setCourse] = useState<StorefrontCourseDetail | null>(null);
-  const [viewer, setViewer] = useState<StorefrontCourseViewer | null>(null);
-  const [lessonDetail, setLessonDetail] = useState<StorefrontLessonDetail | null>(null);
-  const [playback, setPlayback] = useState<LessonPlayback | null>(null);
-  const [playbackLoading, setPlaybackLoading] = useState(false);
-  const [playbackError, setPlaybackError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [lessonLoading, setLessonLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [lessonError, setLessonError] = useState<string | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [lessonCompletionMap, setLessonCompletionMap] = useState<Record<string, boolean>>({});
-  const [isCompletingLesson, setIsCompletingLesson] = useState(false);
+  const [activeLessonId, setActiveLessonId] = useState(routeLessonId)
+  const [course, setCourse] = useState<StorefrontCourseDetail | null>(null)
+  const [viewer, setViewer] = useState<StorefrontCourseViewer | null>(null)
+  const [lessonDetail, setLessonDetail] =
+    useState<StorefrontLessonDetail | null>(null)
+  const [playback, setPlayback] = useState<LessonPlayback | null>(null)
+  const [playbackLoading, setPlaybackLoading] = useState(false)
+  const [playbackError, setPlaybackError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [lessonLoading, setLessonLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [lessonError, setLessonError] = useState<string | null>(null)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [lessonCompletionMap, setLessonCompletionMap] = useState<
+    Record<string, boolean>
+  >({})
+  const [isCompletingLesson, setIsCompletingLesson] = useState(false)
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return
 
-    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+    const mediaQuery = window.matchMedia('(min-width: 1024px)')
 
     const updateSidebarState = () => {
-      setIsSidebarOpen(mediaQuery.matches);
-    };
+      setIsSidebarOpen(mediaQuery.matches)
+    }
 
-    updateSidebarState();
-    mediaQuery.addEventListener("change", updateSidebarState);
+    updateSidebarState()
+    mediaQuery.addEventListener('change', updateSidebarState)
 
     return () => {
-      mediaQuery.removeEventListener("change", updateSidebarState);
-    };
-  }, []);
+      mediaQuery.removeEventListener('change', updateSidebarState)
+    }
+  }, [])
 
   useEffect(() => {
-    if (!routeLessonId) return;
-    setActiveLessonId(routeLessonId);
-  }, [routeLessonId]);
+    if (!routeLessonId) return
+    setActiveLessonId(routeLessonId)
+  }, [routeLessonId])
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return
 
     const handlePopState = () => {
-      const lessonIdFromPath = getLessonIdFromPath(window.location.pathname);
+      const lessonIdFromPath = getLessonIdFromPath(window.location.pathname)
       if (lessonIdFromPath) {
-        setActiveLessonId(lessonIdFromPath);
+        setActiveLessonId(lessonIdFromPath)
       }
-    };
+    }
 
-    window.addEventListener("popstate", handlePopState);
+    window.addEventListener('popstate', handlePopState)
     return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, [])
 
   useEffect(() => {
-    let cancelled = false;
-    setIsLoading(true);
-    setError(null);
+    let cancelled = false
+    setIsLoading(true)
+    setError(null)
 
     const loadCourse = async () => {
       try {
-        const courseResponse = await fetchStorefrontCourse(courseId);
-        if (cancelled) return;
+        const courseResponse = await fetchStorefrontCourse(courseId)
+        if (cancelled) return
 
-        setCourse(courseResponse.course);
-        setViewer(courseResponse.viewer ?? null);
+        setCourse(courseResponse.course)
+        setViewer(courseResponse.viewer ?? null)
 
-        const allCourseLessons = courseResponse.course.modules.flatMap((module) => module.lessons);
-        const hasRequestedLesson = allCourseLessons.some((lesson) => lesson.id === routeLessonId);
-        const initialLessonId = hasRequestedLesson ? routeLessonId : allCourseLessons[0]?.id ?? "";
+        const allCourseLessons = courseResponse.course.modules.flatMap(
+          (module) => module.lessons,
+        )
+        const hasRequestedLesson = allCourseLessons.some(
+          (lesson) => lesson.id === routeLessonId,
+        )
+        const initialLessonId = hasRequestedLesson
+          ? routeLessonId
+          : (allCourseLessons[0]?.id ?? '')
 
         if (!initialLessonId) {
-          setError("No lessons are available in this course yet.");
-          return;
+          setError('No lessons are available in this course yet.')
+          return
         }
 
         const canLoadStudentProgress = Boolean(
-          courseResponse.viewer?.isAuthenticated && courseResponse.viewer?.isEnrolled
-        );
+          courseResponse.viewer?.isAuthenticated &&
+          courseResponse.viewer?.isEnrolled,
+        )
 
         if (canLoadStudentProgress) {
           try {
-            const studentContent = await fetchStudentCourseContent(courseId);
-            if (cancelled) return;
+            const studentContent = await fetchStudentCourseContent(courseId)
+            if (cancelled) return
 
-            setLessonCompletionMap(getCompletionMap(studentContent.progressMap));
+            setLessonCompletionMap(getCompletionMap(studentContent.progressMap))
             setViewer((previous) =>
               previous
                 ? {
@@ -259,240 +288,300 @@ export default function LessonPage() {
                     enrollment: {
                       id: studentContent.enrollment.id,
                       progress: studentContent.enrollment.progress,
-                      completedAt: studentContent.enrollment.completedAt ?? null,
+                      completedAt:
+                        studentContent.enrollment.completedAt ?? null,
                       expiresAt: studentContent.enrollment.expiresAt ?? null,
                     },
                   }
-                : previous
-            );
+                : previous,
+            )
           } catch {
-            if (cancelled) return;
-            setLessonCompletionMap({});
+            if (cancelled) return
+            setLessonCompletionMap({})
           }
         } else {
-          setLessonCompletionMap({});
+          setLessonCompletionMap({})
         }
 
-        setActiveLessonId(initialLessonId);
+        setActiveLessonId(initialLessonId)
 
-        if (typeof window !== "undefined" && initialLessonId !== routeLessonId) {
-          window.history.replaceState(null, "", `/courses/${courseId}/${initialLessonId}`);
+        if (
+          typeof window !== 'undefined' &&
+          initialLessonId !== routeLessonId
+        ) {
+          window.history.replaceState(
+            null,
+            '',
+            `/courses/${courseId}/${initialLessonId}`,
+          )
         }
       } catch (err) {
-        if (cancelled) return;
-        setError(err instanceof Error ? err.message : "Failed to load lesson page.");
+        if (cancelled) return
+        setError(
+          err instanceof Error ? err.message : 'Failed to load lesson page.',
+        )
       } finally {
-        if (!cancelled) setIsLoading(false);
+        if (!cancelled) setIsLoading(false)
       }
-    };
+    }
 
-    void loadCourse();
+    void loadCourse()
     return () => {
-      cancelled = true;
-    };
-  }, [courseId, routeLessonId, router]);
+      cancelled = true
+    }
+  }, [courseId, routeLessonId, router])
 
   useEffect(() => {
-    if (!activeLessonId) return;
+    if (!activeLessonId) return
 
-    let cancelled = false;
-    setLessonLoading(true);
-    setLessonError(null);
-    setLessonDetail(null);
+    let cancelled = false
+    setLessonLoading(true)
+    setLessonError(null)
+    setLessonDetail(null)
 
     const loadLesson = async () => {
       try {
-        const lessonResponse = await fetchStorefrontLesson(activeLessonId);
-        if (cancelled) return;
-        setLessonDetail(lessonResponse.lesson);
+        const lessonResponse = await fetchStorefrontLesson(activeLessonId)
+        if (cancelled) return
+        setLessonDetail(lessonResponse.lesson)
       } catch (err) {
-        if (cancelled) return;
-        setLessonError(err instanceof Error ? err.message : "Failed to load lesson.");
+        if (cancelled) return
+        setLessonError(
+          err instanceof Error ? err.message : 'Failed to load lesson.',
+        )
       } finally {
-        if (!cancelled) setLessonLoading(false);
+        if (!cancelled) setLessonLoading(false)
       }
-    };
+    }
 
-    void loadLesson();
+    void loadLesson()
     return () => {
-      cancelled = true;
-    };
-  }, [activeLessonId]);
+      cancelled = true
+    }
+  }, [activeLessonId])
 
   const allLessons = useMemo(
     () => course?.modules.flatMap((module) => module.lessons) ?? [],
-    [course]
-  );
+    [course],
+  )
 
   useEffect(() => {
-    if (!course || !activeLessonId) return;
+    if (!course || !activeLessonId) return
 
-    const hasActiveLesson = allLessons.some((lesson) => lesson.id === activeLessonId);
-    if (hasActiveLesson) return;
+    const hasActiveLesson = allLessons.some(
+      (lesson) => lesson.id === activeLessonId,
+    )
+    if (hasActiveLesson) return
 
-    const fallbackLessonId = allLessons[0]?.id;
-    if (!fallbackLessonId) return;
+    const fallbackLessonId = allLessons[0]?.id
+    if (!fallbackLessonId) return
 
-    setActiveLessonId(fallbackLessonId);
-    if (typeof window !== "undefined") {
-      window.history.replaceState(null, "", `/courses/${courseId}/${fallbackLessonId}`);
+    setActiveLessonId(fallbackLessonId)
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(
+        null,
+        '',
+        `/courses/${courseId}/${fallbackLessonId}`,
+      )
     }
-  }, [activeLessonId, allLessons, course, courseId]);
+  }, [activeLessonId, allLessons, course, courseId])
 
   const selectedLesson = useMemo(
     () => allLessons.find((lesson) => lesson.id === activeLessonId) ?? null,
-    [allLessons, activeLessonId]
-  );
+    [allLessons, activeLessonId],
+  )
 
   const selectedModule = useMemo(
     () =>
       course?.modules.find((module) =>
-        module.lessons.some((lesson) => lesson.id === activeLessonId)
+        module.lessons.some((lesson) => lesson.id === activeLessonId),
       ) ?? null,
-    [course, activeLessonId]
-  );
+    [course, activeLessonId],
+  )
 
   const canAccessLesson = Boolean(
-    selectedLesson?.isFree || viewer?.isEnrolled || lessonDetail?.canAccess
-  );
-  const isLockedPaidLesson = Boolean(!canAccessLesson && !selectedLesson?.isFree);
+    selectedLesson?.isFree || viewer?.isEnrolled || lessonDetail?.canAccess,
+  )
+  const isLockedPaidLesson = Boolean(
+    !canAccessLesson && !selectedLesson?.isFree,
+  )
 
   useEffect(() => {
     if (
       !selectedLesson ||
-      selectedLesson.contentType.toUpperCase() !== "VIDEO" ||
+      selectedLesson.contentType.toUpperCase() !== 'VIDEO' ||
       !canAccessLesson
     ) {
-      setPlayback(null);
-      setPlaybackError(null);
-      setPlaybackLoading(false);
-      return;
+      setPlayback(null)
+      setPlaybackError(null)
+      setPlaybackLoading(false)
+      return
     }
 
-    let cancelled = false;
-    setPlaybackLoading(true);
-    setPlaybackError(null);
+    let cancelled = false
+    setPlaybackLoading(true)
+    setPlaybackError(null)
 
     const loadPlayback = async () => {
       try {
-        const data = await fetchLessonPlayback(selectedLesson.id);
-        if (cancelled) return;
-        setPlayback(data);
+        const data = await fetchLessonPlayback(selectedLesson.id)
+        if (cancelled) return
+        setPlayback(data)
       } catch (err) {
-        if (cancelled) return;
-        setPlayback(null);
-        setPlaybackError(err instanceof Error ? err.message : "Failed to load lesson playback.");
+        if (cancelled) return
+        setPlayback(null)
+        setPlaybackError(
+          err instanceof Error
+            ? err.message
+            : 'Failed to load lesson playback.',
+        )
       } finally {
-        if (!cancelled) setPlaybackLoading(false);
+        if (!cancelled) setPlaybackLoading(false)
       }
-    };
-
-    void loadPlayback();
-    return () => {
-      cancelled = true;
-    };
-  }, [canAccessLesson, selectedLesson]);
-
-  const resources = useMemo(() => getResources(lessonDetail), [lessonDetail]);
-  const currentIndex = allLessons.findIndex((lesson) => lesson.id === activeLessonId);
-  const previousLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
-  const nextLesson =
-    currentIndex >= 0 && currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
-  const completedLessonsCount = useMemo(
-    () => allLessons.reduce((total, lesson) => (lessonCompletionMap[lesson.id] ? total + 1 : total), 0),
-    [allLessons, lessonCompletionMap]
-  );
-  const completionPercent = useMemo(() => {
-    if (allLessons.length < 1) return 0;
-    return Math.round((completedLessonsCount / allLessons.length) * 100);
-  }, [allLessons.length, completedLessonsCount]);
-  const canRequestCertificate = Boolean(
-    viewer?.isAuthenticated && viewer?.isEnrolled && !nextLesson && completionPercent >= 100
-  );
-
-  const navigateToLesson = useCallback((nextLessonId: string) => {
-    if (!nextLessonId || nextLessonId === activeLessonId) return;
-
-    setActiveLessonId(nextLessonId);
-    if (typeof window !== "undefined") {
-      window.history.pushState(null, "", `/courses/${courseId}/${nextLessonId}`);
     }
-  }, [activeLessonId, courseId]);
+
+    void loadPlayback()
+    return () => {
+      cancelled = true
+    }
+  }, [canAccessLesson, selectedLesson])
+
+  const resources = useMemo(() => getResources(lessonDetail), [lessonDetail])
+  const currentIndex = allLessons.findIndex(
+    (lesson) => lesson.id === activeLessonId,
+  )
+  const previousLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null
+  const nextLesson =
+    currentIndex >= 0 && currentIndex < allLessons.length - 1
+      ? allLessons[currentIndex + 1]
+      : null
+  const completedLessonsCount = useMemo(
+    () =>
+      allLessons.reduce(
+        (total, lesson) => (lessonCompletionMap[lesson.id] ? total + 1 : total),
+        0,
+      ),
+    [allLessons, lessonCompletionMap],
+  )
+  const completionPercent = useMemo(() => {
+    if (allLessons.length < 1) return 0
+    return Math.round((completedLessonsCount / allLessons.length) * 100)
+  }, [allLessons.length, completedLessonsCount])
+  const canRequestCertificate = Boolean(
+    viewer?.isAuthenticated &&
+    viewer?.isEnrolled &&
+    !nextLesson &&
+    completionPercent >= 100,
+  )
+
+  const navigateToLesson = useCallback(
+    (nextLessonId: string) => {
+      if (!nextLessonId || nextLessonId === activeLessonId) return
+
+      setActiveLessonId(nextLessonId)
+      if (typeof window !== 'undefined') {
+        window.history.pushState(
+          null,
+          '',
+          `/courses/${courseId}/${nextLessonId}`,
+        )
+      }
+    },
+    [activeLessonId, courseId],
+  )
 
   const markLessonAsCompleted = useCallback(
     async (lessonId: string, options?: { continueToNext?: boolean }) => {
-      if (!lessonId) return;
+      if (!lessonId) return
 
-      const shouldContinue = Boolean(options?.continueToNext);
-      const targetLesson = allLessons.find((lesson) => lesson.id === lessonId);
-      const canPersistCompletion = Boolean(viewer?.isAuthenticated && viewer?.isEnrolled);
-      const alreadyCompleted = Boolean(lessonCompletionMap[lessonId]);
+      const shouldContinue = Boolean(options?.continueToNext)
+      const targetLesson = allLessons.find((lesson) => lesson.id === lessonId)
+      const canPersistCompletion = Boolean(
+        viewer?.isAuthenticated && viewer?.isEnrolled,
+      )
+      const alreadyCompleted = Boolean(lessonCompletionMap[lessonId])
 
       if (!alreadyCompleted) {
         setLessonCompletionMap((previous) => ({
           ...previous,
           [lessonId]: true,
-        }));
+        }))
       }
 
       if (canPersistCompletion && !alreadyCompleted) {
         try {
-          setIsCompletingLesson(true);
-          setLessonError(null);
+          setIsCompletingLesson(true)
+          setLessonError(null)
 
           await updateStudentLessonProgress(lessonId, {
             watchedDuration: Math.max(0, targetLesson?.duration ?? 0),
             isCompleted: true,
-          });
+          })
         } catch (err) {
           setLessonError(
             err instanceof Error
               ? `Completed locally, but failed to sync: ${err.message}`
-              : "Completed locally, but failed to sync progress."
-          );
+              : 'Completed locally, but failed to sync progress.',
+          )
         } finally {
-          setIsCompletingLesson(false);
+          setIsCompletingLesson(false)
         }
       }
 
       if (shouldContinue && nextLesson) {
-        navigateToLesson(nextLesson.id);
+        navigateToLesson(nextLesson.id)
       }
     },
-    [allLessons, lessonCompletionMap, navigateToLesson, nextLesson, viewer?.isAuthenticated, viewer?.isEnrolled]
-  );
+    [
+      allLessons,
+      lessonCompletionMap,
+      navigateToLesson,
+      nextLesson,
+      viewer?.isAuthenticated,
+      viewer?.isEnrolled,
+    ],
+  )
 
   const handleCompleteAndContinue = useCallback(() => {
-    if (!selectedLesson) return;
-    void markLessonAsCompleted(selectedLesson.id, { continueToNext: true });
-  }, [markLessonAsCompleted, selectedLesson]);
+    if (!selectedLesson) return
+    void markLessonAsCompleted(selectedLesson.id, { continueToNext: true })
+  }, [markLessonAsCompleted, selectedLesson])
 
   const handleVideoEnded = useCallback(() => {
-    if (!selectedLesson) return;
-    void markLessonAsCompleted(selectedLesson.id);
-  }, [markLessonAsCompleted, selectedLesson]);
+    if (!selectedLesson) return
+    void markLessonAsCompleted(selectedLesson.id)
+  }, [markLessonAsCompleted, selectedLesson])
 
   const handleAssignmentSubmitted = useCallback(() => {
-    if (!selectedLesson) return;
-    void markLessonAsCompleted(selectedLesson.id);
-  }, [markLessonAsCompleted, selectedLesson]);
+    if (!selectedLesson) return
+    void markLessonAsCompleted(selectedLesson.id)
+  }, [markLessonAsCompleted, selectedLesson])
 
   const handleGoPrevious = useCallback(() => {
-    if (!previousLesson) return;
-    navigateToLesson(previousLesson.id);
-  }, [navigateToLesson, previousLesson]);
+    if (!previousLesson) return
+    navigateToLesson(previousLesson.id)
+  }, [navigateToLesson, previousLesson])
 
-  const handleLessonLinkClick = (event: MouseEvent<HTMLAnchorElement>, nextLessonId: string) => {
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
-      return;
+  const handleLessonLinkClick = (
+    event: MouseEvent<HTMLAnchorElement>,
+    nextLessonId: string,
+  ) => {
+    if (
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey ||
+      event.button !== 0
+    ) {
+      return
     }
 
-    event.preventDefault();
-    navigateToLesson(nextLessonId);
-  };
+    event.preventDefault()
+    navigateToLesson(nextLessonId)
+  }
 
   if (isLoading) {
-    return <LessonPageSkeleton isSidebarOpen={isSidebarOpen} />;
+    return <LessonPageSkeleton isSidebarOpen={isSidebarOpen} />
   }
 
   if (error || !course || !selectedLesson || !selectedModule) {
@@ -503,7 +592,7 @@ export default function LessonPage() {
             Lesson unavailable
           </h1>
           <p className="mt-2 text-sm text-foreground/70">
-            {error || "Unable to load this lesson right now."}
+            {error || 'Unable to load this lesson right now.'}
           </p>
           <Link
             href={`/courses/${courseId}`}
@@ -513,7 +602,7 @@ export default function LessonPage() {
           </Link>
         </div>
       </main>
-    );
+    )
   }
 
   return (
@@ -535,8 +624,8 @@ export default function LessonPage() {
 
       <div
         className={cn(
-          "min-h-screen pl-0 transition-[padding] duration-300",
-          isSidebarOpen ? "lg:pl-80" : "lg:pl-16"
+          'min-h-screen pl-0 transition-[padding] duration-300',
+          isSidebarOpen ? 'lg:pl-80' : 'lg:pl-16',
         )}
       >
         <CoursePlayerHeader
@@ -552,7 +641,7 @@ export default function LessonPage() {
           hasNextLesson={Boolean(nextLesson)}
           onGoPrevious={handleGoPrevious}
           onGetCertificate={() => {
-            router.push(`/courses/${course.id}/certificate`);
+            router.push(`/courses/${course.id}/certificate`)
           }}
           onCompleteAndContinue={handleCompleteAndContinue}
           canGetCertificate={canRequestCertificate}
@@ -572,11 +661,16 @@ export default function LessonPage() {
               <section
                 className={cn(
                   isLockedPaidLesson
-                    ? "flex min-h-[560px] items-center justify-center rounded-xl border border-border/70 bg-muted/20 p-4 md:p-8"
-                    : ""
+                    ? 'flex min-h-[560px] items-center justify-center rounded-xl border border-border/70 bg-muted/20 p-4 md:p-8'
+                    : '',
                 )}
               >
-                <div className={cn("w-full", isLockedPaidLesson ? "mx-auto max-w-3xl" : "")}>
+                <div
+                  className={cn(
+                    'w-full',
+                    isLockedPaidLesson ? 'mx-auto max-w-3xl' : '',
+                  )}
+                >
                   <LessonContent
                     courseId={course.id}
                     coursePrice={course.price}
@@ -605,7 +699,7 @@ export default function LessonPage() {
                     <p className="mt-2 text-lg leading-7 text-foreground/70">
                       {lessonDetail?.description ||
                         selectedLesson.description ||
-                        "No description provided for this lesson yet."}
+                        'No description provided for this lesson yet.'}
                     </p>
 
                     {resources.length > 0 ? (
@@ -624,7 +718,7 @@ export default function LessonPage() {
                               className="flex  items-center gap-5 md:gap-8 xl:gap-14 justify-between rounded-lg border border-border/80 bg-muted/20 dark:bg-muted/20 px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-muted/35"
                             >
                               <span className="line-clamp-1 font-medium">
-                                {resource.title || "Resource file"}
+                                {resource.title || 'Resource file'}
                               </span>
                               <span className="inline-flex items-center bg-white dark:bg-sidebar/60 hover:bg-sidebar/80 py-1.5 px-2.5 rounded-md gap-1.5 text-xs font-semibold text-foreground/85">
                                 <HiArrowDownTray className="size-4.5" />
@@ -646,7 +740,9 @@ export default function LessonPage() {
                   {previousLesson ? (
                     <Link
                       href={`/courses/${course.id}/${previousLesson.id}`}
-                      onClick={(event) => handleLessonLinkClick(event, previousLesson.id)}
+                      onClick={(event) =>
+                        handleLessonLinkClick(event, previousLesson.id)
+                      }
                       className="group flex h-full w-full cursor-pointer flex-col rounded-xl border border-border bg-muted/80 dark:bg-muted/30 p-4 transition-colors duration-200 hover:bg-muted/65 sm:max-w-[48%]"
                     >
                       <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-primary dark:text-primary/75 group-hover:text-primary">
@@ -662,10 +758,12 @@ export default function LessonPage() {
                   {nextLesson ? (
                     <Link
                       href={`/courses/${course.id}/${nextLesson.id}`}
-                      onClick={(event) => handleLessonLinkClick(event, nextLesson.id)}
+                      onClick={(event) =>
+                        handleLessonLinkClick(event, nextLesson.id)
+                      }
                       className={cn(
-                        "group flex h-full w-full cursor-pointer flex-col rounded-xl border border-border bg-muted/80 dark:bg-muted/30 p-4 transition-colors duration-200 hover:bg-muted/60 sm:max-w-[48%]",
-                        !previousLesson ? "ml-auto" : ""
+                        'group flex h-full w-full cursor-pointer flex-col rounded-xl border border-border bg-muted/80 dark:bg-muted/30 p-4 transition-colors duration-200 hover:bg-muted/60 sm:max-w-[48%]',
+                        !previousLesson ? 'ml-auto' : '',
                       )}
                     >
                       <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-primary dark:text-primary/75 group-hover:text-primary">
@@ -684,5 +782,5 @@ export default function LessonPage() {
         </main>
       </div>
     </div>
-  );
+  )
 }

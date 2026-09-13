@@ -54,11 +54,11 @@ The core loop, end to end, with no payments and no external services.
 be green while the legacy application is still in place. All three are removed
 when the port completes, and none of them applies to new code:
 
-| Carve-out | Where | Removed when |
-| --- | --- | --- |
-| `apps/api` excluded from lint and typecheck | `apps/api/package.json` (`lint:legacy`, `typecheck:legacy`) | The app runs on `packages/domain` rather than its own Prisma schema |
-| `apps/api` exempt from the Prisma-boundary rule | `.dependency-cruiser.cjs` | Same |
-| React Compiler rules downgraded to warnings | `apps/studio/eslint.config.mjs`, `apps/learn/eslint.config.mjs` | The affected screens are reworked |
+| Carve-out                                       | Where                                                           | Removed when                                                        |
+| ----------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `apps/api` excluded from lint and typecheck     | `apps/api/package.json` (`lint:legacy`, `typecheck:legacy`)     | The app runs on `packages/domain` rather than its own Prisma schema |
+| `apps/api` exempt from the Prisma-boundary rule | `.dependency-cruiser.cjs`                                       | Same                                                                |
+| React Compiler rules downgraded to warnings     | `apps/studio/eslint.config.mjs`, `apps/learn/eslint.config.mjs` | The affected screens are reworked                                   |
 
 The React rules are downgraded rather than disabled, so the violations stay
 visible in every lint run instead of disappearing.
@@ -102,18 +102,18 @@ the documentation.
 These are real and wanted. They are not launch scope, because shipping a smaller
 thing that works beats shipping a larger thing that half works.
 
-| Deferred | Why |
-| --- | --- |
-| Shared or cross-academy course libraries | Academy-owned courses with explicit copying cover the need. Sync and unlisting semantics are a large problem to solve early. |
-| Cohorts, drip scheduling, learning paths | Depends on the release model being settled first. |
-| SCORM, xAPI, cmi5 | A substantial integration requiring an LRS. High value for institutional buyers, post-beta. |
-| Discussions, Q&A, notifications | Needs the notification model, which needs the outbox proven at scale. |
-| More payment and video providers | Stripe, Razorpay, OpenVOD, and S3 cover the launch audience. |
-| Adaptive practice, auto-grading, translation, image generation | The two AI flows must meet quality targets first. |
-| i18n and RTL | Real work across every surface. Doing it badly is worse than not doing it. |
-| Audit log | Needs stable event definitions. |
-| SSO (SAML/OIDC) and SCIM | Enterprise operations, deliberately after the OSS product is reliable. |
-| Managed cloud provisioning | Must call the same domain APIs and leave self-hosted operation fully independent. |
+| Deferred                                                       | Why                                                                                                                          |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Shared or cross-academy course libraries                       | Academy-owned courses with explicit copying cover the need. Sync and unlisting semantics are a large problem to solve early. |
+| Cohorts, drip scheduling, learning paths                       | Depends on the release model being settled first.                                                                            |
+| SCORM, xAPI, cmi5                                              | A substantial integration requiring an LRS. High value for institutional buyers, post-beta.                                  |
+| Discussions, Q&A, notifications                                | Needs the notification model, which needs the outbox proven at scale.                                                        |
+| More payment and video providers                               | Stripe, Razorpay, OpenVOD, and S3 cover the launch audience.                                                                 |
+| Adaptive practice, auto-grading, translation, image generation | The two AI flows must meet quality targets first.                                                                            |
+| i18n and RTL                                                   | Real work across every surface. Doing it badly is worse than not doing it.                                                   |
+| Audit log                                                      | Needs stable event definitions.                                                                                              |
+| SSO (SAML/OIDC) and SCIM                                       | Enterprise operations, deliberately after the OSS product is reliable.                                                       |
+| Managed cloud provisioning                                     | Must call the same domain APIs and leave self-hosted operation fully independent.                                            |
 
 ## How priorities are set
 

@@ -69,7 +69,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
+    pathname.startsWith(route),
   )
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route))
   const dashboardCourseId = getDashboardCourseId(pathname)
@@ -90,10 +90,13 @@ export async function middleware(request: NextRequest) {
       const refreshedAccessToken = await refreshAuthToken(refreshToken)
 
       if (refreshedAccessToken) {
-        const refreshedTokenIsValid = await validateAuthToken(refreshedAccessToken)
+        const refreshedTokenIsValid =
+          await validateAuthToken(refreshedAccessToken)
 
         if (refreshedTokenIsValid) {
-          const response = NextResponse.redirect(new URL('/dashboard', request.url))
+          const response = NextResponse.redirect(
+            new URL('/dashboard', request.url),
+          )
           response.cookies.set('auth_token', refreshedAccessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -118,10 +121,14 @@ export async function middleware(request: NextRequest) {
       const refreshedAccessToken = await refreshAuthToken(refreshToken)
 
       if (refreshedAccessToken) {
-        const refreshedTokenIsValid = await validateAuthToken(refreshedAccessToken)
+        const refreshedTokenIsValid =
+          await validateAuthToken(refreshedAccessToken)
         if (!refreshedTokenIsValid) {
           const response = NextResponse.redirect(
-            new URL(dashboardCourseId ? `/courses/${dashboardCourseId}` : '/login', request.url)
+            new URL(
+              dashboardCourseId ? `/courses/${dashboardCourseId}` : '/login',
+              request.url,
+            ),
           )
           response.cookies.delete('auth_token')
           response.cookies.delete('refresh_token')
@@ -151,7 +158,7 @@ export async function middleware(request: NextRequest) {
                 Authorization: `Bearer ${refreshedAccessToken}`,
               },
               cache: 'no-store',
-            }
+            },
           )
 
           if (!enrollmentResponse.ok) {
@@ -164,7 +171,10 @@ export async function middleware(request: NextRequest) {
 
       // If refresh failed, redirect to login
       const response = NextResponse.redirect(
-        new URL(dashboardCourseId ? `/courses/${dashboardCourseId}` : '/login', request.url)
+        new URL(
+          dashboardCourseId ? `/courses/${dashboardCourseId}` : '/login',
+          request.url,
+        ),
       )
       response.cookies.delete('auth_token')
       response.cookies.delete('refresh_token')
@@ -191,7 +201,7 @@ export async function middleware(request: NextRequest) {
               Authorization: `Bearer ${authToken}`,
             },
             cache: 'no-store',
-          }
+          },
         )
 
         if (!enrollmentResponse.ok) {
@@ -207,10 +217,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/dashboard/:path*',
-    '/checkout/:path*',
-    '/login',
-    '/signup',
-  ],
+  matcher: ['/dashboard/:path*', '/checkout/:path*', '/login', '/signup'],
 }

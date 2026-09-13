@@ -1,59 +1,59 @@
-import { ChevronRightIcon } from "@heroicons/react/20/solid";
+import { ChevronRightIcon } from '@heroicons/react/20/solid'
 import {
   BookmarkSquareIcon,
   BookOpenIcon,
   QueueListIcon,
   RssIcon,
-} from "@heroicons/react/24/solid";
-import SectionHeading from "@/components/section-heading";
-import { FaArrowLeftLong } from "react-icons/fa6";
-import { Metadata } from "next";
+} from '@heroicons/react/24/solid'
+import SectionHeading from '@/components/section-heading'
+import { FaArrowLeftLong } from 'react-icons/fa6'
+import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: "404",
+  title: '404',
   description:
-    "The page you’re looking for doesn’t exist or may have been moved. Explore Docento to discover powerful tools for learning businesses, course creators, and training teams.",
+    'The page you’re looking for doesn’t exist or may have been moved. Explore Docento to discover powerful tools for learning businesses, course creators, and training teams.',
   keywords: [
-    "404",
-    "page not found",
-    "missing page",
-    "Docento error page",
-    "resource not found",
-    "invalid URL",
+    '404',
+    'page not found',
+    'missing page',
+    'Docento error page',
+    'resource not found',
+    'invalid URL',
   ],
   openGraph: {
-    title: "404 | Docento",
+    title: '404 | Docento',
     description:
       "We couldn't find the page you're trying to reach. Continue exploring Docento’s platform for creators, educators, and training teams.",
-    url: "/404",
-    type: "website",
+    url: '/404',
+    type: 'website',
   },
   robots: {
     index: false,
     follow: true,
   },
-};
+}
 
 const links = [
   {
-    name: "Documentation",
-    href: "#",
-    description: "Learn how to integrate our tools with your app.",
+    name: 'Documentation',
+    href: '#',
+    description: 'Learn how to integrate our tools with your app.',
     icon: BookOpenIcon,
   },
   {
-    name: "API Reference",
-    href: "#",
-    description: "A complete API reference for our libraries.",
+    name: 'API Reference',
+    href: '#',
+    description: 'A complete API reference for our libraries.',
     icon: QueueListIcon,
   },
   {
-    name: "Blog",
-    href: "/blog",
-    description: "Read our latest news and articles.",
+    name: 'Blog',
+    href: '/blog',
+    description: 'Read our latest news and articles.',
     icon: RssIcon,
   },
-];
+]
 
 export default function Example() {
   return (
@@ -137,12 +137,12 @@ export default function Example() {
             >
               <span aria-hidden="true">
                 <FaArrowLeftLong className="size-4" />
-              </span>{" "}
+              </span>{' '}
               Back to home
             </a>
           </div>
         </div>
       </main>
     </div>
-  );
+  )
 }

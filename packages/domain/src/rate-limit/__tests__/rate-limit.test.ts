@@ -113,14 +113,20 @@ describe('consumeRateLimit', () => {
 
 describe('resetRateLimits', () => {
   it('clears only the named rule', async () => {
-    const other: RateLimitRule = { name: 'other-rule', windowMs: 60_000, limit: 5 }
+    const other: RateLimitRule = {
+      name: 'other-rule',
+      windowMs: 60_000,
+      limit: 5,
+    }
 
     await consumeRateLimit(rule, 'caller-a', base)
     await consumeRateLimit(other, 'caller-a', base)
 
     await resetRateLimits('test-rule')
 
-    expect((await peekRateLimit(rule, 'caller-a', base)).remaining).toBe(rule.limit)
+    expect((await peekRateLimit(rule, 'caller-a', base)).remaining).toBe(
+      rule.limit,
+    )
     expect((await peekRateLimit(other, 'caller-a', base)).remaining).toBe(
       other.limit - 1,
     )

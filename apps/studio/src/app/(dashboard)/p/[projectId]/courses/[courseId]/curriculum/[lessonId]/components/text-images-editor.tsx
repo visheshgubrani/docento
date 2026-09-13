@@ -16,9 +16,9 @@ import { Placeholder } from '@tiptap/extension-placeholder'
 
 import { Spacer } from '@/components/tiptap-ui-primitive/spacer'
 import {
-    Toolbar,
-    ToolbarGroup,
-    ToolbarSeparator,
+  Toolbar,
+  ToolbarGroup,
+  ToolbarSeparator,
 } from '@/components/tiptap-ui-primitive/toolbar'
 
 import { ImageUploadNode } from '@/components/tiptap-node/image-upload-node/image-upload-node-extension'
@@ -42,221 +42,224 @@ import { MarkButton } from '@/components/tiptap-ui/mark-button'
 import { TextAlignButton } from '@/components/tiptap-ui/text-align-button'
 import { UndoRedoButton } from '@/components/tiptap-ui/undo-redo-button'
 
-import { createLessonImageUploadHandler, MAX_FILE_SIZE } from '@/lib/tiptap-utils'
+import {
+  createLessonImageUploadHandler,
+  MAX_FILE_SIZE,
+} from '@/lib/tiptap-utils'
 import { Button } from '@/components/ui/button'
 
 import '@/components/tiptap-templates/simple/simple-editor.scss'
 
 interface TextImagesEditorProps {
-    lessonTitle: string
-    projectId: string
-    courseId: string
-    moduleId: string
-    lessonId: string
-    initialContent?: string
-    onSave: (content: string) => Promise<void>
-    onCancel: () => void
-    isSaving?: boolean
+  lessonTitle: string
+  projectId: string
+  courseId: string
+  moduleId: string
+  lessonId: string
+  initialContent?: string
+  onSave: (content: string) => Promise<void>
+  onCancel: () => void
+  isSaving?: boolean
 }
 
 export function TextImagesEditor({
-    lessonTitle,
-    projectId,
-    courseId,
-    moduleId,
-    lessonId,
-    initialContent,
-    onSave,
-    onCancel,
-    isSaving = false,
+  lessonTitle,
+  projectId,
+  courseId,
+  moduleId,
+  lessonId,
+  initialContent,
+  onSave,
+  onCancel,
+  isSaving = false,
 }: TextImagesEditorProps) {
-    const [hasChanges, setHasChanges] = useState(false)
+  const [hasChanges, setHasChanges] = useState(false)
 
-    // Parse initial content (it's stored as stringified JSON)
-    const parsedInitialContent = initialContent
-        ? (() => {
-            try {
-                return JSON.parse(initialContent)
-            } catch {
-                return initialContent
-            }
-        })()
-        : ''
-
-    const editor = useEditor({
-        immediatelyRender: false,
-        editorProps: {
-            attributes: {
-                autocomplete: 'off',
-                autocorrect: 'off',
-                autocapitalize: 'off',
-                'aria-label': 'Lesson content editor',
-                class: 'simple-editor',
-            },
-        },
-        extensions: [
-            StarterKit.configure({
-                horizontalRule: false,
-                link: {
-                    openOnClick: false,
-                    enableClickSelection: true,
-                },
-            }),
-            HorizontalRule,
-            TextAlign.configure({ types: ['heading', 'paragraph'] }),
-            TaskList,
-            TaskItem.configure({ nested: true }),
-            Highlight.configure({ multicolor: true }),
-            Image,
-            Typography,
-            Superscript,
-            Subscript,
-            Underline,
-            Selection,
-            Placeholder.configure({
-                placeholder: 'Start writing your lesson content...',
-            }),
-            ImageUploadNode.configure({
-                accept: 'image/*',
-                maxSize: MAX_FILE_SIZE,
-                limit: 5,
-                upload: createLessonImageUploadHandler(
-                    projectId,
-                    courseId,
-                    moduleId,
-                    lessonId
-                ),
-                onError: (error) => console.error('Image upload failed:', error),
-            }),
-        ],
-        content: parsedInitialContent,
-        onUpdate: () => {
-            setHasChanges(true)
-        },
-    })
-
-    const handleSave = useCallback(async () => {
-        if (!editor) return
-
-        // Get the JSON content and stringify it
-        const jsonContent = editor.getJSON()
-        const stringifiedContent = JSON.stringify(jsonContent)
-
-        await onSave(stringifiedContent)
-        setHasChanges(false)
-    }, [editor, onSave])
-
-    const handleCancel = useCallback(() => {
-        if (hasChanges) {
-            const confirmed = window.confirm(
-                'You have unsaved changes. Are you sure you want to cancel?'
-            )
-            if (!confirmed) return
+  // Parse initial content (it's stored as stringified JSON)
+  const parsedInitialContent = initialContent
+    ? (() => {
+        try {
+          return JSON.parse(initialContent)
+        } catch {
+          return initialContent
         }
-        onCancel()
-    }, [hasChanges, onCancel])
+      })()
+    : ''
 
-    return (
-        <div className="flex max-w-4xl mx-auto w-full border border-neutral-200 flex-col bg-neutral-50">
-            {/* Header */}
-            <div className="sticky top-0 z-10 bg-white border-b border-neutral-200 px-6 py-4">
-                <h1 className="text-2xl font-semibold font-literata">
-                    Lesson: <span className="ml-1 text-foreground/90">{lessonTitle}</span>
-                </h1>
-            </div>
+  const editor = useEditor({
+    immediatelyRender: false,
+    editorProps: {
+      attributes: {
+        autocomplete: 'off',
+        autocorrect: 'off',
+        autocapitalize: 'off',
+        'aria-label': 'Lesson content editor',
+        class: 'simple-editor',
+      },
+    },
+    extensions: [
+      StarterKit.configure({
+        horizontalRule: false,
+        link: {
+          openOnClick: false,
+          enableClickSelection: true,
+        },
+      }),
+      HorizontalRule,
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      TaskList,
+      TaskItem.configure({ nested: true }),
+      Highlight.configure({ multicolor: true }),
+      Image,
+      Typography,
+      Superscript,
+      Subscript,
+      Underline,
+      Selection,
+      Placeholder.configure({
+        placeholder: 'Start writing your lesson content...',
+      }),
+      ImageUploadNode.configure({
+        accept: 'image/*',
+        maxSize: MAX_FILE_SIZE,
+        limit: 5,
+        upload: createLessonImageUploadHandler(
+          projectId,
+          courseId,
+          moduleId,
+          lessonId,
+        ),
+        onError: (error) => console.error('Image upload failed:', error),
+      }),
+    ],
+    content: parsedInitialContent,
+    onUpdate: () => {
+      setHasChanges(true)
+    },
+  })
 
-            {/* Content Block Header */}
-            <div className="bg-neutral-50 border-b border-neutral-200 px-6 py-3">
-                <h2 className="text-lg font-light text-foreground">Text and images</h2>
-            </div>
+  const handleSave = useCallback(async () => {
+    if (!editor) return
 
-            {/* Editor Area */}
-            <div className="flex-1 overflow-auto bg-white">
-                <div className="max-w-4xl w-full px-6 pt-3 pb-4">
-                    <EditorContext.Provider value={{ editor }}>
-                        <Toolbar className="mb-4 sticky top-0 z-20 bg-neutral-50 shadow-sm">
-                            <ToolbarGroup>
-                                <UndoRedoButton action="undo" />
-                                <UndoRedoButton action="redo" />
-                            </ToolbarGroup>
+    // Get the JSON content and stringify it
+    const jsonContent = editor.getJSON()
+    const stringifiedContent = JSON.stringify(jsonContent)
 
-                            <ToolbarSeparator />
+    await onSave(stringifiedContent)
+    setHasChanges(false)
+  }, [editor, onSave])
 
-                            <ToolbarGroup>
-                                <HeadingDropdownMenu levels={[1, 2, 3, 4]} />
-                                <ListDropdownMenu
-                                    types={['bulletList', 'orderedList', 'taskList']}
-                                />
-                                <BlockquoteButton />
-                                <CodeBlockButton />
-                            </ToolbarGroup>
+  const handleCancel = useCallback(() => {
+    if (hasChanges) {
+      const confirmed = window.confirm(
+        'You have unsaved changes. Are you sure you want to cancel?',
+      )
+      if (!confirmed) return
+    }
+    onCancel()
+  }, [hasChanges, onCancel])
 
-                            <ToolbarSeparator />
+  return (
+    <div className="flex max-w-4xl mx-auto w-full border border-neutral-200 flex-col bg-neutral-50">
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-white border-b border-neutral-200 px-6 py-4">
+        <h1 className="text-2xl font-semibold font-literata">
+          Lesson: <span className="ml-1 text-foreground/90">{lessonTitle}</span>
+        </h1>
+      </div>
 
-                            <ToolbarGroup>
-                                <MarkButton type="bold" />
-                                <MarkButton type="italic" />
-                                <MarkButton type="strike" />
-                                <MarkButton type="underline" />
-                                <MarkButton type="code" />
-                                <ColorHighlightPopover />
-                                <LinkPopover />
-                            </ToolbarGroup>
+      {/* Content Block Header */}
+      <div className="bg-neutral-50 border-b border-neutral-200 px-6 py-3">
+        <h2 className="text-lg font-light text-foreground">Text and images</h2>
+      </div>
 
-                            <ToolbarSeparator />
+      {/* Editor Area */}
+      <div className="flex-1 overflow-auto bg-white">
+        <div className="max-w-4xl w-full px-6 pt-3 pb-4">
+          <EditorContext.Provider value={{ editor }}>
+            <Toolbar className="mb-4 sticky top-0 z-20 bg-neutral-50 shadow-sm">
+              <ToolbarGroup>
+                <UndoRedoButton action="undo" />
+                <UndoRedoButton action="redo" />
+              </ToolbarGroup>
 
-                            <ToolbarGroup>
-                                <MarkButton type="superscript" />
-                                <MarkButton type="subscript" />
-                            </ToolbarGroup>
+              <ToolbarSeparator />
 
-                            <ToolbarSeparator />
+              <ToolbarGroup>
+                <HeadingDropdownMenu levels={[1, 2, 3, 4]} />
+                <ListDropdownMenu
+                  types={['bulletList', 'orderedList', 'taskList']}
+                />
+                <BlockquoteButton />
+                <CodeBlockButton />
+              </ToolbarGroup>
 
-                            <ToolbarGroup>
-                                <TextAlignButton align="left" />
-                                <TextAlignButton align="center" />
-                                <TextAlignButton align="right" />
-                                <TextAlignButton align="justify" />
-                            </ToolbarGroup>
+              <ToolbarSeparator />
 
-                            <ToolbarSeparator />
+              <ToolbarGroup>
+                <MarkButton type="bold" />
+                <MarkButton type="italic" />
+                <MarkButton type="strike" />
+                <MarkButton type="underline" />
+                <MarkButton type="code" />
+                <ColorHighlightPopover />
+                <LinkPopover />
+              </ToolbarGroup>
 
-                            <ToolbarGroup>
-                                <ImageUploadButton text="Add Image" />
-                            </ToolbarGroup>
+              <ToolbarSeparator />
 
-                            <Spacer />
-                        </Toolbar>
+              <ToolbarGroup>
+                <MarkButton type="superscript" />
+                <MarkButton type="subscript" />
+              </ToolbarGroup>
 
-                        <EditorContent
-                            editor={editor}
-                            role="presentation"
-                            className="simple-editor-content min-h-[392px]"
-                        />
-                    </EditorContext.Provider>
-                </div>
-            </div>
+              <ToolbarSeparator />
 
-            {/* Footer with Cancel and Save buttons */}
-            <div className="sticky bottom-0 bg-neutral-50 border-t border-neutral-200 px-6 py-4">
-                <div className="mx-auto flex justify-end gap-3">
-                    <Button
-                        variant="outline"
-                        onClick={handleCancel}
-                        disabled={isSaving}
-                        className="px-6 rounded-md cursor-pointer hover:text-foreground"
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={handleSave}
-                        disabled={isSaving || !hasChanges}
-                        className="px-6 bg-accent/80 cursor-pointer hover:bg-accent/90 rounded-md"
-                    >
-                        {isSaving ? 'Saving...' : 'Save'}
-                    </Button>
-                </div>
-            </div>
+              <ToolbarGroup>
+                <TextAlignButton align="left" />
+                <TextAlignButton align="center" />
+                <TextAlignButton align="right" />
+                <TextAlignButton align="justify" />
+              </ToolbarGroup>
+
+              <ToolbarSeparator />
+
+              <ToolbarGroup>
+                <ImageUploadButton text="Add Image" />
+              </ToolbarGroup>
+
+              <Spacer />
+            </Toolbar>
+
+            <EditorContent
+              editor={editor}
+              role="presentation"
+              className="simple-editor-content min-h-[392px]"
+            />
+          </EditorContext.Provider>
         </div>
-    )
+      </div>
+
+      {/* Footer with Cancel and Save buttons */}
+      <div className="sticky bottom-0 bg-neutral-50 border-t border-neutral-200 px-6 py-4">
+        <div className="mx-auto flex justify-end gap-3">
+          <Button
+            variant="outline"
+            onClick={handleCancel}
+            disabled={isSaving}
+            className="px-6 rounded-md cursor-pointer hover:text-foreground"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            disabled={isSaving || !hasChanges}
+            className="px-6 bg-accent/80 cursor-pointer hover:bg-accent/90 rounded-md"
+          >
+            {isSaving ? 'Saving...' : 'Save'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
 }

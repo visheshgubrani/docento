@@ -1,9 +1,9 @@
-import type { Metadata } from "next"
-import { redirect } from "next/navigation"
+import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 
 export const metadata: Metadata = {
-  title: "Lesson",
-  description: "Redirecting to your lesson.",
+  title: 'Lesson',
+  description: 'Redirecting to your lesson.',
 }
 
 export default async function LegacyPlayerRoute({

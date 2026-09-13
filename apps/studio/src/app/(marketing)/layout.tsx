@@ -1,12 +1,12 @@
-import type { Metadata } from "next";
-import { LandingHeader } from "@/components/landing";
-import { LandingFooter } from "@/components/landing";
-import { CTASection } from "@/components/landing";
+import type { Metadata } from 'next'
+import { LandingHeader } from '@/components/landing'
+import { LandingFooter } from '@/components/landing'
+import { CTASection } from '@/components/landing'
 
 export default function BlogLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <>
@@ -15,5 +15,5 @@ export default function BlogLayout({
       <CTASection />
       <LandingFooter />
     </>
-  );
+  )
 }

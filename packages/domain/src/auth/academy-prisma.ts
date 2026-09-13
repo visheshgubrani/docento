@@ -1,7 +1,10 @@
 import type { PrismaClient } from '@prisma/client'
 
 import { prisma } from '../db.js'
-import { ACADEMY_SCOPED_MODEL_NAMES, AcademyScopeError } from './academy-scope.js'
+import {
+  ACADEMY_SCOPED_MODEL_NAMES,
+  AcademyScopeError,
+} from './academy-scope.js'
 
 /**
  * Academy scoping enforced at the database client, below Better Auth.
@@ -43,7 +46,6 @@ import { ACADEMY_SCOPED_MODEL_NAMES, AcademyScopeError } from './academy-scope.j
  * not match, and Prisma raises its own not-found error exactly as it would for a
  * row that does not exist.
  */
-
 
 type AnyArgs = Record<string, unknown> & {
   where?: Record<string, unknown>

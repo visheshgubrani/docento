@@ -32,7 +32,7 @@ const expirePendingInvitation = async (invitationId: string) => {
 export const inviteToProject = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project!
@@ -50,7 +50,9 @@ export const inviteToProject = async (
 
     const normalizedRole = String(role).toUpperCase() as InvitableRole
     if (!INVITABLE_ROLES.includes(normalizedRole)) {
-      return next(new ApiError(400, 'Only EDITOR role is supported for invitations'))
+      return next(
+        new ApiError(400, 'Only EDITOR role is supported for invitations'),
+      )
     }
 
     const normalizedEmail = email.toLowerCase().trim()
@@ -87,7 +89,9 @@ export const inviteToProject = async (
       })
 
       if (existingMember) {
-        return next(new ApiError(409, 'User is already a member of this project'))
+        return next(
+          new ApiError(409, 'User is already a member of this project'),
+        )
       }
     }
 
@@ -164,7 +168,7 @@ export const inviteToProject = async (
       new ApiResponse(statusCode, message, {
         invitation,
         type: 'invitation',
-      })
+      }),
     )
   } catch (error) {
     console.error('[INVITE_TO_PROJECT_ERROR]', error)
@@ -179,7 +183,7 @@ export const inviteToProject = async (
 export const acceptInvitation = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const user = req.user!
@@ -228,7 +232,9 @@ export const acceptInvitation = async (
     }
 
     if (invitation.email.toLowerCase() !== user.email.toLowerCase()) {
-      return next(new ApiError(403, 'This invitation is for a different email address'))
+      return next(
+        new ApiError(403, 'This invitation is for a different email address'),
+      )
     }
 
     if (invitation.project.ownerId === user.id) {
@@ -248,7 +254,7 @@ export const acceptInvitation = async (
         new ApiResponse(200, 'You already own this project', {
           role: 'OWNER',
           projectId: invitation.project.id,
-        })
+        }),
       )
     }
 
@@ -314,7 +320,7 @@ export const acceptInvitation = async (
           id: invitation.project.id,
           name: invitation.project.name,
         },
-      })
+      }),
     )
   } catch (error) {
     console.error('[ACCEPT_INVITATION_ERROR]', error)
@@ -329,7 +335,7 @@ export const acceptInvitation = async (
 export const rejectInvitation = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const user = req.user!
@@ -366,7 +372,7 @@ export const rejectInvitation = async (
             id: invitation.project.id,
             name: invitation.project.name,
           },
-        })
+        }),
       )
     }
 
@@ -384,7 +390,9 @@ export const rejectInvitation = async (
     }
 
     if (invitation.email.toLowerCase() !== user.email.toLowerCase()) {
-      return next(new ApiError(403, 'This invitation is for a different email address'))
+      return next(
+        new ApiError(403, 'This invitation is for a different email address'),
+      )
     }
 
     const now = new Date()
@@ -405,7 +413,7 @@ export const rejectInvitation = async (
           id: invitation.project.id,
           name: invitation.project.name,
         },
-      })
+      }),
     )
   } catch (error) {
     console.error('[REJECT_INVITATION_ERROR]', error)
@@ -419,7 +427,7 @@ export const rejectInvitation = async (
 export const getProjectMembers = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project!
@@ -485,7 +493,7 @@ export const getProjectMembers = async (
         owner: { ...owner, role: 'OWNER' },
         members,
         invitations,
-      })
+      }),
     )
   } catch (error) {
     console.error('[GET_PROJECT_MEMBERS_ERROR]', error)
@@ -499,7 +507,7 @@ export const getProjectMembers = async (
 export const removeMember = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project!
@@ -520,9 +528,9 @@ export const removeMember = async (
       where: { id: memberId },
     })
 
-    return res.status(200).json(
-      new ApiResponse(200, 'Member removed successfully', {})
-    )
+    return res
+      .status(200)
+      .json(new ApiResponse(200, 'Member removed successfully', {}))
   } catch (error) {
     console.error('[REMOVE_MEMBER_ERROR]', error)
     return next(new ApiError(500, 'Failed to remove member'))
@@ -535,7 +543,7 @@ export const removeMember = async (
 export const revokeInvitation = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project!
@@ -553,9 +561,9 @@ export const revokeInvitation = async (
     }
 
     if (invitation.status === InvitationStatus.REVOKED) {
-      return res.status(200).json(
-        new ApiResponse(200, 'Invitation already revoked', {})
-      )
+      return res
+        .status(200)
+        .json(new ApiResponse(200, 'Invitation already revoked', {}))
     }
 
     if (invitation.status !== InvitationStatus.PENDING) {
@@ -579,9 +587,9 @@ export const revokeInvitation = async (
       },
     })
 
-    return res.status(200).json(
-      new ApiResponse(200, 'Invitation revoked successfully', {})
-    )
+    return res
+      .status(200)
+      .json(new ApiResponse(200, 'Invitation revoked successfully', {}))
   } catch (error) {
     console.error('[REVOKE_INVITATION_ERROR]', error)
     return next(new ApiError(500, 'Failed to revoke invitation'))

@@ -1,6 +1,6 @@
 /**
  * Unified Video Transcription Service
- * 
+ *
  * Handles transcription for both Cloudflare Stream and Clipmux videos.
  * During migration, the system may have videos from both platforms.
  */
@@ -31,27 +31,30 @@ export type { SupportedLanguage }
 /**
  * Determine if a video is from Cloudflare or Clipmux based on videoId/URL patterns
  */
-const detectVideoPlatform = (videoId: string): 'cloudflare' | 'clipmux' | 'unknown' => {
+const detectVideoPlatform = (
+  videoId: string,
+): 'cloudflare' | 'clipmux' | 'unknown' => {
   // Cloudflare video IDs are typically UUIDs or long strings with dashes
   // but we can also check the stored videoUrl if needed
-  
+
   // For now, use a simple heuristic:
   // - If videoId contains 'cloudflarestream.com' or looks like a CF UID -> Cloudflare
   // - Otherwise -> Clipmux
-  
+
   if (videoId.includes('cloudflarestream.com')) {
     return 'cloudflare'
   }
-  
+
   // Cloudflare video IDs are typically 32 chars with dashes (UUID-like)
   // Clipmux IDs may have different formats
   // This is a rough heuristic - adjust based on your actual ID formats
-  const cfPattern = /^[a-f0-9]{32}$|^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
-  
+  const cfPattern =
+    /^[a-f0-9]{32}$|^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
+
   if (cfPattern.test(videoId)) {
     return 'cloudflare'
   }
-  
+
   return 'clipmux'
 }
 
@@ -67,16 +70,19 @@ interface TranscriptionResult {
  */
 export const generateCaptions = async (
   videoId: string,
-  language: SupportedLanguage = 'en'
+  language: SupportedLanguage = 'en',
 ): Promise<TranscriptionResult> => {
   const platform = detectVideoPlatform(videoId)
-  
+
   if (platform === 'cloudflare') {
     return generateCloudflareCaptions(videoId, language)
   }
-  
+
   // For Clipmux, use the Clipmux transcription service
-  return generateClipmuxTranscription(videoId, language as ClipmuxSupportedLanguage)
+  return generateClipmuxTranscription(
+    videoId,
+    language as ClipmuxSupportedLanguage,
+  )
 }
 
 /**
@@ -84,20 +90,22 @@ export const generateCaptions = async (
  */
 export const getCaptionStatus = async (
   videoId: string,
-  language: string = 'en'
+  language: string = 'en',
 ): Promise<TranscriptionResult | null> => {
   const platform = detectVideoPlatform(videoId)
-  
+
   if (platform === 'cloudflare') {
     return getCloudflareCaptionStatus(videoId, language)
   }
-  
+
   const result = await getClipmuxTranscriptionStatus(videoId, language)
-  return result ? {
-    language: result.language,
-    status: result.status,
-    generated: result.status === 'ready',
-  } : null
+  return result
+    ? {
+        language: result.language,
+        status: result.status,
+        generated: result.status === 'ready',
+      }
+    : null
 }
 
 /**
@@ -105,14 +113,14 @@ export const getCaptionStatus = async (
  */
 export const fetchTranscription = async (
   videoId: string,
-  language: string = 'en'
+  language: string = 'en',
 ): Promise<string> => {
   const platform = detectVideoPlatform(videoId)
-  
+
   if (platform === 'cloudflare') {
     return fetchCloudflareTranscription(videoId, language)
   }
-  
+
   return fetchClipmuxTranscription(videoId, language)
 }
 
@@ -121,13 +129,13 @@ export const fetchTranscription = async (
  */
 export const deleteCaptions = async (
   videoId: string,
-  language: string = 'en'
+  language: string = 'en',
 ): Promise<boolean> => {
   const platform = detectVideoPlatform(videoId)
-  
+
   if (platform === 'cloudflare') {
     return deleteCloudflareCaptions(videoId, language)
   }
-  
+
   return deleteClipmuxTranscription(videoId, language)
 }

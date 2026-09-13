@@ -4,13 +4,13 @@ const LMS_API_URL = process.env.LMS_API_URL
 
 export async function POST(
   request: NextRequest,
-  context: { params: Promise<{ courseId: string }> }
+  context: { params: Promise<{ courseId: string }> },
 ) {
   try {
     if (!LMS_API_URL) {
       return NextResponse.json(
         { message: 'LMS_API_URL is not configured' },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
@@ -18,7 +18,7 @@ export async function POST(
     if (!authToken) {
       return NextResponse.json(
         { message: 'Unauthorized: Please login first.' },
-        { status: 401 }
+        { status: 401 },
       )
     }
 
@@ -26,7 +26,7 @@ export async function POST(
     if (!courseId?.trim()) {
       return NextResponse.json(
         { message: 'courseId is required' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -39,7 +39,7 @@ export async function POST(
           Authorization: `Bearer ${authToken}`,
         },
         cache: 'no-store',
-      }
+      },
     )
 
     const payload = await response.json().catch(() => ({
@@ -51,7 +51,7 @@ export async function POST(
     console.error('[STUDENT_CERTIFICATE_PROXY_ERROR]', error)
     return NextResponse.json(
       { message: 'Failed to issue certificate' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

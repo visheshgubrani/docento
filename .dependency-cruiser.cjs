@@ -23,7 +23,7 @@ module.exports = {
         pathNot: '^packages/(contracts|sdk)/(eslint|vitest|tsup)\\.config\\.',
       },
       to: {
-        path: '^(apps/|packages/(domain|integrations|ui|config)/)',
+        path: '^(apps/|packages/(domain|integrations|config)/)',
       },
     },
     {
@@ -52,7 +52,8 @@ module.exports = {
     {
       name: 'no-circular',
       severity: 'error',
-      comment: 'A cycle between packages means the boundary has stopped meaning anything.',
+      comment:
+        'A cycle between packages means the boundary has stopped meaning anything.',
       from: {},
       to: { circular: true },
     },
@@ -63,7 +64,11 @@ module.exports = {
         'Shipped source must not import a devDependency, which would break a production install. Scoped to src/ because build tooling — eslint config, vitest config, docs MDX components — legitimately runs only at build time.',
       from: {
         path: '^(apps|packages)/[^/]+/src/',
-        pathNot: ['(^|/)(test|tests|__tests__)/', '\\.test\\.ts$', '\\.d\\.ts$'],
+        pathNot: [
+          '(^|/)(test|tests|__tests__)/',
+          '\\.test\\.ts$',
+          '\\.d\\.ts$',
+        ],
       },
       to: { dependencyTypes: ['npm-dev'] },
     },

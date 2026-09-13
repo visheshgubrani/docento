@@ -1,107 +1,122 @@
-"use client";
+'use client'
 
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { HiMagnifyingGlass, HiXMark } from "react-icons/hi2";
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { HiMagnifyingGlass, HiXMark } from 'react-icons/hi2'
 
-import { CourseCard } from "@/components/common/course-card";
-import { CourseCardSkeleton } from "@/components/common/course-card-skeleton";
+import { CourseCard } from '@/components/common/course-card'
+import { CourseCardSkeleton } from '@/components/common/course-card-skeleton'
 import {
   fetchStorefrontCourses,
   fetchStudentCourses,
   type StorefrontCourse,
-} from "@/lib/lms-api-client";
+} from '@/lib/lms-api-client'
 
 type CourseCatalogueProps = {
-  enableSearch?: boolean;
-};
+  enableSearch?: boolean
+}
 
-export function CourseCatalogue({ enableSearch = false }: CourseCatalogueProps) {
-  const searchParams = useSearchParams();
-  const [courses, setCourses] = useState<StorefrontCourse[]>([]);
-  const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [searchValue, setSearchValue] = useState("");
+export function CourseCatalogue({
+  enableSearch = false,
+}: CourseCatalogueProps) {
+  const searchParams = useSearchParams()
+  const [courses, setCourses] = useState<StorefrontCourse[]>([])
+  const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState('All')
+  const [searchValue, setSearchValue] = useState('')
 
   useEffect(() => {
-    let cancelled = false;
+    let cancelled = false
 
     const loadCourses = async () => {
       try {
         const [storefrontCourses, studentCourses] = await Promise.all([
           fetchStorefrontCourses(),
           fetchStudentCourses().catch(() => []),
-        ]);
-        if (cancelled) return;
-        setCourses(storefrontCourses);
-        setEnrolledCourseIds(studentCourses.map((course) => course.id));
+        ])
+        if (cancelled) return
+        setCourses(storefrontCourses)
+        setEnrolledCourseIds(studentCourses.map((course) => course.id))
       } catch (err) {
-        if (cancelled) return;
-        setError(err instanceof Error ? err.message : "Failed to load courses.");
+        if (cancelled) return
+        setError(err instanceof Error ? err.message : 'Failed to load courses.')
       } finally {
         if (!cancelled) {
-          setLoading(false);
+          setLoading(false)
         }
       }
-    };
+    }
 
-    loadCourses();
+    loadCourses()
     return () => {
-      cancelled = true;
-    };
-  }, []);
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
-    if (!enableSearch) return;
-    const categoryFromQuery = searchParams.get("category")?.trim();
-    if (!categoryFromQuery) return;
-    setSelectedCategory(categoryFromQuery);
-  }, [enableSearch, searchParams]);
+    if (!enableSearch) return
+    const categoryFromQuery = searchParams.get('category')?.trim()
+    if (!categoryFromQuery) return
+    setSelectedCategory(categoryFromQuery)
+  }, [enableSearch, searchParams])
 
   const allCategories = useMemo(() => {
-    const categorySet = new Set<string>();
+    const categorySet = new Set<string>()
     courses.forEach((course) => {
-      (course.category ?? [])
+      ;(course.category ?? [])
         .map((category) => category.trim())
         .filter(Boolean)
-        .forEach((category) => categorySet.add(category));
-    });
-    return [...categorySet].sort((a, b) => a.localeCompare(b));
-  }, [courses]);
+        .forEach((category) => categorySet.add(category))
+    })
+    return [...categorySet].sort((a, b) => a.localeCompare(b))
+  }, [courses])
 
   useEffect(() => {
-    if (selectedCategory !== "All" && !allCategories.includes(selectedCategory)) {
-      setSelectedCategory("All");
+    if (
+      selectedCategory !== 'All' &&
+      !allCategories.includes(selectedCategory)
+    ) {
+      setSelectedCategory('All')
     }
-  }, [allCategories, selectedCategory]);
+  }, [allCategories, selectedCategory])
 
   const filteredCourses = useMemo(() => {
-    const query = searchValue.trim().toLowerCase();
+    const query = searchValue.trim().toLowerCase()
 
     return courses.filter((course) => {
-      const categories = (course.category ?? []).map((category) => category.trim());
-      const matchesCategory = selectedCategory === "All" || categories.includes(selectedCategory);
+      const categories = (course.category ?? []).map((category) =>
+        category.trim(),
+      )
+      const matchesCategory =
+        selectedCategory === 'All' || categories.includes(selectedCategory)
 
-      if (!matchesCategory) return false;
-      if (!query) return true;
+      if (!matchesCategory) return false
+      if (!query) return true
 
-      const text = [course.title, course.description ?? "", categories.join(" ")]
-        .join(" ")
-        .toLowerCase();
+      const text = [
+        course.title,
+        course.description ?? '',
+        categories.join(' '),
+      ]
+        .join(' ')
+        .toLowerCase()
 
-      return text.includes(query);
-    });
-  }, [courses, searchValue, selectedCategory]);
-  const enrolledCourseIdSet = useMemo(() => new Set(enrolledCourseIds), [enrolledCourseIds]);
+      return text.includes(query)
+    })
+  }, [courses, searchValue, selectedCategory])
+  const enrolledCourseIdSet = useMemo(
+    () => new Set(enrolledCourseIds),
+    [enrolledCourseIds],
+  )
 
   const titleText = useMemo(() => {
-    if (loading) return "Loading courses...";
-    if (error) return "Unable to load courses";
-    if (filteredCourses.length === 0) return "No matching courses found";
-    return "Courses to build your skills";
-  }, [error, filteredCourses.length, loading]);
+    if (loading) return 'Loading courses...'
+    if (error) return 'Unable to load courses'
+    if (filteredCourses.length === 0) return 'No matching courses found'
+    return 'Courses to build your skills'
+  }, [error, filteredCourses.length, loading])
 
   return (
     <section className="w-full py-16 md:py-20">
@@ -122,8 +137,8 @@ export function CourseCatalogue({ enableSearch = false }: CourseCatalogueProps) 
 
             {allCategories.length > 0 ? (
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                {["All", ...allCategories].map((category) => {
-                  const isActive = selectedCategory === category;
+                {['All', ...allCategories].map((category) => {
+                  const isActive = selectedCategory === category
                   return (
                     <button
                       key={category}
@@ -131,13 +146,13 @@ export function CourseCatalogue({ enableSearch = false }: CourseCatalogueProps) 
                       onClick={() => setSelectedCategory(category)}
                       className={
                         isActive
-                          ? "rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground"
-                          : "rounded-full border border-border bg-muted/35 px-4 py-1.5 text-xs font-medium text-foreground/80 hover:bg-muted"
+                          ? 'rounded-full bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground'
+                          : 'rounded-full border border-border bg-muted/35 px-4 py-1.5 text-xs font-medium text-foreground/80 hover:bg-muted'
                       }
                     >
                       {category}
                     </button>
-                  );
+                  )
                 })}
               </div>
             ) : null}
@@ -157,7 +172,7 @@ export function CourseCatalogue({ enableSearch = false }: CourseCatalogueProps) 
                   {searchValue ? (
                     <button
                       type="button"
-                      onClick={() => setSearchValue("")}
+                      onClick={() => setSearchValue('')}
                       className="absolute right-2 top-1/2 inline-flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-foreground/60 transition-colors hover:bg-muted hover:text-foreground"
                       aria-label="Clear search"
                     >
@@ -191,12 +206,14 @@ export function CourseCatalogue({ enableSearch = false }: CourseCatalogueProps) 
               {error ? (
                 <p className="text-sm font-medium text-red-600">{error}</p>
               ) : (
-                <p className="text-foreground/70">No courses found for the selected filters.</p>
+                <p className="text-foreground/70">
+                  No courses found for the selected filters.
+                </p>
               )}
             </div>
           )}
         </div>
       </div>
     </section>
-  );
+  )
 }

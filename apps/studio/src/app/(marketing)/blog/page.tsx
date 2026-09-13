@@ -1,51 +1,51 @@
-import { AnimatedBlogCard } from "@/components/blog-card-animated";
-import { getBlogPosts } from "@/lib/blog";
-import { StaticSectionHeader } from "@/components/landing";
-import { GridPattern } from "@/components/GridPattern";
-import type { Metadata } from "next";
+import { AnimatedBlogCard } from '@/components/blog-card-animated'
+import { getBlogPosts } from '@/lib/blog'
+import { StaticSectionHeader } from '@/components/landing'
+import { GridPattern } from '@/components/GridPattern'
+import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: "Blog",
+  title: 'Blog',
   description:
-    "Stay updated with the latest insights on headless LMS architecture, learning infrastructure, creator tools, product updates, and the future of learning platforms. Learn how Docento helps businesses build custom learning experiences.",
+    'Stay updated with the latest insights on headless LMS architecture, learning infrastructure, creator tools, product updates, and the future of learning platforms. Learn how Docento helps businesses build custom learning experiences.',
   keywords: [
-    "docento blog",
-    "headless lms",
-    "lms insights",
-    "learning platform blog",
-    "creator tools blog",
-    "edtech blog",
-    "learning infrastructure",
-    "product updates",
+    'docento blog',
+    'headless lms',
+    'lms insights',
+    'learning platform blog',
+    'creator tools blog',
+    'edtech blog',
+    'learning infrastructure',
+    'product updates',
   ],
   openGraph: {
     title:
-      "Docento Blog — Latest Insights on LMS, Learning Infrastructure & Creator Tools",
+      'Docento Blog — Latest Insights on LMS, Learning Infrastructure & Creator Tools',
     description:
-      "Explore articles on headless LMS, custom learning platforms, creator enablement, and deep product insights from Docento.",
-    url: "/blog",
-    type: "website",
+      'Explore articles on headless LMS, custom learning platforms, creator enablement, and deep product insights from Docento.',
+    url: '/blog',
+    type: 'website',
     images: [
       {
-        url: "/og/blog.png",
+        url: '/og/blog.png',
       },
     ],
   },
   twitter: {
-    card: "summary_large_image",
-    title: "Docento Blog — Insights, Updates & Learning Architecture",
+    card: 'summary_large_image',
+    title: 'Docento Blog — Insights, Updates & Learning Architecture',
     description:
-      "Thoughtful articles on building scalable learning experiences, LMS architecture, and creator-focused tools.",
-    images: ["/og/blog.png"],
+      'Thoughtful articles on building scalable learning experiences, LMS architecture, and creator-focused tools.',
+    images: ['/og/blog.png'],
   },
-};
+}
 
 export default async function Blog() {
-  const allPosts = await getBlogPosts();
+  const allPosts = await getBlogPosts()
 
   const articles = await Promise.all(
-    allPosts.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
-  );
+    allPosts.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)),
+  )
 
   return (
     <>
@@ -56,9 +56,9 @@ export default async function Blog() {
             className="absolute inset-0 h-full w-full fill-accent-100/30 stroke-neutral-950/3"
             style={{
               maskImage:
-                "linear-gradient(to bottom left, white 40%, transparent 50%)",
+                'linear-gradient(to bottom left, white 40%, transparent 50%)',
               WebkitMaskImage:
-                "linear-gradient(to bottom left, white 40%, transparent 50%)",
+                'linear-gradient(to bottom left, white 40%, transparent 50%)',
             }}
             yOffset={-200}
           />
@@ -70,7 +70,7 @@ export default async function Blog() {
           <div
             style={{
               clipPath:
-                "polygon(73.6% 51.7%, 91.7% 11.8%, 100% 46.4%, 97.4% 82.2%, 92.5% 84.9%, 75.7% 64%, 55.3% 47.5%, 46.5% 49.4%, 45% 62.9%, 50.3% 87.2%, 21.3% 64.1%, 0.1% 100%, 5.4% 51.1%, 21.4% 63.9%, 58.9% 0.2%, 73.6% 51.7%)",
+                'polygon(73.6% 51.7%, 91.7% 11.8%, 100% 46.4%, 97.4% 82.2%, 92.5% 84.9%, 75.7% 64%, 55.3% 47.5%, 46.5% 49.4%, 45% 62.9%, 50.3% 87.2%, 21.3% 64.1%, 0.1% 100%, 5.4% 51.1%, 21.4% 63.9%, 58.9% 0.2%, 73.6% 51.7%)',
             }}
             className="aspect-1108/632 w-290 bg-linear-to-r from-[#e4f9fb] via-[#fbfbe6] to-[#f2eefc] to-20% opacity-70"
           />
@@ -86,11 +86,16 @@ export default async function Blog() {
           </div>
           <div className="mx-auto grid w-full grid-cols-1 gap-8 px-2.5 pt-8 lg:grid-cols-2">
             {articles.map((data, idx) => (
-              <AnimatedBlogCard key={data.slug} data={data} priority={idx <= 1} index={idx} />
+              <AnimatedBlogCard
+                key={data.slug}
+                data={data}
+                priority={idx <= 1}
+                index={idx}
+              />
             ))}
           </div>
         </div>
       </div>
     </>
-  );
+  )
 }

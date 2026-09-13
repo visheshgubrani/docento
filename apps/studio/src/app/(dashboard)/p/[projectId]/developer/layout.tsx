@@ -15,7 +15,9 @@ export default function DeveloperLayout({ children }: { children: ReactNode }) {
   const { data: project, isLoading } = useProject(projectId)
 
   const isOwner = Boolean(
-    project?.ownerId && session?.user?.id && project.ownerId === session.user.id
+    project?.ownerId &&
+    session?.user?.id &&
+    project.ownerId === session.user.id,
   )
 
   useEffect(() => {
@@ -28,15 +30,15 @@ export default function DeveloperLayout({ children }: { children: ReactNode }) {
 
   if (isLoading || !project) {
     return (
-      <div className='flex min-h-[280px] items-center justify-center'>
-        <Loader2 className='size-6 animate-spin text-muted-foreground' />
+      <div className="flex min-h-[280px] items-center justify-center">
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
       </div>
     )
   }
 
   if (!isOwner) {
     return (
-      <div className='flex min-h-[280px] items-center justify-center text-sm text-muted-foreground'>
+      <div className="flex min-h-[280px] items-center justify-center text-sm text-muted-foreground">
         Redirecting...
       </div>
     )

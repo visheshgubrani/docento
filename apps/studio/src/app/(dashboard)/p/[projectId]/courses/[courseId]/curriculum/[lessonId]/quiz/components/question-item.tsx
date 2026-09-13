@@ -1,34 +1,34 @@
-"use client";
+'use client'
 
-import { useState, useEffect, useRef } from "react";
-import { Edit, Trash2, Loader2 } from "lucide-react";
-import { GiCheckMark } from "react-icons/gi";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect, useRef } from 'react'
+import { Edit, Trash2, Loader2 } from 'lucide-react'
+import { GiCheckMark } from 'react-icons/gi'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select'
 import {
   type Question,
   type QuestionType,
   type CreateQuestionInput,
-} from "@/lib/api";
-import { AnswerInput } from "./answer-input";
-import { MdOutlineAddBox } from "react-icons/md";
+} from '@/lib/api'
+import { AnswerInput } from './answer-input'
+import { MdOutlineAddBox } from 'react-icons/md'
 
 interface QuestionItemProps {
-  question: Question;
-  questionNumber: number;
-  onSave: (questionId: string, data: CreateQuestionInput) => Promise<void>;
-  onDelete: () => void;
-  onChange?: (questionId: string, updates: Partial<Question>) => void;
-  isSaving: boolean;
-  isDeleting: boolean;
+  question: Question
+  questionNumber: number
+  onSave: (questionId: string, data: CreateQuestionInput) => Promise<void>
+  onDelete: () => void
+  onChange?: (questionId: string, updates: Partial<Question>) => void
+  isSaving: boolean
+  isDeleting: boolean
 }
 
 export function QuestionItem({
@@ -40,214 +40,212 @@ export function QuestionItem({
   isSaving,
   isDeleting,
 }: QuestionItemProps) {
-  const [isEditing, setIsEditing] = useState(question.id.startsWith("temp-"));
-  const [questionText, setQuestionText] = useState(question.questionText);
+  const [isEditing, setIsEditing] = useState(question.id.startsWith('temp-'))
+  const [questionText, setQuestionText] = useState(question.questionText)
   const [questionType, setQuestionType] = useState<QuestionType>(
-    question.questionType
-  );
+    question.questionType,
+  )
   const [answers, setAnswers] = useState<string[]>(
     question.options ||
-      (questionType === "MULTIPLE_CHOICE" ? ["", "", "", ""] : [])
-  );
-  const [correctAnswerIndices, setCorrectAnswerIndices] = useState<number[]>(
-    []
-  );
-  const [explanation, setExplanation] = useState(question.explanation || "");
-  const [points, setPoints] = useState(question.points);
-  const [questionError, setQuestionError] = useState("");
-  const [answerError, setAnswerError] = useState("");
+      (questionType === 'MULTIPLE_CHOICE' ? ['', '', '', ''] : []),
+  )
+  const [correctAnswerIndices, setCorrectAnswerIndices] = useState<number[]>([])
+  const [explanation, setExplanation] = useState(question.explanation || '')
+  const [points, setPoints] = useState(question.points)
+  const [questionError, setQuestionError] = useState('')
+  const [answerError, setAnswerError] = useState('')
 
   // Initialize correct answer indices from question
   useEffect(() => {
     if (question.correctAnswer && question.options) {
       // Support multiple correct answers separated by ||
       const correctAnswers = question.correctAnswer
-        .split("||")
-        .map((a) => a.trim());
+        .split('||')
+        .map((a) => a.trim())
       const indices = correctAnswers
         .map((ca) => question.options!.indexOf(ca))
-        .filter((i) => i !== -1);
-      setCorrectAnswerIndices(indices.length > 0 ? indices : []);
-    } else if (question.correctAnswer === "True") {
-      setCorrectAnswerIndices([0]);
-    } else if (question.correctAnswer === "False") {
-      setCorrectAnswerIndices([1]);
+        .filter((i) => i !== -1)
+      setCorrectAnswerIndices(indices.length > 0 ? indices : [])
+    } else if (question.correctAnswer === 'True') {
+      setCorrectAnswerIndices([0])
+    } else if (question.correctAnswer === 'False') {
+      setCorrectAnswerIndices([1])
     }
-  }, [question.correctAnswer, question.options]);
+  }, [question.correctAnswer, question.options])
 
   // Track previous question ID to detect when it changes from temp to real
-  const prevQuestionIdRef = useRef(question.id);
+  const prevQuestionIdRef = useRef(question.id)
 
   // Switch to view mode only when question ID changes from temp to real (after save)
   useEffect(() => {
-    const prevId = prevQuestionIdRef.current;
-    const currentId = question.id;
+    const prevId = prevQuestionIdRef.current
+    const currentId = question.id
 
     // Only switch to view mode if the ID changed from temp to real
-    if (prevId.startsWith("temp-") && !currentId.startsWith("temp-")) {
-      setIsEditing(false);
+    if (prevId.startsWith('temp-') && !currentId.startsWith('temp-')) {
+      setIsEditing(false)
     }
 
-    prevQuestionIdRef.current = currentId;
-  }, [question.id]);
+    prevQuestionIdRef.current = currentId
+  }, [question.id])
 
   // Update answers array when question type changes
   useEffect(() => {
-    if (questionType === "MULTIPLE_CHOICE") {
+    if (questionType === 'MULTIPLE_CHOICE') {
       // Check if current answers are from TRUE_FALSE
       const isTrueFalseFormat =
-        answers.length === 2 && answers[0] === "True" && answers[1] === "False";
+        answers.length === 2 && answers[0] === 'True' && answers[1] === 'False'
       if (answers.length === 0 || isTrueFalseFormat) {
-        setAnswers(["", "", "", ""]);
-        setCorrectAnswerIndices([]);
+        setAnswers(['', '', '', ''])
+        setCorrectAnswerIndices([])
       }
-    } else if (questionType === "TRUE_FALSE") {
-      setAnswers(["True", "False"]);
+    } else if (questionType === 'TRUE_FALSE') {
+      setAnswers(['True', 'False'])
       if (
         correctAnswerIndices.length === 0 ||
         correctAnswerIndices.some((i) => i > 1)
       ) {
-        setCorrectAnswerIndices([0]);
+        setCorrectAnswerIndices([0])
       }
-    } else if (questionType === "SHORT_ANSWER") {
-      setAnswers([]);
-      setCorrectAnswerIndices([]);
+    } else if (questionType === 'SHORT_ANSWER') {
+      setAnswers([])
+      setCorrectAnswerIndices([])
     }
 
     // Clear answer error when question type changes
-    setAnswerError("");
-  }, [questionType]);
+    setAnswerError('')
+  }, [questionType])
 
   const handleAddAnswer = () => {
-    setAnswers([...answers, ""]);
-  };
+    setAnswers([...answers, ''])
+  }
 
   const handleUpdateAnswer = (index: number, value: string) => {
-    const updated = [...answers];
-    updated[index] = value;
-    setAnswers(updated);
+    const updated = [...answers]
+    updated[index] = value
+    setAnswers(updated)
 
     // Notify parent of changes
     if (onChange) {
-      onChange(question.id, { options: updated });
+      onChange(question.id, { options: updated })
     }
-  };
+  }
 
   const handleDeleteAnswer = (index: number) => {
-    const updated = answers.filter((_, i) => i !== index);
-    setAnswers(updated);
+    const updated = answers.filter((_, i) => i !== index)
+    setAnswers(updated)
 
     // Update correct answer indices
     setCorrectAnswerIndices(
       (prev) =>
         prev
           .filter((i) => i !== index) // Remove the deleted index
-          .map((i) => (i > index ? i - 1 : i)) // Adjust indices after the deleted one
-    );
-  };
+          .map((i) => (i > index ? i - 1 : i)), // Adjust indices after the deleted one
+    )
+  }
 
   const handleToggleCorrect = (index: number) => {
-    if (questionType === "TRUE_FALSE") {
+    if (questionType === 'TRUE_FALSE') {
       // For TRUE_FALSE, only allow single selection
-      setCorrectAnswerIndices([index]);
+      setCorrectAnswerIndices([index])
       if (onChange) {
-        onChange(question.id, { correctAnswer: answers[index] });
+        onChange(question.id, { correctAnswer: answers[index] })
       }
     } else {
       // For MCQ, allow multiple selections (toggle behavior)
       setCorrectAnswerIndices((prev) => {
         const newIndices = prev.includes(index)
           ? prev.filter((i) => i !== index) // Remove if already selected
-          : [...prev, index]; // Add if not selected
+          : [...prev, index] // Add if not selected
 
         // Notify parent of changes - store as || separated string
         if (onChange) {
           const correctAnswersStr = newIndices
             .map((i) => answers[i])
             .filter(Boolean)
-            .join("||");
-          onChange(question.id, { correctAnswer: correctAnswersStr });
+            .join('||')
+          onChange(question.id, { correctAnswer: correctAnswersStr })
         }
 
-        return newIndices;
-      });
+        return newIndices
+      })
     }
-    setAnswerError(""); // Clear error when user selects an answer
-  };
+    setAnswerError('') // Clear error when user selects an answer
+  }
 
   const handleSave = async () => {
     // Reset errors
-    setQuestionError("");
-    setAnswerError("");
+    setQuestionError('')
+    setAnswerError('')
 
-    let hasError = false;
+    let hasError = false
 
     // Validation
     if (!questionText.trim()) {
-      setQuestionError("Question is required.");
-      hasError = true;
+      setQuestionError('Question is required.')
+      hasError = true
     }
 
-    if (questionType === "MULTIPLE_CHOICE") {
-      const filledAnswers = answers.filter((a) => a.trim());
+    if (questionType === 'MULTIPLE_CHOICE') {
+      const filledAnswers = answers.filter((a) => a.trim())
       if (filledAnswers.length < 2) {
-        setAnswerError("Please provide at least 2 answer options.");
-        hasError = true;
+        setAnswerError('Please provide at least 2 answer options.')
+        hasError = true
       } else if (
         correctAnswerIndices.length === 0 ||
         !correctAnswerIndices.some((i) => answers[i]?.trim())
       ) {
-        setAnswerError("At least one correct answer is required.");
-        hasError = true;
+        setAnswerError('At least one correct answer is required.')
+        hasError = true
       }
-    } else if (questionType === "TRUE_FALSE") {
+    } else if (questionType === 'TRUE_FALSE') {
       if (correctAnswerIndices.length === 0) {
-        setAnswerError("A correct answer is required.");
-        hasError = true;
+        setAnswerError('A correct answer is required.')
+        hasError = true
       }
-    } else if (questionType === "SHORT_ANSWER") {
+    } else if (questionType === 'SHORT_ANSWER') {
       if (!answers[0]?.trim()) {
-        setAnswerError("An expected answer is required.");
-        hasError = true;
+        setAnswerError('An expected answer is required.')
+        hasError = true
       }
     }
 
-    if (hasError) return;
+    if (hasError) return
 
     // Build correct answer string (multiple answers separated by || for MCQ)
     const correctAnswerValue =
-      questionType === "SHORT_ANSWER"
-        ? answers[0] || ""
+      questionType === 'SHORT_ANSWER'
+        ? answers[0] || ''
         : correctAnswerIndices
             .map((i) => answers[i])
             .filter(Boolean)
-            .join("||");
+            .join('||')
 
     const questionData: CreateQuestionInput = {
       questionText: questionText.trim(),
       questionType,
       options:
-        questionType === "MULTIPLE_CHOICE"
+        questionType === 'MULTIPLE_CHOICE'
           ? answers.filter((a) => a.trim())
-          : questionType === "TRUE_FALSE"
-          ? ["True", "False"]
-          : undefined,
+          : questionType === 'TRUE_FALSE'
+            ? ['True', 'False']
+            : undefined,
       correctAnswer: correctAnswerValue,
       explanation: explanation.trim() || undefined,
       points,
-    };
+    }
 
-    await onSave(question.id, questionData);
-    setIsEditing(false);
-  };
+    await onSave(question.id, questionData)
+    setIsEditing(false)
+  }
 
   // View Mode
   if (!isEditing) {
     const displayAnswers =
-      questionType === "SHORT_ANSWER" ? [question.correctAnswer] : answers;
+      questionType === 'SHORT_ANSWER' ? [question.correctAnswer] : answers
     // Parse correct answers (support multiple separated by ||)
     const correctAnswersList =
-      question.correctAnswer?.split("||").map((a) => a.trim()) || [];
+      question.correctAnswer?.split('||').map((a) => a.trim()) || []
 
     return (
       <div className="rounded-md border border-neutral-300 bg-white">
@@ -283,7 +281,7 @@ export function QuestionItem({
           <p className="text-foreground font-semibold mb-3">{questionText}</p>
 
           <div className="space-y-2">
-            {questionType === "MULTIPLE_CHOICE" && (
+            {questionType === 'MULTIPLE_CHOICE' && (
               <div className="space-y-1.5">
                 {displayAnswers.map((answer, index) => (
                   <div key={index} className="flex items-center gap-2">
@@ -299,9 +297,9 @@ export function QuestionItem({
                 ))}
               </div>
             )}
-            {questionType === "TRUE_FALSE" && (
+            {questionType === 'TRUE_FALSE' && (
               <div className="space-y-1.5">
-                {["True", "False"].map((option) => (
+                {['True', 'False'].map((option) => (
                   <div key={option} className="flex items-center gap-2">
                     {correctAnswersList.includes(option) ? (
                       <GiCheckMark className="size-3.5 text-foreground flex-shrink-0" />
@@ -313,7 +311,7 @@ export function QuestionItem({
                 ))}
               </div>
             )}
-            {questionType === "SHORT_ANSWER" && (
+            {questionType === 'SHORT_ANSWER' && (
               <div className="flex items-center gap-2">
                 <GiCheckMark className="size-3.5 text-foreground flex-shrink-0" />
                 <span className="text-sm text-foreground/80">
@@ -324,7 +322,7 @@ export function QuestionItem({
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   // Edit Mode
@@ -398,13 +396,13 @@ export function QuestionItem({
           <Textarea
             value={questionText}
             onChange={(e) => {
-              const newValue = e.target.value;
-              setQuestionText(newValue);
-              setQuestionError("");
+              const newValue = e.target.value
+              setQuestionText(newValue)
+              setQuestionError('')
 
               // Notify parent of changes
               if (onChange) {
-                onChange(question.id, { questionText: newValue });
+                onChange(question.id, { questionText: newValue })
               }
             }}
             placeholder="Write your question here..."
@@ -415,12 +413,12 @@ export function QuestionItem({
 
         <div className="pt-3">
           {/* Multiple Choice Answers */}
-          {questionType === "MULTIPLE_CHOICE" && (
+          {questionType === 'MULTIPLE_CHOICE' && (
             <div className="space-y-3">
               <label className="text-base font-medium text-foreground">
-                Answers <br />{" "}
+                Answers <br />{' '}
                 <span className="text-xs text-foreground/50 ">
-                  {" "}
+                  {' '}
                   (choose one or more correct answers)
                 </span>
               </label>
@@ -454,7 +452,7 @@ export function QuestionItem({
           )}
 
           {/* True/False Answers */}
-          {questionType === "TRUE_FALSE" && (
+          {questionType === 'TRUE_FALSE' && (
             <div className="space-y-3">
               <label className="text-sm font-medium text-foreground">
                 Select the correct answer
@@ -468,8 +466,8 @@ export function QuestionItem({
                   isCorrect={correctAnswerIndices.includes(0)}
                   onValueChange={() => {}}
                   onToggleCorrect={() => {
-                    setCorrectAnswerIndices([0]);
-                    setAnswerError("");
+                    setCorrectAnswerIndices([0])
+                    setAnswerError('')
                   }}
                   onDelete={() => {}}
                   canDelete={false}
@@ -481,8 +479,8 @@ export function QuestionItem({
                   isCorrect={correctAnswerIndices.includes(1)}
                   onValueChange={() => {}}
                   onToggleCorrect={() => {
-                    setCorrectAnswerIndices([1]);
-                    setAnswerError("");
+                    setCorrectAnswerIndices([1])
+                    setAnswerError('')
                   }}
                   onDelete={() => {}}
                   canDelete={false}
@@ -494,26 +492,26 @@ export function QuestionItem({
           )}
 
           {/* Short Answer */}
-          {questionType === "SHORT_ANSWER" && (
+          {questionType === 'SHORT_ANSWER' && (
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
-                Expected Answer{" "}
+                Expected Answer{' '}
                 <span className="text-xs text-destructive">*</span>
               </label>
               {answerError && (
                 <p className="text-sm text-destructive">{answerError}</p>
               )}
               <Input
-                value={answers[0] || ""}
+                value={answers[0] || ''}
                 onChange={(e) => {
-                  const newValue = e.target.value;
-                  const updated = [newValue];
-                  setAnswers(updated);
-                  setAnswerError("");
+                  const newValue = e.target.value
+                  const updated = [newValue]
+                  setAnswers(updated)
+                  setAnswerError('')
 
                   // Notify parent of changes
                   if (onChange) {
-                    onChange(question.id, { correctAnswer: newValue });
+                    onChange(question.id, { correctAnswer: newValue })
                   }
                 }}
                 placeholder="Enter the expected answer..."
@@ -530,7 +528,7 @@ export function QuestionItem({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
           <div className="space-y-2">
             <label className="text-base font-medium text-foreground">
-              Explanation{" "}
+              Explanation{' '}
               <span className="text-xs text-foreground/50"> (Optional)</span>
             </label>
             <Textarea
@@ -569,5 +567,5 @@ export function QuestionItem({
         </div>
       </div>
     </div>
-  );
+  )
 }

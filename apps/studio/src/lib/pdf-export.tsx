@@ -117,7 +117,7 @@ function ReportDocument({
 }: Omit<DownloadPdfReportOptions, 'filename'>) {
   return (
     <Document title={title}>
-      <Page size='A4' orientation='landscape' style={styles.page}>
+      <Page size="A4" orientation="landscape" style={styles.page}>
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
           {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
@@ -131,7 +131,11 @@ function ReportDocument({
                 key={column.key}
                 style={
                   index === columns.length - 1
-                    ? [styles.cell, { flex: column.weight ?? 1 }, styles.lastCell]
+                    ? [
+                        styles.cell,
+                        { flex: column.weight ?? 1 },
+                        styles.lastCell,
+                      ]
                     : [styles.cell, { flex: column.weight ?? 1 }]
                 }
               >
@@ -167,7 +171,11 @@ function ReportDocument({
                     key={column.key}
                     style={
                       columnIndex === columns.length - 1
-                        ? [styles.cell, { flex: column.weight ?? 1 }, styles.lastCell]
+                        ? [
+                            styles.cell,
+                            { flex: column.weight ?? 1 },
+                            styles.lastCell,
+                          ]
                         : [styles.cell, { flex: column.weight ?? 1 }]
                     }
                   >
@@ -210,7 +218,7 @@ export async function downloadPdfReport({
       columns={columns}
       rows={rows}
       emptyMessage={emptyMessage}
-    />
+    />,
   ).toBlob()
 
   const url = URL.createObjectURL(blob)

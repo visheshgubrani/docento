@@ -1,32 +1,32 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { useState } from 'react'
+import { Loader2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useUpdateLesson } from "@/lib/hooks/use-lessons";
-import { useToast } from "@/components/ui/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { useUpdateLesson } from '@/lib/hooks/use-lessons'
+import { useToast } from '@/components/ui/use-toast'
+import { useQueryClient } from '@tanstack/react-query'
 
 type YouTubeLinkModalProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  lessonTitle: string;
-  projectId: string;
-  courseId: string;
-  moduleId: string;
-  lessonId: string;
-  onSaveComplete?: () => void;
-  initialUrl?: string;
-};
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  lessonTitle: string
+  projectId: string
+  courseId: string
+  moduleId: string
+  lessonId: string
+  onSaveComplete?: () => void
+  initialUrl?: string
+}
 
 export function YouTubeLinkModal({
   open,
@@ -37,74 +37,73 @@ export function YouTubeLinkModal({
   moduleId,
   lessonId,
   onSaveComplete,
-  initialUrl = "",
+  initialUrl = '',
 }: YouTubeLinkModalProps) {
-  const [url, setUrl] = useState(initialUrl);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [url, setUrl] = useState(initialUrl)
+  const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
 
   const updateLessonMutation = useUpdateLesson(
     projectId,
     courseId,
     moduleId,
-    lessonId
-  );
+    lessonId,
+  )
 
-  const isSaving = updateLessonMutation.isPending;
+  const isSaving = updateLessonMutation.isPending
 
   const validateUrl = (value: string): boolean => {
     if (!value.trim()) {
-      setError("URL is required");
-      return false;
+      setError('URL is required')
+      return false
     }
     try {
-      new URL(value.trim());
-      setError(null);
-      return true;
+      new URL(value.trim())
+      setError(null)
+      return true
     } catch {
-      setError("Please enter a valid URL");
-      return false;
+      setError('Please enter a valid URL')
+      return false
     }
-  };
+  }
 
   const handleSave = async () => {
-    if (!validateUrl(url)) return;
+    if (!validateUrl(url)) return
 
     try {
       await updateLessonMutation.mutateAsync({
         videoUrl: url.trim(),
-        contentType: "YOUTUBE",
-      });
+        contentType: 'YOUTUBE',
+      })
 
       await queryClient.invalidateQueries({
-        queryKey: ["project-course", projectId, courseId],
-      });
+        queryKey: ['project-course', projectId, courseId],
+      })
 
       toast({
-        title: "Link saved",
+        title: 'Link saved',
         description: `External video link added to "${lessonTitle}".`,
-      });
+      })
 
-      onOpenChange(false);
-      onSaveComplete?.();
+      onOpenChange(false)
+      onSaveComplete?.()
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to save link";
+      const message = err instanceof Error ? err.message : 'Failed to save link'
       toast({
-        title: "Error",
+        title: 'Error',
         description: message,
-        variant: "destructive",
-      });
+        variant: 'destructive',
+      })
     }
-  };
+  }
 
   const handleClose = () => {
-    if (isSaving) return;
-    onOpenChange(false);
-    setUrl(initialUrl);
-    setError(null);
-  };
+    if (isSaving) return
+    onOpenChange(false)
+    setUrl(initialUrl)
+    setError(null)
+  }
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -129,17 +128,21 @@ export function YouTubeLinkModal({
               placeholder="https://www.youtube.com/watch?v=..."
               value={url}
               onChange={(e) => {
-                setUrl(e.target.value);
-                if (error) setError(null);
+                setUrl(e.target.value)
+                if (error) setError(null)
               }}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleSave();
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  handleSave()
                 }
               }}
               disabled={isSaving}
-              className={error ? "border-destructive" : "py-5 border placeholder:text-foreground/50 border-neutral-400 shadow-none mt-2"}
+              className={
+                error
+                  ? 'border-destructive'
+                  : 'py-5 border placeholder:text-foreground/50 border-neutral-400 shadow-none mt-2'
+              }
             />
             {error ? (
               <p className="text-sm text-destructive">{error}</p>
@@ -161,11 +164,11 @@ export function YouTubeLinkModal({
                 Saving...
               </>
             ) : (
-              "Save Link"
+              'Save Link'
             )}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

@@ -40,7 +40,7 @@ const formatVideoDuration = (totalSeconds: number): string => {
 
 export const getCourseIncludesMap = async (courseIds: string[]) => {
   const uniqueCourseIds = Array.from(
-    new Set(courseIds.filter((courseId) => Boolean(courseId)))
+    new Set(courseIds.filter((courseId) => Boolean(courseId))),
   )
 
   if (uniqueCourseIds.length === 0) {
@@ -48,7 +48,7 @@ export const getCourseIncludesMap = async (courseIds: string[]) => {
   }
 
   const includesMap: Record<string, CourseIncludes> = Object.fromEntries(
-    uniqueCourseIds.map((courseId) => [courseId, buildEmptyCourseIncludes()])
+    uniqueCourseIds.map((courseId) => [courseId, buildEmptyCourseIncludes()]),
   )
 
   const lessons = await prisma.lesson.findMany({
@@ -115,9 +115,10 @@ export const getCourseIncludesMap = async (courseIds: string[]) => {
 
   for (const courseId of uniqueCourseIds) {
     const includes = includesMap[courseId]
-    includes.assessmentsCount = includes.quizzesCount + includes.assignmentsCount
+    includes.assessmentsCount =
+      includes.quizzesCount + includes.assignmentsCount
     includes.videoDurationText = `${formatVideoDuration(
-      includes.videoDurationSeconds
+      includes.videoDurationSeconds,
     )} on-demand video`
   }
 

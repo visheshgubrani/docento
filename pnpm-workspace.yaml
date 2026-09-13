@@ -27,12 +27,34 @@ allowBuilds:
   unrs-resolver: true
 
 # Single source of truth for versions that must not drift between apps.
-# `better-auth` is pinned exactly because the staff and learner realms depend on
-# its table-config and adapter semantics (see docs/adr/0003-two-authentication-realms.md).
+#
+# Only versions that genuinely must agree go here. A version that one app may
+# legitimately move ahead on belongs in that app's package.json, because adding
+# it here turns every future upgrade into a two-app change.
+#
+#   better-auth  — pinned exactly: the staff and learner realms depend on its
+#                  table-config and adapter semantics
+#                  (docs/adr/0003-two-authentication-realms.md)
+#   next/react   — the two applications must build against the same framework
+#   hono         — the API runtime, and Better Auth's supported node path
 catalog:
   better-auth: 1.7.4
   typescript: 5.9.3
   zod: 4.6.2
+
+  next: 16.2.4
+  eslint-config-next: 16.2.4
+  react: 19.2.5
+  react-dom: 19.2.5
+  '@types/react': 19.2.14
+  '@types/react-dom': 19.2.3
+
+  hono: 4.13.7
+  '@hono/node-server': 2.1.1
+
+  lucide-react: 0.563.0
+  tailwind-merge: 3.4.0
+  motion: 12.34.0
 
 minimumReleaseAgeExclude:
   - '@better-auth/core@1.7.4'

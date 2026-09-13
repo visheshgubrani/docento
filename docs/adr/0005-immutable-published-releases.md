@@ -43,16 +43,16 @@ Separate **editable drafts** from **immutable published releases**.
 
 For learners following updates, the rules are explicit:
 
-| Situation | Behavior |
-| --- | --- |
-| Completed lesson still exists | Stays completed |
-| Completed lesson removed | Leaves the completion denominator; the historical record is retained |
-| New required lesson added | Affects incomplete enrollments |
-| Instructor requires reassessment | The only way a completed lesson becomes incomplete again, and it is explicit and recorded |
-| Quiz changed after a passed attempt | The attempt stands; the snapshot is authoritative |
-| Course unpublished | Discovery stops. Existing access is not removed. |
-| Enrollment closed | No new enrollments. Existing access is not removed. |
-| Certificate issued | Remains valid and verifiable, permanently |
+| Situation                           | Behavior                                                                                  |
+| ----------------------------------- | ----------------------------------------------------------------------------------------- |
+| Completed lesson still exists       | Stays completed                                                                           |
+| Completed lesson removed            | Leaves the completion denominator; the historical record is retained                      |
+| New required lesson added           | Affects incomplete enrollments                                                            |
+| Instructor requires reassessment    | The only way a completed lesson becomes incomplete again, and it is explicit and recorded |
+| Quiz changed after a passed attempt | The attempt stands; the snapshot is authoritative                                         |
+| Course unpublished                  | Discovery stops. Existing access is not removed.                                          |
+| Enrollment closed                   | No new enrollments. Existing access is not removed.                                       |
+| Certificate issued                  | Remains valid and verifiable, permanently                                                 |
 
 Completion is computed **server-side** from these rules. Client playback reports
 indicate progress; they are not proof of attendance and are not trusted as such.

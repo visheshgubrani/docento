@@ -4,13 +4,16 @@ import { prisma } from '../lib/prisma'
 import ApiError from '../utils/ApiError'
 import ApiResponse from '../utils/ApiResponse'
 import { getSignedThumbnailUrl } from '../utils/clipmux'
-import { getCourseIncludes, getCourseIncludesMap } from '../utils/course-duration'
+import {
+  getCourseIncludes,
+  getCourseIncludesMap,
+} from '../utils/course-duration'
 
 // Get my enrolled courses
 const getMyCourses = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const endUser = req.endUser!
@@ -37,7 +40,7 @@ const getMyCourses = async (
     })
 
     const includesMap = await getCourseIncludesMap(
-      enrollments.map((enrollment) => enrollment.course.id)
+      enrollments.map((enrollment) => enrollment.course.id),
     )
 
     const courses = enrollments.map((en) => ({
@@ -54,7 +57,7 @@ const getMyCourses = async (
     return res.status(200).json(
       new ApiResponse(200, 'Courses fetched successfully', {
         courses,
-      })
+      }),
     )
   } catch (error) {
     console.error('[GET_MY_COURSES_ERROR]', error)
@@ -66,7 +69,7 @@ const getMyCourses = async (
 const getCourseContent = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const endUser = req.endUser!
@@ -85,8 +88,8 @@ const getCourseContent = async (
       return next(
         new ApiError(
           403,
-          'You are not enrolled in this course or your access has expired.'
-        )
+          'You are not enrolled in this course or your access has expired.',
+        ),
       )
     }
 
@@ -138,7 +141,7 @@ const getCourseContent = async (
 
     // ✅ Create a map for easy lookup
     const progressMap = Object.fromEntries(
-      progressData.map((p) => [p.lessonId, p])
+      progressData.map((p) => [p.lessonId, p]),
     )
 
     return res.status(200).json(
@@ -149,7 +152,7 @@ const getCourseContent = async (
         },
         enrollment,
         progressMap, // ✅ Easier for frontend to use
-      })
+      }),
     )
   } catch (error) {
     console.error('[GET_COURSE_CONTENT_ERROR]', error)
@@ -195,7 +198,7 @@ const getLesson = async (req: Request, res: Response, next: NextFunction) => {
         lesson,
         progress,
         enrollment,
-      })
+      }),
     )
   } catch (error) {
     console.error('[GET_LESSON_ERROR]', error)
@@ -207,7 +210,7 @@ const getLesson = async (req: Request, res: Response, next: NextFunction) => {
 const updateProgress = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -221,7 +224,7 @@ const updateProgress = async (
     // ✅ Validate watchedDuration
     if (typeof watchedDuration !== 'number' || watchedDuration < 0) {
       return next(
-        new ApiError(400, 'watchedDuration must be a positive number')
+        new ApiError(400, 'watchedDuration must be a positive number'),
       )
     }
 
@@ -261,13 +264,13 @@ const updateProgress = async (
 
     // Update enrollment progress percentage (async, don't wait)
     updateEnrollmentProgress(endUser.id, lesson.id).catch((err) =>
-      console.error('[UPDATE_ENROLLMENT_PROGRESS_ERROR]', err)
+      console.error('[UPDATE_ENROLLMENT_PROGRESS_ERROR]', err),
     )
 
     return res.status(200).json(
       new ApiResponse(200, 'Progress updated successfully', {
         progress,
-      })
+      }),
     )
   } catch (error) {
     console.error('[UPDATE_PROGRESS_ERROR]', error)
@@ -279,7 +282,7 @@ const updateProgress = async (
 const updateMyProfile = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const endUser = req.endUser!
@@ -287,7 +290,7 @@ const updateMyProfile = async (
 
     if (name === undefined && email === undefined) {
       return next(
-        new ApiError(400, 'Please provide a name or email to update.')
+        new ApiError(400, 'Please provide a name or email to update.'),
       )
     }
 
@@ -299,8 +302,8 @@ const updateMyProfile = async (
       return next(
         new ApiError(
           400,
-          'Profile updates are only available for managed users.'
-        )
+          'Profile updates are only available for managed users.',
+        ),
       )
     }
 
@@ -320,9 +323,7 @@ const updateMyProfile = async (
       })
 
       if (existing) {
-        return next(
-          new ApiError(409, 'A user with this email already exists.')
-        )
+        return next(new ApiError(409, 'A user with this email already exists.'))
       }
     }
 
@@ -354,7 +355,7 @@ const updateMyProfile = async (
           name: updated.updatedManagedUser.name,
           projectId: updated.updatedEndUser.projectId,
         },
-      })
+      }),
     )
   } catch (error) {
     console.error('[UPDATE_PROFILE_ERROR]', error)
@@ -363,11 +364,7 @@ const updateMyProfile = async (
 }
 
 // List orders for the current student
-const getMyOrders = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const getMyOrders = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const endUser = req.endUser!
     const orders = await prisma.order.findMany({
@@ -389,7 +386,7 @@ const getMyOrders = async (
     return res.status(200).json(
       new ApiResponse(200, 'Orders fetched successfully', {
         orders,
-      })
+      }),
     )
   } catch (error) {
     console.error('[GET_ORDERS_ERROR]', error)
@@ -441,7 +438,7 @@ async function updateEnrollmentProgress(endUserId: string, lessonId: string) {
     })
 
     const progressPercentage = Math.round(
-      (completedLessons / totalLessons) * 100
+      (completedLessons / totalLessons) * 100,
     ) // ✅ Round to whole number
 
     // Update enrollment

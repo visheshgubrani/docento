@@ -1,13 +1,9 @@
-import {
-  LandingHeader,
-  LandingFooter,
-  CTASection,
-} from "@/components/landing";
+import { LandingHeader, LandingFooter, CTASection } from '@/components/landing'
 
 export default function LegalLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <>
@@ -16,5 +12,5 @@ export default function LegalLayout({
       <CTASection />
       <LandingFooter />
     </>
-  );
+  )
 }

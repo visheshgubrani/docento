@@ -1,9 +1,9 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { ctaData } from "@/config/marketing/home";
-import { noisePattern } from "@/components/noise-pattern";
-import { HiChevronRight } from "react-icons/hi2";
+import Link from 'next/link'
+import { ctaData } from '@/config/marketing/home'
+import { noisePattern } from '@/components/noise-pattern'
+import { HiChevronRight } from 'react-icons/hi2'
 
 export function CTA() {
   return (
@@ -12,7 +12,7 @@ export function CTA() {
         <div
           className="absolute inset-0 opacity-85 mix-blend-overlay dark:opacity-70"
           style={{
-            backgroundPosition: "center",
+            backgroundPosition: 'center',
             backgroundImage: noisePattern,
           }}
         />
@@ -50,5 +50,5 @@ export function CTA() {
         </div>
       </div>
     </section>
-  );
+  )
 }

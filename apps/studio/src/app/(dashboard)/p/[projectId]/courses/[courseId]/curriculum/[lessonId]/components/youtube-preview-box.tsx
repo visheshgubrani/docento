@@ -1,29 +1,29 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { BsThreeDotsVertical } from "react-icons/bs";
-import { FaYoutube } from "react-icons/fa";
-import { ExternalLink } from "lucide-react";
+import { useState } from 'react'
+import { BsThreeDotsVertical } from 'react-icons/bs'
+import { FaYoutube } from 'react-icons/fa'
+import { ExternalLink } from 'lucide-react'
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { YouTubeLinkModal } from "./youtube-link-modal";
+} from '@/components/ui/dropdown-menu'
+import { YouTubeLinkModal } from './youtube-link-modal'
 
 type YouTubePreviewBoxProps = {
-  projectId: string;
-  courseId: string;
-  moduleId: string;
-  lessonId: string;
-  videoUrl: string;
-  videoTitle: string;
-  onDelete?: () => void;
-  isDeleting?: boolean;
-};
+  projectId: string
+  courseId: string
+  moduleId: string
+  lessonId: string
+  videoUrl: string
+  videoTitle: string
+  onDelete?: () => void
+  isDeleting?: boolean
+}
 
 /**
  * Extract a YouTube video ID from common URL formats.
@@ -31,34 +31,34 @@ type YouTubePreviewBoxProps = {
  */
 function extractYouTubeId(url: string): string | null {
   try {
-    const parsed = new URL(url);
+    const parsed = new URL(url)
 
     // youtube.com/watch?v=ID
     if (
-      (parsed.hostname === "www.youtube.com" ||
-        parsed.hostname === "youtube.com") &&
-      parsed.searchParams.has("v")
+      (parsed.hostname === 'www.youtube.com' ||
+        parsed.hostname === 'youtube.com') &&
+      parsed.searchParams.has('v')
     ) {
-      return parsed.searchParams.get("v");
+      return parsed.searchParams.get('v')
     }
 
     // youtu.be/ID
-    if (parsed.hostname === "youtu.be") {
-      return parsed.pathname.slice(1).split("/")[0] || null;
+    if (parsed.hostname === 'youtu.be') {
+      return parsed.pathname.slice(1).split('/')[0] || null
     }
 
     // youtube.com/embed/ID
     if (
-      (parsed.hostname === "www.youtube.com" ||
-        parsed.hostname === "youtube.com") &&
-      parsed.pathname.startsWith("/embed/")
+      (parsed.hostname === 'www.youtube.com' ||
+        parsed.hostname === 'youtube.com') &&
+      parsed.pathname.startsWith('/embed/')
     ) {
-      return parsed.pathname.replace("/embed/", "").split("/")[0] || null;
+      return parsed.pathname.replace('/embed/', '').split('/')[0] || null
     }
   } catch {
     // not a valid URL
   }
-  return null;
+  return null
 }
 
 export function YouTubePreviewBox({
@@ -71,8 +71,8 @@ export function YouTubePreviewBox({
   onDelete,
   isDeleting = false,
 }: YouTubePreviewBoxProps) {
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const youtubeId = extractYouTubeId(videoUrl);
+  const [editModalOpen, setEditModalOpen] = useState(false)
+  const youtubeId = extractYouTubeId(videoUrl)
 
   return (
     <>
@@ -106,7 +106,7 @@ export function YouTubePreviewBox({
                 disabled={isDeleting}
                 className="cursor-pointer text-destructive focus:text-destructive hover:bg-red-50"
               >
-                {isDeleting ? "Deleting..." : "Delete"}
+                {isDeleting ? 'Deleting...' : 'Delete'}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -125,7 +125,9 @@ export function YouTubePreviewBox({
                   allowFullScreen
                 />
               </div>
-              <p className="text-sm font-semibold bg-muted p-2 rounded-sm text-foreground">{videoTitle}</p>
+              <p className="text-sm font-semibold bg-muted p-2 rounded-sm text-foreground">
+                {videoTitle}
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -163,5 +165,5 @@ export function YouTubePreviewBox({
         initialUrl={videoUrl}
       />
     </>
-  );
+  )
 }

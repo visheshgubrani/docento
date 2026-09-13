@@ -1,10 +1,6 @@
 'use client'
 
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import {
   createCourse,
@@ -25,7 +21,7 @@ type UseProjectCoursesOptions = {
 
 export function useProjectCourses(
   projectId: string,
-  options: UseProjectCoursesOptions = {}
+  options: UseProjectCoursesOptions = {},
 ) {
   return useQuery<CourseSummary[], Error>({
     queryKey: ['project-courses', projectId, options.isPublished ?? 'all'],

@@ -37,10 +37,7 @@ const getRetryAfterSeconds = (req: Request, windowMs: number) => {
   const resetTime = (req as any).rateLimit?.resetTime
 
   if (resetTime instanceof Date) {
-    return Math.max(
-      1,
-      Math.ceil((resetTime.getTime() - Date.now()) / 1000)
-    )
+    return Math.max(1, Math.ceil((resetTime.getTime() - Date.now()) / 1000))
   }
 
   return Math.max(1, Math.ceil(windowMs / 1000))
@@ -83,41 +80,41 @@ const createRateLimiter = ({
 
 const authWindowMs = readPositiveNumber(
   'AUTH_RATE_LIMIT_WINDOW_MS',
-  minutes(15)
+  minutes(15),
 )
 const authLimit = readPositiveNumber('AUTH_RATE_LIMIT_MAX', 10)
 
 const passwordResetWindowMs = readPositiveNumber(
   'PASSWORD_RESET_RATE_LIMIT_WINDOW_MS',
-  hours(1)
+  hours(1),
 )
 const passwordResetLimit = readPositiveNumber(
   'PASSWORD_RESET_RATE_LIMIT_MAX',
-  3
+  3,
 )
 
 const apiKeyWindowMs = readPositiveNumber(
   'API_KEY_RATE_LIMIT_WINDOW_MS',
-  minutes(1)
+  minutes(1),
 )
 const apiKeyLimit = readPositiveNumber('API_KEY_RATE_LIMIT_MAX', 300)
 
 const storefrontWindowMs = readPositiveNumber(
   'STOREFRONT_RATE_LIMIT_WINDOW_MS',
-  minutes(15)
+  minutes(15),
 )
 const storefrontLimit = readPositiveNumber('STOREFRONT_RATE_LIMIT_MAX', 400)
 
 const webhookWindowMs = readPositiveNumber(
   'WEBHOOK_RATE_LIMIT_WINDOW_MS',
-  minutes(1)
+  minutes(1),
 )
 const webhookLimit = readPositiveNumber('WEBHOOK_RATE_LIMIT_MAX', 1000)
 
 export const markSkipApiKeyRateLimit = (
   req: Request,
   _res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   req.skipApiKeyRateLimit = true
   next()
@@ -191,7 +188,7 @@ const apiKeyRateLimiter = createRateLimiter({
 export const applyApiKeyRateLimit = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => apiKeyRateLimiter(req, res, next)
 
 export const storefrontRateLimiter = createRateLimiter({

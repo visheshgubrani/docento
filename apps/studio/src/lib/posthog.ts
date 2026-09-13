@@ -71,7 +71,7 @@ export function getPostHogRequestHeaders(): Record<string, string> {
 
 export function captureClientException(
   error: unknown,
-  properties?: Properties & { context?: string }
+  properties?: Properties & { context?: string },
 ) {
   if (!isConfigured) {
     return

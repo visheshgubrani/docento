@@ -59,7 +59,9 @@ describe('loadEnv', () => {
   })
 
   it('rejects a relative APP_URL, which would break auth callbacks', () => {
-    expect(() => loadEnv({ ...valid, APP_URL: '/dashboard' })).toThrow(/APP_URL/)
+    expect(() => loadEnv({ ...valid, APP_URL: '/dashboard' })).toThrow(
+      /APP_URL/,
+    )
   })
 
   it('parses comma-separated trusted origins and trims them', () => {

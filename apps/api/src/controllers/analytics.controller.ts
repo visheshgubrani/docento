@@ -58,11 +58,7 @@ const getEndUserDisplayName = (endUser: {
 }
 
 // High-level KPIs for a project
-const getOverview = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const getOverview = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const project = req.project!
 
@@ -95,7 +91,7 @@ const getOverview = async (
 
     const totalRevenue = revenueByCurrency.reduce(
       (sum, entry) => sum + entry.amount,
-      0
+      0,
     )
 
     return res.status(200).json(
@@ -106,11 +102,9 @@ const getOverview = async (
           totalStudents,
           activeCourses,
           totalEnrollments: enrollmentAggregate._count?._all ?? 0,
-          averageProgress: Math.round(
-            enrollmentAggregate._avg.progress ?? 0
-          ),
+          averageProgress: Math.round(enrollmentAggregate._avg.progress ?? 0),
         },
-      })
+      }),
     )
   } catch (error) {
     console.error('[ANALYTICS_OVERVIEW_ERROR]', error)
@@ -122,7 +116,7 @@ const getOverview = async (
 const getRecentSales = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project!
@@ -172,7 +166,7 @@ const getRecentSales = async (
             externalId: order.endUser.externalId,
           },
         })),
-      })
+      }),
     )
   } catch (error) {
     console.error('[ANALYTICS_RECENT_SALES_ERROR]', error)
@@ -184,7 +178,7 @@ const getRecentSales = async (
 const getCourseInsights = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project!
@@ -227,15 +221,13 @@ const getCourseInsights = async (
       ])
 
     const totalEnrollments = enrollmentsAggregate._count?._all ?? 0
-    const averageProgress = Math.round(
-      enrollmentsAggregate._avg.progress ?? 0
-    )
+    const averageProgress = Math.round(enrollmentsAggregate._avg.progress ?? 0)
     const completionRate = totalEnrollments
       ? Math.round((completedEnrollments / totalEnrollments) * 100)
       : 0
     const revenue = revenueByCurrency.reduce(
       (sum, entry) => sum + toMajorAmount(entry._sum.amount, entry.currency),
-      0
+      0,
     )
 
     return res.status(200).json(
@@ -247,7 +239,7 @@ const getCourseInsights = async (
           completionRate,
           revenue,
         },
-      })
+      }),
     )
   } catch (error) {
     console.error('[ANALYTICS_COURSE_INSIGHT_ERROR]', error)
@@ -259,7 +251,7 @@ const getCourseInsights = async (
 const getStudentsProgress = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project!
@@ -295,7 +287,7 @@ const getStudentsProgress = async (
     ])
 
     const activityMap = new Map(
-      activity.map((entry) => [entry.endUserId, entry._max.lastWatchedAt])
+      activity.map((entry) => [entry.endUserId, entry._max.lastWatchedAt]),
     )
 
     const studentsWithProgress = students.map((student) => {
@@ -305,8 +297,8 @@ const getStudentsProgress = async (
           ? Math.round(
               student.enrollments.reduce(
                 (sum, enrollment) => sum + (enrollment.progress ?? 0),
-                0
-              ) / totalEnrollments
+                0,
+              ) / totalEnrollments,
             )
           : 0
 
@@ -331,7 +323,7 @@ const getStudentsProgress = async (
     return res.status(200).json(
       new ApiResponse(200, 'Student analytics fetched', {
         students: studentsWithProgress,
-      })
+      }),
     )
   } catch (error) {
     console.error('[ANALYTICS_STUDENTS_ERROR]', error)
@@ -343,7 +335,7 @@ const getStudentsProgress = async (
 const getEngagementInsights = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project!
@@ -398,7 +390,7 @@ const getEngagementInsights = async (
 
     const revenue7d = revenueByCurrency7d.reduce(
       (sum, entry) => sum + entry.amount,
-      0
+      0,
     )
 
     return res.status(200).json(
@@ -412,7 +404,7 @@ const getEngagementInsights = async (
           revenueByCurrency7d,
           averageProgress: Math.round(averageProgress._avg.progress ?? 0),
         },
-      })
+      }),
     )
   } catch (error) {
     console.error('[ANALYTICS_ENGAGEMENT_ERROR]', error)

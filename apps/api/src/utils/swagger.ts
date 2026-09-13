@@ -86,7 +86,10 @@ Routes list one or more auth methods; you only need one of the listed methods.
           properties: {
             id: { type: 'string', format: 'uuid' },
             name: { type: 'string', example: 'My Learning Platform' },
-            slug: { type: 'string', example: 'my-learning-platform-1234567890' },
+            slug: {
+              type: 'string',
+              example: 'my-learning-platform-1234567890',
+            },
             publishableKey: { type: 'string', example: 'pk_live_xxxxxxxx' },
             authMode: { type: 'string', enum: ['MANAGED', 'DELEGATED'] },
             branding: { type: 'object', nullable: true },
@@ -172,7 +175,10 @@ Routes list one or more auth methods; you only need one of the listed methods.
       { name: 'Projects', description: 'Project/Tenant management' },
       { name: 'API Keys', description: 'API key management for projects' },
       { name: 'Webhooks', description: 'Webhook configuration' },
-      { name: 'Payment Settings', description: 'Payment gateway configuration' },
+      {
+        name: 'Payment Settings',
+        description: 'Payment gateway configuration',
+      },
       { name: 'Coupons', description: 'Coupon and discount management' },
       { name: 'End Users', description: 'End user management' },
       { name: 'Courses', description: 'Course management' },
@@ -188,21 +194,22 @@ Routes list one or more auth methods; you only need one of the listed methods.
       { name: 'AI', description: 'AI-powered features' },
     ],
   },
-  apis: [
-    './src/routes/*.ts',
-    './src/controllers/*.ts',
-  ],
+  apis: ['./src/routes/*.ts', './src/controllers/*.ts'],
 }
 
 const swaggerSpec = swaggerJsdoc(options)
 
 export const setupSwagger = (app: Express) => {
   // Serve swagger docs
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
-    explorer: true,
-    customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'LMS API Documentation',
-  }))
+  app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec, {
+      explorer: true,
+      customCss: '.swagger-ui .topbar { display: none }',
+      customSiteTitle: 'LMS API Documentation',
+    }),
+  )
 
   // Serve raw JSON spec
   app.get('/api-docs.json', (req, res) => {

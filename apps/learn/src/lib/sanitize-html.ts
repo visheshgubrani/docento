@@ -33,7 +33,9 @@ import DOMPurify from 'isomorphic-dompurify'
 DOMPurify.addHook('uponSanitizeAttribute', (_node, data) => {
   if (data.attrName !== 'src' && data.attrName !== 'href') return
 
-  const value = String(data.attrValue ?? '').trim().toLowerCase()
+  const value = String(data.attrValue ?? '')
+    .trim()
+    .toLowerCase()
 
   if (
     value.startsWith('data:') ||
@@ -43,29 +45,73 @@ DOMPurify.addHook('uponSanitizeAttribute', (_node, data) => {
   ) {
     data.keepAttr = false
   }
-});
+})
 
 export function sanitizeLessonHtml(value: string): string {
   return DOMPurify.sanitize(value, {
     ALLOWED_TAGS: [
-      'p', 'br', 'hr', 'span', 'div',
-      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-      'strong', 'b', 'em', 'i', 'u', 's', 'sub', 'sup', 'mark',
-      'ul', 'ol', 'li',
-      'blockquote', 'pre', 'code',
-      'a', 'img',
-      'table', 'thead', 'tbody', 'tr', 'th', 'td',
+      'p',
+      'br',
+      'hr',
+      'span',
+      'div',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+      'strong',
+      'b',
+      'em',
+      'i',
+      'u',
+      's',
+      'sub',
+      'sup',
+      'mark',
+      'ul',
+      'ol',
+      'li',
+      'blockquote',
+      'pre',
+      'code',
+      'a',
+      'img',
+      'table',
+      'thead',
+      'tbody',
+      'tr',
+      'th',
+      'td',
     ],
     ALLOWED_ATTR: [
-      'href', 'src', 'alt', 'title', 'class', 'target', 'rel',
-      'colspan', 'rowspan',
+      'href',
+      'src',
+      'alt',
+      'title',
+      'class',
+      'target',
+      'rel',
+      'colspan',
+      'rowspan',
     ],
     // No `data:` URIs: they are a script-execution vector in several contexts
     // and course content has no need for them.
     ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|tel:|\/|#)/i,
     FORBID_TAGS: [
-      'script', 'style', 'iframe', 'object', 'embed', 'form', 'input',
-      'link', 'meta', 'base', 'svg', 'math',
+      'script',
+      'style',
+      'iframe',
+      'object',
+      'embed',
+      'form',
+      'input',
+      'link',
+      'meta',
+      'base',
+      'svg',
+      'math',
     ],
     FORBID_ATTR: ['style'],
     KEEP_CONTENT: true,

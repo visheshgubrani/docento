@@ -1,8 +1,8 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { RiSparkling2Fill } from "react-icons/ri";
-import { Loader2 } from "lucide-react";
+import { useState } from 'react'
+import { RiSparkling2Fill } from 'react-icons/ri'
+import { Loader2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -10,31 +10,31 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { type QuestionType } from "@/lib/api";
+} from '@/components/ui/select'
+import { type QuestionType } from '@/lib/api'
 
 interface GenerateQuizDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  open: boolean
+  onOpenChange: (open: boolean) => void
   onGenerate: (options: {
-    description: string;
-    questionCount: number;
-    questionTypes: QuestionType[];
-    difficulty: "beginner" | "intermediate" | "advanced";
-  }) => Promise<void>;
-  isGenerating: boolean;
-  lessonTitle?: string;
+    description: string
+    questionCount: number
+    questionTypes: QuestionType[]
+    difficulty: 'beginner' | 'intermediate' | 'advanced'
+  }) => Promise<void>
+  isGenerating: boolean
+  lessonTitle?: string
 }
 
 export function GenerateQuizDialog({
@@ -44,29 +44,29 @@ export function GenerateQuizDialog({
   isGenerating,
   lessonTitle,
 }: GenerateQuizDialogProps) {
-  const [description, setDescription] = useState("");
-  const [questionCount, setQuestionCount] = useState(5);
+  const [description, setDescription] = useState('')
+  const [questionCount, setQuestionCount] = useState(5)
   const [difficulty, setDifficulty] = useState<
-    "beginner" | "intermediate" | "advanced"
-  >("intermediate");
+    'beginner' | 'intermediate' | 'advanced'
+  >('intermediate')
   const [selectedTypes, setSelectedTypes] = useState<QuestionType[]>([
-    "MULTIPLE_CHOICE",
-  ]);
+    'MULTIPLE_CHOICE',
+  ])
 
   const handleTypeToggle = (type: QuestionType) => {
     setSelectedTypes((prev) => {
       if (prev.includes(type)) {
         // Don't allow removing the last type
-        if (prev.length === 1) return prev;
-        return prev.filter((t) => t !== type);
+        if (prev.length === 1) return prev
+        return prev.filter((t) => t !== type)
       }
-      return [...prev, type];
-    });
-  };
+      return [...prev, type]
+    })
+  }
 
   const handleGenerate = async () => {
     if (!description.trim() || description.trim().length < 10) {
-      return;
+      return
     }
 
     await onGenerate({
@@ -74,10 +74,10 @@ export function GenerateQuizDialog({
       questionCount,
       questionTypes: selectedTypes,
       difficulty,
-    });
-  };
+    })
+  }
 
-  const isValid = description.trim().length >= 10 && selectedTypes.length > 0;
+  const isValid = description.trim().length >= 10 && selectedTypes.length > 0
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -109,7 +109,7 @@ export function GenerateQuizDialog({
               placeholder={
                 lessonTitle
                   ? `e.g., Test knowledge about ${lessonTitle}, covering key concepts, definitions, and practical applications...`
-                  : "Describe what topics, concepts, or skills the quiz should test..."
+                  : 'Describe what topics, concepts, or skills the quiz should test...'
               }
               className="border-neutral-300 rounded-sm shadow-none py-2 mt-1 min-h-[100px]"
               rows={4}
@@ -137,7 +137,7 @@ export function GenerateQuizDialog({
                 value={questionCount}
                 onChange={(e) =>
                   setQuestionCount(
-                    Math.min(20, Math.max(1, Number(e.target.value) || 1))
+                    Math.min(20, Math.max(1, Number(e.target.value) || 1)),
                   )
                 }
                 className="border-neutral-300 rounded-sm shadow-none py-2 mt-1 w-32"
@@ -174,16 +174,16 @@ export function GenerateQuizDialog({
             <div className="space-y-2 mt-2 bg-muted/80 rounded-md p-1">
               <label className="flex items-center gap-3 cursor-pointer">
                 <Checkbox
-                  checked={selectedTypes.includes("MULTIPLE_CHOICE")}
-                  onCheckedChange={() => handleTypeToggle("MULTIPLE_CHOICE")}
+                  checked={selectedTypes.includes('MULTIPLE_CHOICE')}
+                  onCheckedChange={() => handleTypeToggle('MULTIPLE_CHOICE')}
                   className="border border-foreground/80"
                 />
                 <span className="text-sm text-foreground">Multiple Choice</span>
               </label>
               <label className="flex items-center gap-3 cursor-pointer">
                 <Checkbox
-                  checked={selectedTypes.includes("TRUE_FALSE")}
-                  onCheckedChange={() => handleTypeToggle("TRUE_FALSE")}
+                  checked={selectedTypes.includes('TRUE_FALSE')}
+                  onCheckedChange={() => handleTypeToggle('TRUE_FALSE')}
                   className="border border-foreground/80"
                 />
                 <span className="text-sm text-foreground">True/False</span>
@@ -235,5 +235,5 @@ export function GenerateQuizDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

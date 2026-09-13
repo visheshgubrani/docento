@@ -1,115 +1,115 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Trash2 } from "lucide-react";
-import { MdOutlineAssignment } from "react-icons/md";
+import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
+import { ArrowLeft, Trash2 } from 'lucide-react'
+import { MdOutlineAssignment } from 'react-icons/md'
 
-import { useCourse } from "@/lib/hooks/use-courses";
-import { useProjectRouteId } from "@/lib/hooks/use-project-route-id";
+import { useCourse } from '@/lib/hooks/use-courses'
+import { useProjectRouteId } from '@/lib/hooks/use-project-route-id'
 import {
   createAssignment,
   deleteAssignment,
   getAssignment,
   updateAssignment,
   type Assignment,
-} from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { DatePickerInput } from "@/components/ui/date-picker";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/use-toast";
+} from '@/lib/api'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { DatePickerInput } from '@/components/ui/date-picker'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useToast } from '@/components/ui/use-toast'
 
 function toDatePickerValue(isoDate?: string | null) {
-  if (!isoDate) return "";
-  const parsedDate = new Date(isoDate);
-  if (Number.isNaN(parsedDate.getTime())) return "";
+  if (!isoDate) return ''
+  const parsedDate = new Date(isoDate)
+  if (Number.isNaN(parsedDate.getTime())) return ''
 
-  const year = parsedDate.getFullYear();
-  const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
-  const day = String(parsedDate.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  const year = parsedDate.getFullYear()
+  const month = String(parsedDate.getMonth() + 1).padStart(2, '0')
+  const day = String(parsedDate.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 export default function AssignmentEditorPage() {
-  const params = useParams();
-  const router = useRouter();
-  const projectId = useProjectRouteId();
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const params = useParams()
+  const router = useRouter()
+  const projectId = useProjectRouteId()
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
 
-  const courseId = typeof params?.courseId === "string" ? params.courseId : "";
-  const lessonId = typeof params?.lessonId === "string" ? params.lessonId : "";
+  const courseId = typeof params?.courseId === 'string' ? params.courseId : ''
+  const lessonId = typeof params?.lessonId === 'string' ? params.lessonId : ''
 
   const { data: course, isLoading: isLoadingCourse } = useCourse(
     projectId,
-    courseId
-  );
+    courseId,
+  )
 
   const currentModule = course?.modules?.find((module) =>
-    module.lessons.some((lesson) => lesson.id === lessonId)
-  );
+    module.lessons.some((lesson) => lesson.id === lessonId),
+  )
   const currentLesson = currentModule?.lessons?.find(
-    (lesson) => lesson.id === lessonId
-  );
+    (lesson) => lesson.id === lessonId,
+  )
 
-  const [assignment, setAssignment] = useState<Assignment | null>(null);
-  const [isLoadingAssignment, setIsLoadingAssignment] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [assignment, setAssignment] = useState<Assignment | null>(null)
+  const [isLoadingAssignment, setIsLoadingAssignment] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [totalPoints, setTotalPoints] = useState("100");
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [dueDate, setDueDate] = useState('')
+  const [totalPoints, setTotalPoints] = useState('100')
 
   useEffect(() => {
     const loadAssignment = async () => {
       if (!projectId || !courseId || !currentModule?.id || !lessonId) {
-        setAssignment(null);
-        setIsLoadingAssignment(false);
-        return;
+        setAssignment(null)
+        setIsLoadingAssignment(false)
+        return
       }
 
       try {
-        setIsLoadingAssignment(true);
+        setIsLoadingAssignment(true)
         const data = await getAssignment(
           projectId,
           courseId,
           currentModule.id,
-          lessonId
-        );
-        setAssignment(data);
+          lessonId,
+        )
+        setAssignment(data)
 
         if (data) {
-          setTitle(data.title);
-          setDescription(data.description ?? "");
-          setDueDate(toDatePickerValue(data.dueDate));
-          setTotalPoints(String(data.totalPoints));
+          setTitle(data.title)
+          setDescription(data.description ?? '')
+          setDueDate(toDatePickerValue(data.dueDate))
+          setTotalPoints(String(data.totalPoints))
         } else {
           setTitle(
-            currentLesson?.title ? `${currentLesson.title} Assignment` : ""
-          );
-          setDescription("");
-          setDueDate("");
-          setTotalPoints("100");
+            currentLesson?.title ? `${currentLesson.title} Assignment` : '',
+          )
+          setDescription('')
+          setDueDate('')
+          setTotalPoints('100')
         }
       } catch (error) {
-        console.error("Failed to load assignment:", error);
+        console.error('Failed to load assignment:', error)
         toast({
-          title: "Error",
-          description: "Failed to load assignment details.",
-          variant: "destructive",
-        });
+          title: 'Error',
+          description: 'Failed to load assignment details.',
+          variant: 'destructive',
+        })
       } finally {
-        setIsLoadingAssignment(false);
+        setIsLoadingAssignment(false)
       }
-    };
+    }
 
-    loadAssignment();
+    loadAssignment()
   }, [
     projectId,
     courseId,
@@ -117,61 +117,61 @@ export default function AssignmentEditorPage() {
     lessonId,
     currentLesson?.title,
     toast,
-  ]);
+  ])
 
   const handleBack = () => {
-    router.push(`/p/${projectId}/courses/${courseId}/curriculum/${lessonId}`);
-  };
+    router.push(`/p/${projectId}/courses/${courseId}/curriculum/${lessonId}`)
+  }
 
   const handleSave = async () => {
-    if (!projectId || !courseId || !currentModule?.id || !lessonId) return;
+    if (!projectId || !courseId || !currentModule?.id || !lessonId) return
 
     if (!title.trim()) {
       toast({
-        title: "Title required",
-        description: "Please add a title for this assignment.",
-        variant: "destructive",
-      });
-      return;
+        title: 'Title required',
+        description: 'Please add a title for this assignment.',
+        variant: 'destructive',
+      })
+      return
     }
 
-    const points = Number(totalPoints);
+    const points = Number(totalPoints)
     if (!Number.isFinite(points) || points < 1) {
       toast({
-        title: "Invalid points",
-        description: "Total points must be at least 1.",
-        variant: "destructive",
-      });
-      return;
+        title: 'Invalid points',
+        description: 'Total points must be at least 1.',
+        variant: 'destructive',
+      })
+      return
     }
 
-    let normalizedDueDate: Date | null = null;
+    let normalizedDueDate: Date | null = null
     if (dueDate) {
-      const [year, month, day] = dueDate.split("-").map(Number);
+      const [year, month, day] = dueDate.split('-').map(Number)
       if (year && month && day) {
-        normalizedDueDate = new Date(year, month - 1, day, 23, 59, 59, 999);
+        normalizedDueDate = new Date(year, month - 1, day, 23, 59, 59, 999)
       } else {
-        normalizedDueDate = new Date(dueDate);
+        normalizedDueDate = new Date(dueDate)
       }
     }
     if (normalizedDueDate && Number.isNaN(normalizedDueDate.getTime())) {
       toast({
-        title: "Invalid due date",
-        description: "Please provide a valid due date.",
-        variant: "destructive",
-      });
-      return;
+        title: 'Invalid due date',
+        description: 'Please provide a valid due date.',
+        variant: 'destructive',
+      })
+      return
     }
 
     try {
-      setIsSaving(true);
+      setIsSaving(true)
 
       const payload = {
         title: title.trim(),
         description: description.trim(),
         dueDate: normalizedDueDate ? normalizedDueDate.toISOString() : null,
         totalPoints: Math.round(points),
-      };
+      }
 
       const saved = assignment
         ? await updateAssignment(
@@ -179,43 +179,43 @@ export default function AssignmentEditorPage() {
             courseId,
             currentModule.id,
             lessonId,
-            payload
+            payload,
           )
         : await createAssignment(
             projectId,
             courseId,
             currentModule.id,
             lessonId,
-            payload
-          );
+            payload,
+          )
 
-      setAssignment(saved);
-      setTitle(saved.title);
-      setDescription(saved.description ?? "");
-      setDueDate(toDatePickerValue(saved.dueDate));
-      setTotalPoints(String(saved.totalPoints));
+      setAssignment(saved)
+      setTitle(saved.title)
+      setDescription(saved.description ?? '')
+      setDueDate(toDatePickerValue(saved.dueDate))
+      setTotalPoints(String(saved.totalPoints))
 
       await queryClient.invalidateQueries({
-        queryKey: ["project-course", projectId, courseId],
-      });
+        queryKey: ['project-course', projectId, courseId],
+      })
 
       toast({
-        title: assignment ? "Assignment updated" : "Assignment created",
-        description: "Assignment details were saved successfully.",
-      });
-      router.push(`/p/${projectId}/courses/${courseId}/curriculum/${lessonId}`);
+        title: assignment ? 'Assignment updated' : 'Assignment created',
+        description: 'Assignment details were saved successfully.',
+      })
+      router.push(`/p/${projectId}/courses/${courseId}/curriculum/${lessonId}`)
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to save assignment.";
+        error instanceof Error ? error.message : 'Failed to save assignment.'
       toast({
-        title: "Error",
+        title: 'Error',
         description: message,
-        variant: "destructive",
-      });
+        variant: 'destructive',
+      })
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
+  }
 
   const handleDelete = async () => {
     if (
@@ -225,32 +225,32 @@ export default function AssignmentEditorPage() {
       !currentModule?.id ||
       !lessonId
     ) {
-      return;
+      return
     }
 
     try {
-      setIsDeleting(true);
-      await deleteAssignment(projectId, courseId, currentModule.id, lessonId);
+      setIsDeleting(true)
+      await deleteAssignment(projectId, courseId, currentModule.id, lessonId)
       await queryClient.invalidateQueries({
-        queryKey: ["project-course", projectId, courseId],
-      });
+        queryKey: ['project-course', projectId, courseId],
+      })
       toast({
-        title: "Assignment deleted",
-        description: "The assignment was removed from this lesson.",
-      });
-      router.push(`/p/${projectId}/courses/${courseId}/curriculum/${lessonId}`);
+        title: 'Assignment deleted',
+        description: 'The assignment was removed from this lesson.',
+      })
+      router.push(`/p/${projectId}/courses/${courseId}/curriculum/${lessonId}`)
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to delete assignment.";
+        error instanceof Error ? error.message : 'Failed to delete assignment.'
       toast({
-        title: "Error",
+        title: 'Error',
         description: message,
-        variant: "destructive",
-      });
+        variant: 'destructive',
+      })
     } finally {
-      setIsDeleting(false);
+      setIsDeleting(false)
     }
-  };
+  }
 
   if (!projectId || !courseId || !lessonId) {
     return (
@@ -258,7 +258,7 @@ export default function AssignmentEditorPage() {
         Missing lesson information. Select a lesson from the curriculum to
         continue.
       </div>
-    );
+    )
   }
 
   return (
@@ -291,7 +291,7 @@ export default function AssignmentEditorPage() {
                   Assignment Builder
                 </h1>
                 <p className="text-sm text-foreground/70">
-                  {currentLesson?.title ?? "Lesson"}
+                  {currentLesson?.title ?? 'Lesson'}
                 </p>
               </>
             )}
@@ -351,7 +351,7 @@ export default function AssignmentEditorPage() {
               <div className="grid gap-4 md:gap-7 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="assignment-due-date">
-                    Due date{" "}
+                    Due date{' '}
                     <span className="ml-1 text-muted-foreground">
                       (optional)
                     </span>
@@ -387,10 +387,10 @@ export default function AssignmentEditorPage() {
                   className="cursor-pointer rounded-xs shadow-none border border-muted-foreground/75 bg-accent/85 font-semibold hover:bg-accent"
                 >
                   {isSaving
-                    ? "Saving..."
+                    ? 'Saving...'
                     : assignment
-                    ? "Save changes"
-                    : "Create assignment"}
+                      ? 'Save changes'
+                      : 'Create assignment'}
                 </Button>
                 {/* {assignment ? (
                   <Button
@@ -409,5 +409,5 @@ export default function AssignmentEditorPage() {
         </div>
       </div>
     </div>
-  );
+  )
 }

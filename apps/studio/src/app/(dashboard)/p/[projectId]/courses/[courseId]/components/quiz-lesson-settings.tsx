@@ -48,7 +48,7 @@ export function QuizLessonSettings({
     projectId,
     courseId,
     moduleId,
-    lesson.id
+    lesson.id,
   )
 
   const handleSave = async () => {
@@ -80,8 +80,7 @@ export function QuizLessonSettings({
       await updateLessonMutation({
         title: title.trim(),
         description: description.trim() === '' ? null : description.trim(),
-        duration:
-          normalizedTime === null ? null : Math.round(normalizedTime),
+        duration: normalizedTime === null ? null : Math.round(normalizedTime),
       })
 
       toast({
@@ -99,80 +98,84 @@ export function QuizLessonSettings({
   }
 
   return (
-    <Card className='border border-slate-200/80 shadow-sm dark:border-slate-800'>
-      <CardHeader className='border-b border-slate-100 pb-4 dark:border-slate-800'>
-        <CardTitle className='text-xl font-semibold'>{lessonLabel} settings</CardTitle>
+    <Card className="border border-slate-200/80 shadow-sm dark:border-slate-800">
+      <CardHeader className="border-b border-slate-100 pb-4 dark:border-slate-800">
+        <CardTitle className="text-xl font-semibold">
+          {lessonLabel} settings
+        </CardTitle>
         <CardDescription>
           Control timing, scoring, and attempt limits.
         </CardDescription>
       </CardHeader>
-      <CardContent className='space-y-4 pt-4'>
-        <div className='space-y-2'>
+      <CardContent className="space-y-4 pt-4">
+        <div className="space-y-2">
           <Label htmlFor={`quiz-title-${lesson.id}`}>Title</Label>
           <Input
             id={`quiz-title-${lesson.id}`}
             value={title}
-            placeholder='Final exam'
+            placeholder="Final exam"
             onChange={(event) => setTitle(event.target.value)}
           />
         </div>
-        <div className='space-y-2'>
+        <div className="space-y-2">
           <Label htmlFor={`quiz-description-${lesson.id}`}>Description</Label>
           <Textarea
             id={`quiz-description-${lesson.id}`}
             value={description}
-            placeholder='Passing score is 70%'
+            placeholder="Passing score is 70%"
             rows={3}
             onChange={(event) => setDescription(event.target.value)}
           />
         </div>
-        <div className='grid gap-3 sm:grid-cols-2'>
-          <div className='space-y-2'>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-2">
             <Label htmlFor={`quiz-time-${lesson.id}`}>
               Time limit (minutes)
             </Label>
             <Input
               id={`quiz-time-${lesson.id}`}
-              type='number'
+              type="number"
               min={0}
-              placeholder='30'
+              placeholder="30"
               value={timeLimit}
               onChange={(event) => setTimeLimit(event.target.value)}
             />
           </div>
-          <div className='space-y-2'>
+          <div className="space-y-2">
             <Label htmlFor={`quiz-score-${lesson.id}`}>Passing score (%)</Label>
             <Input
               id={`quiz-score-${lesson.id}`}
-              type='number'
+              type="number"
               min={0}
               max={100}
-              placeholder='70'
+              placeholder="70"
               value={passingScore}
               onChange={(event) => setPassingScore(event.target.value)}
             />
           </div>
         </div>
-        <div className='space-y-2'>
+        <div className="space-y-2">
           <Label htmlFor={`quiz-attempts-${lesson.id}`}>Max attempts</Label>
           <Input
             id={`quiz-attempts-${lesson.id}`}
-            type='number'
+            type="number"
             min={1}
-            placeholder='3'
+            placeholder="3"
             value={maxAttempts}
             onChange={(event) => setMaxAttempts(event.target.value)}
           />
         </div>
         <Button
-          className='w-full'
+          className="w-full"
           onClick={handleSave}
           disabled={isPending || !moduleId}
         >
-          {isPending ? 'Saving...' : `Save ${lessonLabel.toLowerCase()} settings`}
+          {isPending
+            ? 'Saving...'
+            : `Save ${lessonLabel.toLowerCase()} settings`}
         </Button>
         {!moduleId ? (
-          <p className='text-xs text-muted-foreground'>
+          <p className="text-xs text-muted-foreground">
             Select a module to enable saving changes.
           </p>
         ) : null}

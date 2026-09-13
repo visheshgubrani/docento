@@ -61,19 +61,18 @@ Docento is **not** uniformly licensed. Which license applies depends on the
 directory, and this is deliberate: the SDK and its contracts are meant to be
 usable by anyone, including in proprietary products.
 
-| Path | License |
-| --- | --- |
-| `apps/*` | AGPL-3.0-only |
-| `packages/domain` | AGPL-3.0-only |
+| Path                    | License       |
+| ----------------------- | ------------- |
+| `apps/*`                | AGPL-3.0-only |
+| `packages/domain`       | AGPL-3.0-only |
 | `packages/integrations` | AGPL-3.0-only |
-| `packages/ui` | AGPL-3.0-only |
-| `packages/config` | AGPL-3.0-only |
-| `packages/contracts` | Apache-2.0 |
-| `packages/sdk` | Apache-2.0 |
+| `packages/config`       | AGPL-3.0-only |
+| `packages/contracts`    | Apache-2.0    |
+| `packages/sdk`          | Apache-2.0    |
 
 **Enforced invariant: an Apache-2.0 package must never import an AGPL-3.0
 package.** Dependency direction is one-way — `packages/contracts` is imported
-*by* `packages/sdk` and by the applications, never the reverse. Otherwise the
+_by_ `packages/sdk` and by the applications, never the reverse. Otherwise the
 Apache-2.0 packages would inherit AGPL obligations and stop being usable by the
 people they exist for.
 
@@ -106,20 +105,22 @@ Start the local stack. Postgres is the only required service:
 
 ```bash
 docker compose up -d postgres
+cp packages/domain/.env.example packages/domain/.env   # then fill in the secrets
 pnpm db:migrate
+pnpm db:seed
 pnpm dev
 ```
 
-A full walkthrough, including the first-run setup that creates your owner
-account and first academy, is in the [self-hosting docs](./apps/docs).
+`db:seed` creates a workspace, an academy and an owner account, then prints the
+credentials once. Without it you have a migrated but empty database and nothing
+to sign in to.
 
 ## Repository layout
 
 ```
 apps/       api, worker, studio, learn, docs — runnable applications
-packages/   domain, contracts, sdk, integrations, ui, config — libraries
+packages/   domain, contracts, sdk, integrations, config — libraries
 docs/adr/   architecture decision records
-docker/     compose files
 ```
 
 Where a change belongs:
@@ -157,20 +158,32 @@ Automated coverage is a release requirement, not an optional extra. Add tests
 with your change, in the package that owns the behavior:
 
 ```bash
-pnpm test                                  # everything
-pnpm --filter @docento/domain test         # one package
-pnpm test:e2e                              # Playwright flows
+pnpm test                            # everything
+pnpm --filter @docento/domain test   # one package
+pnpm format:check                    # the formatting gate CI runs
+```
+
+Tests run against a **real Postgres**, because the guarantees being checked are
+database properties — unique indexes and atomic statements. A mocked client
+would test nothing that matters:
+
+```bash
+docker compose up -d
+pnpm db:migrate
+pnpm test
 ```
 
 What must be covered when you touch it:
 
-| You changed | Required test |
-| --- | --- |
-| Authorization or tenancy | Cross-tenant access attempts must fail. A positive test alone is not enough. |
-| Money, checkout, or refunds | Idempotency: the same request twice produces one business effect. |
-| Provider callbacks or webhooks | Duplicate and out-of-order delivery. |
-| Quizzes or grading | Attempt limits, and that answer keys never leave the server. |
-| The data model | A migration that applies cleanly to an empty database. |
+| You changed                    | Required test                                                                     |
+| ------------------------------ | --------------------------------------------------------------------------------- |
+| Authorization or tenancy       | Cross-tenant access attempts must fail. A positive test alone is not enough.      |
+| Publishing or releases         | Republishing is idempotent, and progress survives a course update.                |
+| Enrolment or access grants     | Idempotency, and that revoking a grant never erases progress.                     |
+| Provider callbacks or webhooks | Duplicate and out-of-order delivery.                                              |
+| Quizzes or grading             | Attempt limits, and that answer keys never leave the server.                      |
+| Anything rendering HTML        | The sanitizer, not a regex. Author-supplied content reaches the DOM in one place. |
+| The data model                 | A migration that applies cleanly to an empty database.                            |
 
 ## Pull requests
 

@@ -1,34 +1,33 @@
-"use client"
+'use client'
 
-import { forwardRef, useCallback } from "react"
+import { forwardRef, useCallback } from 'react'
 
 // --- Lib ---
-import { parseShortcutKeys } from "@/lib/tiptap-utils"
+import { parseShortcutKeys } from '@/lib/tiptap-utils'
 
 // --- Hooks ---
-import { useTiptapEditor } from "@/hooks/use-tiptap-editor"
+import { useTiptapEditor } from '@/hooks/use-tiptap-editor'
 
 // --- Tiptap UI ---
 import type {
   TextAlign,
   UseTextAlignConfig,
-} from "@/components/tiptap-ui/text-align-button"
+} from '@/components/tiptap-ui/text-align-button'
 import {
   TEXT_ALIGN_SHORTCUT_KEYS,
   useTextAlign,
-} from "@/components/tiptap-ui/text-align-button"
+} from '@/components/tiptap-ui/text-align-button'
 
 // --- UI Primitives ---
-import type { ButtonProps } from "@/components/tiptap-ui-primitive/button"
-import { Button } from "@/components/tiptap-ui-primitive/button"
-import { Badge } from "@/components/tiptap-ui-primitive/badge"
+import type { ButtonProps } from '@/components/tiptap-ui-primitive/button'
+import { Button } from '@/components/tiptap-ui-primitive/button'
+import { Badge } from '@/components/tiptap-ui-primitive/badge'
 
 type IconProps = React.SVGProps<SVGSVGElement>
 type IconComponent = ({ className, ...props }: IconProps) => React.ReactElement
 
 export interface TextAlignButtonProps
-  extends Omit<ButtonProps, "type">,
-    UseTextAlignConfig {
+  extends Omit<ButtonProps, 'type'>, UseTextAlignConfig {
   /**
    * Optional text to display alongside the icon.
    */
@@ -76,7 +75,7 @@ export const TextAlignButton = forwardRef<
       children,
       ...buttonProps
     },
-    ref
+    ref,
   ) => {
     const { editor } = useTiptapEditor(providedEditor)
     const {
@@ -100,7 +99,7 @@ export const TextAlignButton = forwardRef<
         if (event.defaultPrevented) return
         handleTextAlign()
       },
-      [handleTextAlign, onClick]
+      [handleTextAlign, onClick],
     )
 
     if (!isVisible) {
@@ -114,7 +113,7 @@ export const TextAlignButton = forwardRef<
         type="button"
         disabled={!canAlign}
         data-style="ghost"
-        data-active-state={isActive ? "on" : "off"}
+        data-active-state={isActive ? 'on' : 'off'}
         data-disabled={!canAlign}
         role="button"
         tabIndex={-1}
@@ -139,7 +138,7 @@ export const TextAlignButton = forwardRef<
         )}
       </Button>
     )
-  }
+  },
 )
 
-TextAlignButton.displayName = "TextAlignButton"
+TextAlignButton.displayName = 'TextAlignButton'

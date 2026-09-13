@@ -29,7 +29,7 @@ It is **not ready to be declared complete**, for three reasons:
 3. **CI fails on the first push**, in two independent jobs, and three of four
    Dockerfiles cannot build at all.
 
-There is also a set of things *verified true* that the milestone text claims
+There is also a set of things _verified true_ that the milestone text claims
 otherwise — most importantly that rate limiting is shared (the Postgres limiter
 is built and tested but nothing calls it) and that the adapter wrapper is
 enforcement (it is never constructed).
@@ -41,20 +41,20 @@ removed.
 
 ## What I verified myself
 
-| Claim | Result |
-| --- | --- |
-| `pnpm boundaries` | **Passes.** 889 modules, 2253 deps, 0 violations |
-| `pnpm lint` | Passes — 202 warnings, **0 errors** across 10 packages |
-| `pnpm typecheck` | Passes — 9 packages |
-| `pnpm test` | **75 tests pass** (config 28, domain 42, integrations 5) |
-| `pnpm db:deploy` on an empty database | 3 migrations apply cleanly |
-| `apps/api` typecheck / lint | **112 type errors / 33 lint errors** — exactly as documented |
-| `.env.example` → boot | Secrets validated; placeholders accepted (see #5) |
-| Two-realm isolation | 12/12 green, including 12-way concurrent cross-academy session rejection |
-| Rate limiter concurrency | Correct: 20 concurrent against limit 3 admits exactly 3 |
+| Claim                                 | Result                                                                   |
+| ------------------------------------- | ------------------------------------------------------------------------ |
+| `pnpm boundaries`                     | **Passes.** 889 modules, 2253 deps, 0 violations                         |
+| `pnpm lint`                           | Passes — 202 warnings, **0 errors** across 10 packages                   |
+| `pnpm typecheck`                      | Passes — 9 packages                                                      |
+| `pnpm test`                           | **75 tests pass** (config 28, domain 42, integrations 5)                 |
+| `pnpm db:deploy` on an empty database | 3 migrations apply cleanly                                               |
+| `apps/api` typecheck / lint           | **112 type errors / 33 lint errors** — exactly as documented             |
+| `.env.example` → boot                 | Secrets validated; placeholders accepted (see #5)                        |
+| Two-realm isolation                   | 12/12 green, including 12-way concurrent cross-academy session rejection |
+| Rate limiter concurrency              | Correct: 20 concurrent against limit 3 admits exactly 3                  |
 
 Two corrections to the milestone summary. First, I initially suspected a
-rate-limit off-by-one because `remaining` reports `0` on the last *allowed*
+rate-limit off-by-one because `remaining` reports `0` on the last _allowed_
 request; I probed it and the limiter is correct — the boundary is right, the
 reporting is just unusual. Second, my first gate run reported exit 0 for all four
 commands while they had all failed, because the shell piped them through `tail`.
@@ -201,7 +201,7 @@ cannot rot again. Right now nothing verifies these files at all.
 ### 7. Stored XSS in the learner player — CRITICAL, in code Milestone B inherits
 
 `apps/learn/src/components/course-player/text-lesson-content.tsx:123-130` has a
-hand-rolled sanitizer whose event-handler patterns only match *quoted*
+hand-rolled sanitizer whose event-handler patterns only match _quoted_
 attributes:
 
 ```js
@@ -309,7 +309,7 @@ variable.
    A handler cannot tell a first attempt from an eighth, which is precisely what
    idempotency code needs.
 5. **`withMany`/transactional enqueue does not exist.** ADR 7 and
-   `ARCHITECTURE.md:138-139` both state jobs are enqueued *inside* the business
+   `ARCHITECTURE.md:138-139` both state jobs are enqueued _inside_ the business
    transaction ("If the business change rolls back, the job does not exist").
    `JobQueue.enqueue` calls `this.boss.send()` and accepts no transaction client.
    This is Milestone B/D work, but it is described as already-true.
@@ -394,26 +394,26 @@ cheapest possible moment to change them.
 Verified in the documents themselves; every one of these will mislead a
 contributor.
 
-| Where | Says | Actually |
-| --- | --- | --- |
-| `ARCHITECTURE.md:83`, `CONTRIBUTING.md:69,120`, `docs/adr/0006:36`, `.dependency-cruiser.cjs:26` | `packages/ui` exists, AGPL | No such directory |
-| `ARCHITECTURE.md:86`, `CONTRIBUTING.md:122` | `docker/` holds compose files | Compose is at the repo root; no `docker/` |
-| `ARCHITECTURE.md:326-335` | "one `docker compose up`: proxy, Studio, Learn, API, worker, and Postgres … the compose file demonstrates the correct wiring" (shared uploads volume) | `docker-compose.yml` defines **only** `postgres` and one volume |
-| `ARCHITECTURE.md:284-299`, `docs/adr/0008:42-58` | Media provider interface, local/S3/OpenVOD adapters, short-lived playback URLs | No media code anywhere; only Prisma models and env vars |
-| `ARCHITECTURE.md:251-258` | "Two supported flows at launch, both complete" (AI) | No AI code anywhere |
-| `ARCHITECTURE.md:138-139`, `docs/adr/0007:33-37` | Jobs enqueued inside the business transaction, using pg-boss ORM transaction adapters | `JobQueue.enqueue` takes no transaction and calls `boss.send()` directly |
-| `CONTRIBUTING.md:162` | `pnpm test:e2e  # Playwright flows` | No such script, no Playwright anywhere |
-| `CONTRIBUTING.md:114` | First-run setup that creates your owner account and first academy, in `apps/docs` | No such document; `apps/docs` is legacy content |
-| `docs/adr/0003:45`, `ARCHITECTURE.md:155` | Learner tables are `learner_user`, … | The table is `learner` (mapped); only three of the four carry `academyId` in a unique key |
-| `docs/adr/0003:45` wording | "Carries `academyId` … in every unique key" | False for `learner_session` (unique on `token` alone), `learner_account` (no unique at all), `learner_verification` (composite includes it). Only `learner` does. The isolation test asserts this for `learner` and then claims the same property for tables it never checks |
-| `docs/adr/0003` | "isolation is a property of the schema", "structural" | True only in the sense that rows are stamped with `academyId`. The single `learner_session` table keyed on a global `token` is *behavioral* isolation, which the ADR explicitly rejects as the alternative. Rejection works because the scoped client filters — the same "remember the filter" property the ADR argues against |
-| `docs/adr/0003:91` | "gated by a publishable key, an origin check, rate limiting, and optionally a captcha" | None of those is wired to the learner realm |
-| `docs/adr/0010:36-37` | Closed-source schema and migrations not published | Both tracked under `apps/api/prisma/` |
-| `README.md:19` | "Monorepo, licensing, governance, CI \| Done" | CI's build job fails; see #4 |
-| `SECURITY.md:10` | Email maintainers listed in `GOVERNANCE.md` | `GOVERNANCE.md` lists no maintainers or emails |
-| `CODE_OF_CONDUCT.md:40` | `[INSERT CONTACT METHOD]` | Placeholder never filled |
-| `README.md:55` | "75 tests against a real Postgres" | 75 is exact, but only 26 touch Postgres; the other 49 are pure unit tests |
-| `.github/ISSUE_TEMPLATE/config.yml:8` | GitHub Discussions link | Discussions must be enabled manually or the link 404s |
+| Where                                                                                            | Says                                                                                                                                                  | Actually                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ARCHITECTURE.md:83`, `CONTRIBUTING.md:69,120`, `docs/adr/0006:36`, `.dependency-cruiser.cjs:26` | `packages/ui` exists, AGPL                                                                                                                            | No such directory                                                                                                                                                                                                                                                                                                              |
+| `ARCHITECTURE.md:86`, `CONTRIBUTING.md:122`                                                      | `docker/` holds compose files                                                                                                                         | Compose is at the repo root; no `docker/`                                                                                                                                                                                                                                                                                      |
+| `ARCHITECTURE.md:326-335`                                                                        | "one `docker compose up`: proxy, Studio, Learn, API, worker, and Postgres … the compose file demonstrates the correct wiring" (shared uploads volume) | `docker-compose.yml` defines **only** `postgres` and one volume                                                                                                                                                                                                                                                                |
+| `ARCHITECTURE.md:284-299`, `docs/adr/0008:42-58`                                                 | Media provider interface, local/S3/OpenVOD adapters, short-lived playback URLs                                                                        | No media code anywhere; only Prisma models and env vars                                                                                                                                                                                                                                                                        |
+| `ARCHITECTURE.md:251-258`                                                                        | "Two supported flows at launch, both complete" (AI)                                                                                                   | No AI code anywhere                                                                                                                                                                                                                                                                                                            |
+| `ARCHITECTURE.md:138-139`, `docs/adr/0007:33-37`                                                 | Jobs enqueued inside the business transaction, using pg-boss ORM transaction adapters                                                                 | `JobQueue.enqueue` takes no transaction and calls `boss.send()` directly                                                                                                                                                                                                                                                       |
+| `CONTRIBUTING.md:162`                                                                            | `pnpm test:e2e  # Playwright flows`                                                                                                                   | No such script, no Playwright anywhere                                                                                                                                                                                                                                                                                         |
+| `CONTRIBUTING.md:114`                                                                            | First-run setup that creates your owner account and first academy, in `apps/docs`                                                                     | No such document; `apps/docs` is legacy content                                                                                                                                                                                                                                                                                |
+| `docs/adr/0003:45`, `ARCHITECTURE.md:155`                                                        | Learner tables are `learner_user`, …                                                                                                                  | The table is `learner` (mapped); only three of the four carry `academyId` in a unique key                                                                                                                                                                                                                                      |
+| `docs/adr/0003:45` wording                                                                       | "Carries `academyId` … in every unique key"                                                                                                           | False for `learner_session` (unique on `token` alone), `learner_account` (no unique at all), `learner_verification` (composite includes it). Only `learner` does. The isolation test asserts this for `learner` and then claims the same property for tables it never checks                                                   |
+| `docs/adr/0003`                                                                                  | "isolation is a property of the schema", "structural"                                                                                                 | True only in the sense that rows are stamped with `academyId`. The single `learner_session` table keyed on a global `token` is _behavioral_ isolation, which the ADR explicitly rejects as the alternative. Rejection works because the scoped client filters — the same "remember the filter" property the ADR argues against |
+| `docs/adr/0003:91`                                                                               | "gated by a publishable key, an origin check, rate limiting, and optionally a captcha"                                                                | None of those is wired to the learner realm                                                                                                                                                                                                                                                                                    |
+| `docs/adr/0010:36-37`                                                                            | Closed-source schema and migrations not published                                                                                                     | Both tracked under `apps/api/prisma/`                                                                                                                                                                                                                                                                                          |
+| `README.md:19`                                                                                   | "Monorepo, licensing, governance, CI \| Done"                                                                                                         | CI's build job fails; see #4                                                                                                                                                                                                                                                                                                   |
+| `SECURITY.md:10`                                                                                 | Email maintainers listed in `GOVERNANCE.md`                                                                                                           | `GOVERNANCE.md` lists no maintainers or emails                                                                                                                                                                                                                                                                                 |
+| `CODE_OF_CONDUCT.md:40`                                                                          | `[INSERT CONTACT METHOD]`                                                                                                                             | Placeholder never filled                                                                                                                                                                                                                                                                                                       |
+| `README.md:55`                                                                                   | "75 tests against a real Postgres"                                                                                                                    | 75 is exact, but only 26 touch Postgres; the other 49 are pure unit tests                                                                                                                                                                                                                                                      |
+| `.github/ISSUE_TEMPLATE/config.yml:8`                                                            | GitHub Discussions link                                                                                                                               | Discussions must be enabled manually or the link 404s                                                                                                                                                                                                                                                                          |
 
 **Below the top-level docs, `apps/docs/content/**` is the legacy product's
 documentation** — `Project` tenants, `MANAGED`/`DELEGATED` auth modes,

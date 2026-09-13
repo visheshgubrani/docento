@@ -1,29 +1,29 @@
-"use client";
+'use client'
 
-import { motion } from "framer-motion";
-import Image from "next/image";
-import { SectionHeader } from "./section-header";
-import { HiMiniSquaresPlus, HiMiniArrowsPointingOut } from "react-icons/hi2";
+import { motion } from 'framer-motion'
+import Image from 'next/image'
+import { SectionHeader } from './section-header'
+import { HiMiniSquaresPlus, HiMiniArrowsPointingOut } from 'react-icons/hi2'
 import {
   BsFillPlayBtnFill,
   BsFillQuestionCircleFill,
   BsFillFileEarmarkFill,
   BsFillAwardFill,
-} from "react-icons/bs";
+} from 'react-icons/bs'
 import {
   HiMiniCpuChip,
   HiMiniChatBubbleLeftRight,
   HiMiniMicrophone,
-} from "react-icons/hi2";
+} from 'react-icons/hi2'
 import {
   HiMiniUsers,
   HiMiniChartBar,
   HiMiniCurrencyDollar,
   HiMiniChartPie,
   HiMiniUser,
-} from "react-icons/hi2";
-import { GridPattern } from "@/components/GridPattern";
-import { noiseOverlayStyles } from "@/components/noise-pattern";
+} from 'react-icons/hi2'
+import { GridPattern } from '@/components/GridPattern'
+import { noiseOverlayStyles } from '@/components/noise-pattern'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -34,16 +34,16 @@ const containerVariants = {
       delayChildren: 0.2,
     },
   },
-};
+}
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: "easeOut" as const },
+    transition: { duration: 0.5, ease: 'easeOut' as const },
   },
-};
+}
 
 /* ============================================
    COURSE BUILDER SECTION
@@ -51,14 +51,14 @@ const itemVariants = {
 const courseBuilderFeatures = [
   {
     icon: HiMiniSquaresPlus,
-    label: "Structured courses",
+    label: 'Structured courses',
   },
-  { icon: HiMiniArrowsPointingOut, label: "Drag & drop content" },
-  { icon: BsFillPlayBtnFill, label: "Video, text, images & PDFs" },
-  { icon: BsFillQuestionCircleFill, label: "Quizzes & assessments" },
-  { icon: BsFillFileEarmarkFill, label: "Downloadable resources" },
-  { icon: BsFillAwardFill, label: "Completion certificates" },
-];
+  { icon: HiMiniArrowsPointingOut, label: 'Drag & drop content' },
+  { icon: BsFillPlayBtnFill, label: 'Video, text, images & PDFs' },
+  { icon: BsFillQuestionCircleFill, label: 'Quizzes & assessments' },
+  { icon: BsFillFileEarmarkFill, label: 'Downloadable resources' },
+  { icon: BsFillAwardFill, label: 'Completion certificates' },
+]
 
 export function CourseBuilderSection() {
   return (
@@ -69,7 +69,7 @@ export function CourseBuilderSection() {
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.6 }}
             className="lg:pr-8"
           >
@@ -108,7 +108,7 @@ export function CourseBuilderSection() {
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="relative scale-110 lg:-mr-[calc((100vw-80rem)/0.9+1.5rem)]"
           >
@@ -134,7 +134,7 @@ export function CourseBuilderSection() {
         </div>
       </div>
     </section>
-  );
+  )
 }
 
 /* ============================================
@@ -143,26 +143,26 @@ export function CourseBuilderSection() {
 const aiFeatures = [
   {
     icon: HiMiniCpuChip,
-    title: "Course Outline Generation",
+    title: 'Course Outline Generation',
     description:
-      "Enter a topic and let AI create a complete course structure with modules and lessons.",
-    image: "/images/landing/course-outline.svg",
+      'Enter a topic and let AI create a complete course structure with modules and lessons.',
+    image: '/images/landing/course-outline.svg',
   },
   {
     icon: HiMiniMicrophone,
-    title: "Automatic Subtitles",
+    title: 'Automatic Subtitles',
     description:
-      "AI-powered transcription and subtitle generation for all your video content.",
-    image: "/images/landing/subtitles.png",
+      'AI-powered transcription and subtitle generation for all your video content.',
+    image: '/images/landing/subtitles.png',
   },
   {
     icon: HiMiniChatBubbleLeftRight,
-    title: "Quiz Generation",
+    title: 'Quiz Generation',
     description:
-      "Automatically generate quizzes from your lesson content to test student comprehension.",
-    image: "/images/landing/generate-quiz.svg",
+      'Automatically generate quizzes from your lesson content to test student comprehension.',
+    image: '/images/landing/generate-quiz.svg',
   },
-];
+]
 
 export function AIToolsSection() {
   return (
@@ -171,9 +171,9 @@ export function AIToolsSection() {
         className="absolute inset-0 h-full w-full fill-accent-100/40 stroke-neutral-200/60"
         style={{
           maskImage:
-            "linear-gradient(to bottom left, white 50%, transparent 70%)",
+            'linear-gradient(to bottom left, white 50%, transparent 70%)',
           WebkitMaskImage:
-            "linear-gradient(to bottom left, white 50%, transparent 70%)",
+            'linear-gradient(to bottom left, white 50%, transparent 70%)',
         }}
         yOffset={-256}
       />
@@ -189,7 +189,7 @@ export function AIToolsSection() {
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: true, margin: '-100px' }}
           className="grid lg:grid-cols-3 gap-8 lg:gap-5"
         >
           {aiFeatures.map((feature, index) => (
@@ -229,20 +229,20 @@ export function AIToolsSection() {
         </motion.div>
       </div>
     </section>
-  );
+  )
 }
 
 /* ============================================
    DASHBOARD SECTION
 ============================================ */
 const dashboardFeatures = [
-  { icon: HiMiniUsers, label: "Students & enrollments" },
-  { icon: HiMiniChartBar, label: "Course completion rates" },
-  { icon: HiMiniCurrencyDollar, label: "Revenue analytics" },
-  { icon: HiMiniChartPie, label: "Engagement metrics" },
-  { icon: HiMiniUser, label: "Individual progress" },
-  { icon: HiMiniCpuChip, label: "Real-time insights" },
-];
+  { icon: HiMiniUsers, label: 'Students & enrollments' },
+  { icon: HiMiniChartBar, label: 'Course completion rates' },
+  { icon: HiMiniCurrencyDollar, label: 'Revenue analytics' },
+  { icon: HiMiniChartPie, label: 'Engagement metrics' },
+  { icon: HiMiniUser, label: 'Individual progress' },
+  { icon: HiMiniCpuChip, label: 'Real-time insights' },
+]
 
 export function DashboardSection() {
   return (
@@ -253,7 +253,7 @@ export function DashboardSection() {
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.6 }}
             className="relative order-2 lg:order-1 lg:-ml-[calc((100vw-80.5rem)/2+0.1rem)]"
           >
@@ -281,7 +281,7 @@ export function DashboardSection() {
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="order-1 lg:order-2 lg:pl-8"
           >
@@ -318,5 +318,5 @@ export function DashboardSection() {
         </div>
       </div>
     </section>
-  );
+  )
 }

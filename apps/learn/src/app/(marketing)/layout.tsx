@@ -1,9 +1,9 @@
-import { Header, Footer, CTA } from "@/components/marketing";
+import { Header, Footer, CTA } from '@/components/marketing'
 
 export default function MarketingLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <>
@@ -12,5 +12,5 @@ export default function MarketingLayout({
       <CTA />
       <Footer />
     </>
-  );
+  )
 }

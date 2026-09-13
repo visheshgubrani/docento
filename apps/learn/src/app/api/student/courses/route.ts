@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     if (!LMS_API_URL) {
       return NextResponse.json(
         { message: 'LMS_API_URL is not configured' },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     if (!authToken) {
       return NextResponse.json(
         { message: 'Unauthorized: Please login first.' },
-        { status: 401 }
+        { status: 401 },
       )
     }
 
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     console.error('[STUDENT_COURSES_PROXY_ERROR]', error)
     return NextResponse.json(
       { message: 'Failed to fetch enrolled courses' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

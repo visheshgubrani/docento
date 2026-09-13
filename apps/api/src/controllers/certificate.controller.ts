@@ -22,7 +22,7 @@ const extractNameFromMetadata = (metadata: unknown) => {
 const issueCertificate = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const endUser = req.endUser!
@@ -75,12 +75,12 @@ const issueCertificate = async (
 
     if (!isCompleted) {
       return next(
-        new ApiError(403, 'Course is not completed yet. Finish all lessons.')
+        new ApiError(403, 'Course is not completed yet. Finish all lessons.'),
       )
     }
 
     const delegatedName = extractNameFromMetadata(
-      enrollment.endUser.delegatedUser?.metadata
+      enrollment.endUser.delegatedUser?.metadata,
     )
 
     const recipientName =

@@ -47,10 +47,8 @@ export function CreateCourseModal({
   onCourseCreated,
 }: CreateCourseModalProps) {
   const { toast } = useToast()
-  const {
-    mutateAsync: createCourseMutation,
-    isPending,
-  } = useCreateCourse(projectId)
+  const { mutateAsync: createCourseMutation, isPending } =
+    useCreateCourse(projectId)
 
   const {
     register,
@@ -111,7 +109,9 @@ export function CreateCourseModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-noto font-semibold">Create course</DialogTitle>
+          <DialogTitle className="text-xl font-noto font-semibold">
+            Create course
+          </DialogTitle>
           <DialogDescription className="text-foreground/70">
             Give the course a name and short description. You can add modules,
             lessons, and pricing later.
@@ -130,11 +130,15 @@ export function CreateCourseModal({
                 className={`rounded-xs mt-1 shadow-none border border-muted-foreground/60 h-11 ${errors.title ? 'border-destructive' : ''}`}
               />
               {errors.title ? (
-                <p className="text-sm text-destructive">{errors.title.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.title.message}
+                </p>
               ) : null}
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="course-description" className="font-medium">Description</Label>
+              <Label htmlFor="course-description" className="font-medium">
+                Description
+              </Label>
               <Textarea
                 id="course-description"
                 rows={4}

@@ -52,10 +52,7 @@ export type ServiceKeyPrincipal = {
 export type AnonymousPrincipal = { kind: 'anonymous' }
 
 export type Principal =
-  | StaffPrincipal
-  | LearnerPrincipal
-  | ServiceKeyPrincipal
-  | AnonymousPrincipal
+  StaffPrincipal | LearnerPrincipal | ServiceKeyPrincipal | AnonymousPrincipal
 
 /**
  * A scoped grant below the workspace level.

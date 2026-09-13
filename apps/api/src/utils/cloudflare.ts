@@ -9,7 +9,7 @@ interface StreamTokenOptions {
 export const verifyCloudflareSignature = (
   signatureHeader: string,
   rawBody: string | any, // Can be string or object
-  secret: string
+  secret: string,
 ): boolean => {
   try {
     // 1. Parse the header: "time=123,sig1=abc..."
@@ -69,7 +69,7 @@ export const generateStreamToken = ({
     privateKey = rawKey.replace(/\\n/g, '\n').replace(/"/g, '')
   } else {
     throw new Error(
-      'Missing Cloudflare Stream Keys in .env (Check CLOUDFLARE_STREAM_PRIVATE_KEY_BASE64)'
+      'Missing Cloudflare Stream Keys in .env (Check CLOUDFLARE_STREAM_PRIVATE_KEY_BASE64)',
     )
   }
 
@@ -99,7 +99,7 @@ export const generateStreamToken = ({
 
 export const getSignedThumbnailUrl = (
   thumbnailUrl: string | null,
-  videoId: string | null
+  videoId: string | null,
 ): string | null => {
   // 1. Basic Validation
   if (!thumbnailUrl || !videoId) return thumbnailUrl

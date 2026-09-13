@@ -1,6 +1,6 @@
-import * as React from "react"
+import * as React from 'react'
 
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 
 const Separator = React.forwardRef<
   HTMLDivElement,
@@ -9,12 +9,10 @@ const Separator = React.forwardRef<
   <div
     ref={ref}
     role="separator"
-    className={cn("h-px w-full shrink-0 bg-border", className)}
+    className={cn('h-px w-full shrink-0 bg-border', className)}
     {...props}
   />
 ))
-Separator.displayName = "Separator"
+Separator.displayName = 'Separator'
 
 export { Separator }
-
-

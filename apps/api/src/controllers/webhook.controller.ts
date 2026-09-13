@@ -28,7 +28,7 @@ const isValidUrl = (value?: string | null) => {
 const createWebhook = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const user = req.user
@@ -89,7 +89,7 @@ const createWebhook = async (
           secret: updatedProject.webhookSecret,
           events: SUPPORTED_WEBHOOK_EVENTS,
         },
-      })
+      }),
     )
   } catch (error) {
     console.error('[CREATE_WEBHOOK_ERROR]', error)
@@ -100,7 +100,7 @@ const createWebhook = async (
 const deleteWebhook = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const user = req.user
@@ -165,7 +165,7 @@ const getWebhook = async (req: Request, res: Response, next: NextFunction) => {
         url: project.webhookUrl,
         secret: project.webhookSecret,
         events: SUPPORTED_WEBHOOK_EVENTS,
-      })
+      }),
     )
   } catch (error) {
     console.error('[GET_WEBHOOK_ERROR]', error)
@@ -194,13 +194,13 @@ const testWebhook = async (req: Request, res: Response, next: NextFunction) => {
 
     if (!project.webhookUrl || !project.webhookSecret) {
       return next(
-        new ApiError(400, 'Webhook is not configured for this project')
+        new ApiError(400, 'Webhook is not configured for this project'),
       )
     }
 
     const normalizedEvent = String(event).toLowerCase()
     const isSupported = SUPPORTED_WEBHOOK_EVENTS.includes(
-      normalizedEvent as (typeof SUPPORTED_WEBHOOK_EVENTS)[number]
+      normalizedEvent as (typeof SUPPORTED_WEBHOOK_EVENTS)[number],
     )
 
     if (!isSupported) {
@@ -208,9 +208,9 @@ const testWebhook = async (req: Request, res: Response, next: NextFunction) => {
         new ApiError(
           400,
           `Unsupported event. Supported events: ${SUPPORTED_WEBHOOK_EVENTS.join(
-            ', '
-          )}`
-        )
+            ', ',
+          )}`,
+        ),
       )
     }
 

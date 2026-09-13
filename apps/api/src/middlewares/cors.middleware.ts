@@ -55,7 +55,7 @@ const fetchOriginsFromDb = async (): Promise<Set<string>> => {
     })
   } catch (error) {
     console.warn(
-      '[CORS_WARNING] Failed to fetch origins from DB, using fallback only.'
+      '[CORS_WARNING] Failed to fetch origins from DB, using fallback only.',
     )
   }
 
@@ -85,14 +85,20 @@ const getCachedOrigins = async () => {
     cachedOrigins = new Set(collectOriginsFromEnv())
     cacheExpiresAt = now + CACHE_TTL_MS
     void refreshOriginsCache().catch((error) => {
-      console.warn('[CORS_WARNING] Initial background origin cache refresh failed.', error)
+      console.warn(
+        '[CORS_WARNING] Initial background origin cache refresh failed.',
+        error,
+      )
     })
     return cachedOrigins
   }
 
   if (cacheExpiresAt <= now) {
     void refreshOriginsCache().catch((error) => {
-      console.warn('[CORS_WARNING] Background origin cache refresh failed.', error)
+      console.warn(
+        '[CORS_WARNING] Background origin cache refresh failed.',
+        error,
+      )
     })
   }
 
@@ -113,14 +119,14 @@ export const dropOriginFromCache = (origin: string) => {
   const normalized = normalizeOrigin(origin)
   if (!normalized) return
   cachedOrigins = new Set(
-    [...cachedOrigins].filter((item) => normalizeOrigin(item) !== normalized)
+    [...cachedOrigins].filter((item) => normalizeOrigin(item) !== normalized),
   )
 }
 
 export const dynamicCors = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const originHeader = req.headers.origin
@@ -163,11 +169,11 @@ export const dynamicCors = async (
     res.header('Access-Control-Allow-Credentials', 'true')
     res.header(
       'Access-Control-Allow-Methods',
-      'GET,POST,PUT,PATCH,DELETE,OPTIONS'
+      'GET,POST,PUT,PATCH,DELETE,OPTIONS',
     )
     res.header(
       'Access-Control-Allow-Headers',
-      'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Publishable-Key, X-Api-Key, X-PostHog-Distinct-Id, X-PostHog-Session-Id, Tus-Resumable, Upload-Length, Upload-Metadata'
+      'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Publishable-Key, X-Api-Key, X-PostHog-Distinct-Id, X-PostHog-Session-Id, Tus-Resumable, Upload-Length, Upload-Metadata',
     )
 
     if (req.method === 'OPTIONS') {

@@ -61,7 +61,8 @@ export type RateLimitHookOptions = {
 }
 
 export function createAuthRateLimitHook(options: RateLimitHookOptions) {
-  const table = options.realm === 'learner' ? LEARNER_PATH_RULES : STAFF_PATH_RULES
+  const table =
+    options.realm === 'learner' ? LEARNER_PATH_RULES : STAFF_PATH_RULES
 
   return createAuthMiddleware(async (ctx) => {
     const rule = table[ctx.path]
@@ -72,7 +73,8 @@ export function createAuthRateLimitHook(options: RateLimitHookOptions) {
     // endpoint path; if it somehow is not, fall back to a shared bucket so the
     // request is still counted rather than exempt.
     const ip =
-      (ctx.request ? getIP(ctx.request, ctx.context.options) : null) ?? 'unknown'
+      (ctx.request ? getIP(ctx.request, ctx.context.options) : null) ??
+      'unknown'
     const identity = `${options.scope ?? options.realm}:${ip}`
 
     const result = await consumeRateLimit(rule, identity)

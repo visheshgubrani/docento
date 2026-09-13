@@ -4,7 +4,10 @@ import ApiResponse from '../utils/ApiResponse'
 import ApiError from '../utils/ApiError'
 import { playableVideoUrl } from './video.controller'
 import { getSignedThumbnailUrl } from '../utils/clipmux'
-import { getCourseIncludes, getCourseIncludesMap } from '../utils/course-duration'
+import {
+  getCourseIncludes,
+  getCourseIncludesMap,
+} from '../utils/course-duration'
 
 type StorefrontInstructor = {
   name: string
@@ -15,7 +18,7 @@ type StorefrontInstructor = {
 
 const normalizeOptionalString = (
   value: unknown,
-  maxLength: number
+  maxLength: number,
 ): string | null => {
   if (typeof value !== 'string') return null
   const trimmed = value.trim()
@@ -84,7 +87,7 @@ const ensureProjectContext = (req: Request) => {
 const getStorefrontCatalog = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = ensureProjectContext(req)
@@ -124,12 +127,14 @@ const getStorefrontCatalog = async (
       },
     })
 
-    const includesMap = await getCourseIncludesMap(courses.map((course) => course.id))
+    const includesMap = await getCourseIncludesMap(
+      courses.map((course) => course.id),
+    )
 
     const catalogCourses = courses.map((course) => {
       const lessonsCount = course.modules.reduce(
         (sum, module) => sum + (module._count?.lessons ?? 0),
-        0
+        0,
       )
 
       return {
@@ -151,7 +156,7 @@ const getStorefrontCatalog = async (
     return res.status(200).json(
       new ApiResponse(200, 'Catalog fetched successfully', {
         courses: catalogCourses,
-      })
+      }),
     )
   } catch (error) {
     next(error)
@@ -161,7 +166,7 @@ const getStorefrontCatalog = async (
 const getStorefrontCourse = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = ensureProjectContext(req)
@@ -281,7 +286,7 @@ const getStorefrontCourse = async (
           isEnrolled: Boolean(viewerEnrollment),
           enrollment: viewerEnrollment,
         },
-      })
+      }),
     )
   } catch (error) {
     next(error)
@@ -291,7 +296,7 @@ const getStorefrontCourse = async (
 const getStorefrontLesson = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = ensureProjectContext(req)
@@ -398,7 +403,7 @@ const getStorefrontLesson = async (
           isEnrolled: Boolean(viewerEnrollment),
           canAccess,
         },
-      })
+      }),
     )
   } catch (error) {
     next(error)
@@ -408,7 +413,7 @@ const getStorefrontLesson = async (
 const getStorefrontLessonVideo = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = ensureProjectContext(req)
@@ -440,7 +445,7 @@ const getStorefrontLessonVideo = async (
 
     if (!lesson.isFree) {
       return next(
-        new ApiError(403, 'Lesson is not available as a free preview.')
+        new ApiError(403, 'Lesson is not available as a free preview.'),
       )
     }
 

@@ -1,9 +1,9 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { IoFlask } from "react-icons/io5";
-import { BsStars } from "react-icons/bs";
-import { Loader2 } from "lucide-react";
+import { useState } from 'react'
+import { IoFlask } from 'react-icons/io5'
+import { BsStars } from 'react-icons/bs'
+import { Loader2 } from 'lucide-react'
 
 import {
   Dialog,
@@ -11,26 +11,26 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
-import { FaWandMagicSparkles } from "react-icons/fa6";
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
+import { FaWandMagicSparkles } from 'react-icons/fa6'
 
 type AICourseOutlineModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen: boolean
+  onClose: () => void
   onGenerate: (data: {
-    description: string;
-    targetAudience: string;
-    difficulty: "beginner" | "intermediate" | "advanced";
-    moduleCount: number;
-    lessonsPerModule: number;
-  }) => void;
-  isLoading?: boolean;
-};
+    description: string
+    targetAudience: string
+    difficulty: 'beginner' | 'intermediate' | 'advanced'
+    moduleCount: number
+    lessonsPerModule: number
+  }) => void
+  isLoading?: boolean
+}
 
 export function AICourseOutlineModal({
   isOpen,
@@ -38,16 +38,16 @@ export function AICourseOutlineModal({
   onGenerate,
   isLoading = false,
 }: AICourseOutlineModalProps) {
-  const [description, setDescription] = useState("");
-  const [targetAudience, setTargetAudience] = useState("");
+  const [description, setDescription] = useState('')
+  const [targetAudience, setTargetAudience] = useState('')
   const [difficulty, setDifficulty] = useState<
-    "beginner" | "intermediate" | "advanced"
-  >("intermediate");
-  const [moduleCount, setModuleCount] = useState(5);
-  const [lessonsPerModule, setLessonsPerModule] = useState(4);
+    'beginner' | 'intermediate' | 'advanced'
+  >('intermediate')
+  const [moduleCount, setModuleCount] = useState(5)
+  const [lessonsPerModule, setLessonsPerModule] = useState(4)
 
   const handleSubmit = () => {
-    if (!description.trim()) return;
+    if (!description.trim()) return
 
     onGenerate({
       description: description.trim(),
@@ -55,22 +55,22 @@ export function AICourseOutlineModal({
       difficulty,
       moduleCount,
       lessonsPerModule,
-    });
-  };
+    })
+  }
 
   const handleClose = () => {
     if (!isLoading) {
-      onClose();
+      onClose()
     }
-  };
+  }
 
   const resetForm = () => {
-    setDescription("");
-    setTargetAudience("");
-    setDifficulty("intermediate");
-    setModuleCount(5);
-    setLessonsPerModule(4);
-  };
+    setDescription('')
+    setTargetAudience('')
+    setDifficulty('intermediate')
+    setModuleCount(5)
+    setLessonsPerModule(4)
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
@@ -110,8 +110,8 @@ export function AICourseOutlineModal({
               rows={4}
               disabled={isLoading}
               className={cn(
-                "rounded-md shadow-none border border-neutral-300 resize-none",
-                "focus:border-accent focus:ring-1 focus:ring-accent/30"
+                'rounded-md shadow-none border border-neutral-300 resize-none',
+                'focus:border-accent focus:ring-1 focus:ring-accent/30',
               )}
             />
           </div>
@@ -143,7 +143,7 @@ export function AICourseOutlineModal({
                 value={difficulty}
                 onChange={(e) =>
                   setDifficulty(
-                    e.target.value as "beginner" | "intermediate" | "advanced"
+                    e.target.value as 'beginner' | 'intermediate' | 'advanced',
                   )
                 }
                 disabled={isLoading}
@@ -168,7 +168,7 @@ export function AICourseOutlineModal({
                 value={moduleCount}
                 onChange={(e) =>
                   setModuleCount(
-                    Math.max(1, Math.min(20, parseInt(e.target.value) || 1))
+                    Math.max(1, Math.min(20, parseInt(e.target.value) || 1)),
                   )
                 }
                 disabled={isLoading}
@@ -189,7 +189,7 @@ export function AICourseOutlineModal({
                 value={lessonsPerModule}
                 onChange={(e) =>
                   setLessonsPerModule(
-                    Math.max(1, Math.min(15, parseInt(e.target.value) || 1))
+                    Math.max(1, Math.min(15, parseInt(e.target.value) || 1)),
                   )
                 }
                 disabled={isLoading}
@@ -220,9 +220,9 @@ export function AICourseOutlineModal({
               onClick={handleSubmit}
               disabled={!description.trim() || isLoading}
               className={cn(
-                "gap-2 rounded-md cursor-pointer",
-                "bg-accent hover:bg-accent/90 text-white",
-                "disabled:opacity-50 disabled:cursor-not-allowed"
+                'gap-2 rounded-md cursor-pointer',
+                'bg-accent hover:bg-accent/90 text-white',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
               )}
             >
               {isLoading ? (
@@ -241,5 +241,5 @@ export function AICourseOutlineModal({
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

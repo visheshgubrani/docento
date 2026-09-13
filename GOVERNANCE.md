@@ -15,12 +15,12 @@ Maintainers as of this document's last update are listed in
 
 ## How decisions are made
 
-| Change | Who decides |
-| --- | --- |
-| Bug fixes, docs, tests, refactors inside an existing boundary | Any maintainer, on review |
-| New features within existing architecture | Lazy consensus — a maintainer opens an issue, and it proceeds if no maintainer objects within a reasonable window |
-| Data model, public API, authorization model, licensing, or dependency policy | Explicit maintainer agreement, recorded as an ADR |
-| Anything that would break self-hosters on upgrade | Explicit maintainer agreement, plus a migration note in the release |
+| Change                                                                       | Who decides                                                                                                       |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Bug fixes, docs, tests, refactors inside an existing boundary                | Any maintainer, on review                                                                                         |
+| New features within existing architecture                                    | Lazy consensus — a maintainer opens an issue, and it proceeds if no maintainer objects within a reasonable window |
+| Data model, public API, authorization model, licensing, or dependency policy | Explicit maintainer agreement, recorded as an ADR                                                                 |
+| Anything that would break self-hosters on upgrade                            | Explicit maintainer agreement, plus a migration note in the release                                               |
 
 The distinction matters because the bottom two rows are expensive to reverse.
 If your change touches them, open an issue before writing code.

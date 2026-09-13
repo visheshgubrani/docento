@@ -9,11 +9,11 @@ interface ClipmuxConfig {
 const getConfig = (): ClipmuxConfig => {
   const apiKey = process.env.CLIPMUX_API_KEY
   const apiUrl = process.env.CLIPMUX_API_URL
-  
+
   if (!apiKey || !apiUrl) {
     throw new Error('Missing CLIPMUX_API_KEY or CLIPMUX_API_URL in environment')
   }
-  
+
   return { apiKey, apiUrl }
 }
 
@@ -30,15 +30,20 @@ interface UploadTokenResponse {
 }
 
 export const generateUploadToken = async (
-  options: UploadTokenOptions = {}
+  options: UploadTokenOptions = {},
 ): Promise<UploadTokenResponse> => {
   const { apiKey, apiUrl } = getConfig()
-  const { expiresIn = '1h', maxFiles = 1, generateSubtitle = false, generateChapters = false } = options
+  const {
+    expiresIn = '1h',
+    maxFiles = 1,
+    generateSubtitle = false,
+    generateChapters = false,
+  } = options
 
   const response = await fetch(`${apiUrl}/v1/upload/token`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -54,7 +59,7 @@ export const generateUploadToken = async (
     console.error('[CLIPMUX] Token generation failed:', error)
     throw new Error(`Failed to generate upload token: ${error}`)
   }
-  
+
   const data = await response.json()
   return {
     uploadToken: data.upload_token,
@@ -71,20 +76,22 @@ interface VideoDetails {
   thumbnailUrl?: string
 }
 
-export const getVideoDetails = async (videoId: string): Promise<VideoDetails> => {
+export const getVideoDetails = async (
+  videoId: string,
+): Promise<VideoDetails> => {
   const { apiKey, apiUrl } = getConfig()
-  
+
   const response = await fetch(`${apiUrl}/v1/video/${videoId}`, {
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
     },
   })
-  
+
   if (!response.ok) {
     const error = await response.text()
     throw new Error(`Failed to get video details: ${error}`)
   }
-  
+
   const data = await response.json()
   return {
     id: data.id,
@@ -104,27 +111,31 @@ interface PlaybackTokenResponse {
   chapters?: any[] | null
 }
 
-export const getPlaybackUrl = async (videoId: string, ip: string, userAgent: string): Promise<PlaybackTokenResponse> => {
+export const getPlaybackUrl = async (
+  videoId: string,
+  ip: string,
+  userAgent: string,
+): Promise<PlaybackTokenResponse> => {
   const { apiKey, apiUrl } = getConfig()
-  
+
   const response = await fetch(`${apiUrl}/v1/video/${videoId}/playback-token`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       viewer_ip: ip,
       viewer_user_agent: userAgent,
-      expires_in: '2h' // Optional
-    })
+      expires_in: '2h', // Optional
+    }),
   })
-  
+
   if (!response.ok) {
     const error = await response.text()
     throw new Error(`Failed to get playback URL: ${error}`)
   }
-  
+
   const data = await response.json()
   return {
     playbackUrl: data.playback_url,
@@ -137,14 +148,14 @@ export const getPlaybackUrl = async (videoId: string, ip: string, userAgent: str
 
 export const deleteVideo = async (videoId: string): Promise<void> => {
   const { apiKey, apiUrl } = getConfig()
-  
+
   const response = await fetch(`${apiUrl}/v1/video/${videoId}`, {
     method: 'DELETE',
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
     },
   })
-  
+
   if (!response.ok && response.status !== 404) {
     const error = await response.text()
     throw new Error(`Failed to delete video: ${error}`)
@@ -163,17 +174,17 @@ interface WebhookPayload {
 export const verifyClipmuxSignature = (
   signatureHeader: string,
   rawBody: string,
-  secret: string
+  secret: string,
 ): boolean => {
   try {
     const expectedSignature = crypto
       .createHmac('sha256', secret)
       .update(rawBody)
       .digest('hex')
-    
+
     return crypto.timingSafeEqual(
       Buffer.from(signatureHeader, 'hex'),
-      Buffer.from(expectedSignature, 'hex')
+      Buffer.from(expectedSignature, 'hex'),
     )
   } catch (error) {
     console.error('Clipmux signature verification failed:', error)
@@ -183,13 +194,17 @@ export const verifyClipmuxSignature = (
 
 export const getThumbnailUrl = (videoId: string, token?: string): string => {
   const baseUrl = process.env.CLIPMUX_CDN_URL || ''
-  const url = baseUrl ? `${baseUrl}/videos/${videoId}/poster.jpg` : `/videos/${videoId}/poster.jpg`
+  const url = baseUrl
+    ? `${baseUrl}/videos/${videoId}/poster.jpg`
+    : `/videos/${videoId}/poster.jpg`
   return token ? `${url}?token=${token}` : url
 }
 
 export const getHlsUrl = (videoId: string, token?: string): string => {
   const baseUrl = process.env.CLIPMUX_CDN_URL || ''
-  const url = baseUrl ? `${baseUrl}/videos/${videoId}/playlist.m3u8` : `/videos/${videoId}/playlist.m3u8`
+  const url = baseUrl
+    ? `${baseUrl}/videos/${videoId}/playlist.m3u8`
+    : `/videos/${videoId}/playlist.m3u8`
   return token ? `${url}?token=${token}` : url
 }
 
@@ -199,13 +214,16 @@ export const getHlsUrl = (videoId: string, token?: string): string => {
  */
 export const getSignedThumbnailUrl = (
   thumbnailUrl: string | null,
-  videoId: string | null
+  videoId: string | null,
 ): string | null => {
   // 1. Basic Validation
   if (!thumbnailUrl) return null
 
   // 2. If it's not hosted on Cloudflare or Clipmux, return as-is (e.g., S3/R2)
-  if (!thumbnailUrl.includes('cloudflarestream.com') && !thumbnailUrl.includes('clipmux.com')) {
+  if (
+    !thumbnailUrl.includes('cloudflarestream.com') &&
+    !thumbnailUrl.includes('clipmux.com')
+  ) {
     return thumbnailUrl
   }
 

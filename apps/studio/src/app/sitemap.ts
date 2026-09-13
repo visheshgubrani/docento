@@ -1,12 +1,12 @@
-import { getBlogPosts } from "@/lib/blog";
-import { MetadataRoute } from "next";
-import { headers } from "next/headers";
+import { getBlogPosts } from '@/lib/blog'
+import { MetadataRoute } from 'next'
+import { headers } from 'next/headers'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const allPosts = await getBlogPosts();
-  const headersList = headers();
-  const domain = (await headersList).get("host") as string;
-  const protocol = "https";
+  const allPosts = await getBlogPosts()
+  const headersList = headers()
+  const domain = (await headersList).get('host') as string
+  const protocol = 'https'
 
   return [
     {
@@ -17,5 +17,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${protocol}://${domain}/blog/${post.slug}`,
       lastModified: new Date(),
     })),
-  ];
+  ]
 }

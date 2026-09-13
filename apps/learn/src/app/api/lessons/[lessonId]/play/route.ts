@@ -8,13 +8,13 @@ const parsePayload = async (response: Response, fallbackMessage: string) =>
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ lessonId: string }> }
+  context: { params: Promise<{ lessonId: string }> },
 ) {
   try {
     if (!LMS_API_URL || !LMS_SECRET_API_KEY) {
       return NextResponse.json(
         { message: 'LMS_API_URL or LMS_SECRET_API_KEY is not configured' },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
@@ -22,7 +22,7 @@ export async function GET(
     if (!lessonId?.trim()) {
       return NextResponse.json(
         { message: 'lessonId is required' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -50,16 +50,18 @@ export async function GET(
             Authorization: `Bearer ${authToken}`,
           },
           cache: 'no-store',
-        }
+        },
       )
 
       const studentPayload = await parsePayload(
         studentResponse,
-        'Unexpected response from student API'
+        'Unexpected response from student API',
       )
 
       if (studentResponse.ok) {
-        return NextResponse.json(studentPayload, { status: studentResponse.status })
+        return NextResponse.json(studentPayload, {
+          status: studentResponse.status,
+        })
       }
     }
 
@@ -73,20 +75,22 @@ export async function GET(
           'X-API-Key': LMS_SECRET_API_KEY,
         },
         cache: 'no-store',
-      }
+      },
     )
 
     const storefrontPayload = await parsePayload(
       storefrontResponse,
-      'Unexpected response from storefront API'
+      'Unexpected response from storefront API',
     )
 
-    return NextResponse.json(storefrontPayload, { status: storefrontResponse.status })
+    return NextResponse.json(storefrontPayload, {
+      status: storefrontResponse.status,
+    })
   } catch (error) {
     console.error('[LESSON_PLAY_PROXY_ERROR]', error)
     return NextResponse.json(
       { message: 'Failed to authorize lesson playback' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

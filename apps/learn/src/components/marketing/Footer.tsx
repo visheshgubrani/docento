@@ -1,16 +1,16 @@
-import Image from "next/image";
-import Link from "next/link";
-import { FaGithub, FaLinkedinIn, FaXTwitter } from "react-icons/fa6";
+import Image from 'next/image'
+import Link from 'next/link'
+import { FaGithub, FaLinkedinIn, FaXTwitter } from 'react-icons/fa6'
 
-import { footerData } from "@/config/navigation";
-import { siteConfig } from "@/config/site";
+import { footerData } from '@/config/navigation'
+import { siteConfig } from '@/config/site'
 
 export function Footer() {
   const socialIconMap = {
     github: FaGithub,
     linkedin: FaLinkedinIn,
     x: FaXTwitter,
-  } as const;
+  } as const
 
   return (
     <footer className="bg-linear-to-b from-muted/20 border-t border-muted-foreground/10 to-muted dark:to-muted/80 text-foreground">
@@ -18,12 +18,19 @@ export function Footer() {
         <div className="flex w-full flex-col items-start gap-10 lg:flex-row lg:justify-between lg:gap-28">
           <div className="w-full max-w-md lg:flex-none">
             <Link href="/" className="inline-flex items-center gap-2">
-              <Image src={siteConfig.logo} alt={siteConfig.name} width={30} height={30} />
+              <Image
+                src={siteConfig.logo}
+                alt={siteConfig.name}
+                width={30}
+                height={30}
+              />
               <span className="font-brand text-lg font-extrabold lowercase text-foreground">
                 {siteConfig.name}
               </span>
             </Link>
-            <p className="mt-3 max-w-sm text-sm text-foreground/80">{footerData.description}</p>
+            <p className="mt-3 max-w-sm text-sm text-foreground/80">
+              {footerData.description}
+            </p>
 
             <div className="mt-6">
               <form
@@ -76,10 +83,13 @@ export function Footer() {
         </div>
 
         <div className="mt-10 flex flex-col items-start justify-between gap-4 border-t border-border pt-5 sm:flex-row sm:items-center">
-          <p className="text-xs text-foreground/70 sm:text-sm">{footerData.copyright}</p>
+          <p className="text-xs text-foreground/70 sm:text-sm">
+            {footerData.copyright}
+          </p>
           <div className="flex items-center gap-4">
             {footerData.social.map((social) => {
-              const Icon = socialIconMap[social.icon as keyof typeof socialIconMap];
+              const Icon =
+                socialIconMap[social.icon as keyof typeof socialIconMap]
               return (
                 <Link
                   key={social.label}
@@ -91,11 +101,11 @@ export function Footer() {
                 >
                   <Icon className="size-5" />
                 </Link>
-              );
+              )
             })}
           </div>
         </div>
       </div>
     </footer>
-  );
+  )
 }

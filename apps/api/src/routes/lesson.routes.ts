@@ -409,7 +409,11 @@ router.delete('/:lessonId', resolveLessonContext, lessonController.deleteLesson)
  *       500:
  *         description: Storage provider is not configured
  */
-router.post('/:lessonId/thumbnail/upload', resolveLessonContext, lessonController.createThumbnailUpload)
+router.post(
+  '/:lessonId/thumbnail/upload',
+  resolveLessonContext,
+  lessonController.createThumbnailUpload,
+)
 /**
  * @openapi
  * /projects/{projectId}/courses/{courseId}/modules/{moduleId}/lessons/{lessonId}/thumbnail:
@@ -464,11 +468,23 @@ router.post('/:lessonId/thumbnail/upload', resolveLessonContext, lessonControlle
  *       404:
  *         description: Lesson not found
  */
-router.patch('/:lessonId/thumbnail', resolveLessonContext, lessonController.updateThumbnail)
+router.patch(
+  '/:lessonId/thumbnail',
+  resolveLessonContext,
+  lessonController.updateThumbnail,
+)
 
 // PDF
-router.post('/:lessonId/pdf/presign', resolveLessonContext, lessonController.createPdfUpload)
-router.delete('/:lessonId/pdf', resolveLessonContext, lessonController.deletePdf)
+router.post(
+  '/:lessonId/pdf/presign',
+  resolveLessonContext,
+  lessonController.createPdfUpload,
+)
+router.delete(
+  '/:lessonId/pdf',
+  resolveLessonContext,
+  lessonController.deletePdf,
+)
 
 // Reorder
 /**

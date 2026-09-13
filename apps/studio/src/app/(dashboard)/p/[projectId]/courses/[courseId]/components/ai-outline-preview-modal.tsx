@@ -1,7 +1,7 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { BsStars } from "react-icons/bs";
+import { useState } from 'react'
+import { BsStars } from 'react-icons/bs'
 import {
   Loader2,
   ChevronDown,
@@ -11,7 +11,7 @@ import {
   Video,
   FileText,
   CheckCircle,
-} from "lucide-react";
+} from 'lucide-react'
 
 import {
   Dialog,
@@ -19,20 +19,20 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { type GeneratedCourseOutline, type GeneratedModule } from "@/lib/api";
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { type GeneratedCourseOutline, type GeneratedModule } from '@/lib/api'
 
 type AIOutlinePreviewModalProps = {
-  isOpen: boolean;
-  outline: GeneratedCourseOutline | null;
-  onClose: () => void;
-  onConfirm: () => void;
-  onRegenerate: () => void;
-  isGenerating: boolean;
-  isCreating: boolean;
-};
+  isOpen: boolean
+  outline: GeneratedCourseOutline | null
+  onClose: () => void
+  onConfirm: () => void
+  onRegenerate: () => void
+  isGenerating: boolean
+  isCreating: boolean
+}
 
 export function AIOutlinePreviewModal({
   isOpen,
@@ -44,35 +44,35 @@ export function AIOutlinePreviewModal({
   isCreating,
 }: AIOutlinePreviewModalProps) {
   const [expandedModules, setExpandedModules] = useState<Set<number>>(
-    new Set([0])
-  );
+    new Set([0]),
+  )
 
   const toggleModule = (index: number) => {
     setExpandedModules((prev) => {
-      const newSet = new Set(prev);
+      const newSet = new Set(prev)
       if (newSet.has(index)) {
-        newSet.delete(index);
+        newSet.delete(index)
       } else {
-        newSet.add(index);
+        newSet.add(index)
       }
-      return newSet;
-    });
-  };
+      return newSet
+    })
+  }
 
   const expandAll = () => {
-    setExpandedModules(new Set(outline?.modules.map((_, i) => i) ?? []));
-  };
+    setExpandedModules(new Set(outline?.modules.map((_, i) => i) ?? []))
+  }
 
   const collapseAll = () => {
-    setExpandedModules(new Set());
-  };
+    setExpandedModules(new Set())
+  }
 
-  if (!outline) return null;
+  if (!outline) return null
 
   const totalLessons = outline.modules.reduce(
     (sum, mod) => sum + mod.lessons.length,
-    0
-  );
+    0,
+  )
 
   return (
     <Dialog
@@ -208,9 +208,9 @@ export function AIOutlinePreviewModal({
               onClick={onConfirm}
               disabled={isGenerating || isCreating}
               className={cn(
-                "gap-2 rounded-md cursor-pointer",
-                "bg-accent hover:bg-accent/90 text-white",
-                "disabled:opacity-50 disabled:cursor-not-allowed"
+                'gap-2 rounded-md cursor-pointer',
+                'bg-accent hover:bg-accent/90 text-white',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
               )}
             >
               {isCreating ? (
@@ -229,7 +229,7 @@ export function AIOutlinePreviewModal({
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 // Module Card Component
@@ -239,10 +239,10 @@ function ModuleCard({
   isExpanded,
   onToggle,
 }: {
-  module: GeneratedModule;
-  moduleIndex: number;
-  isExpanded: boolean;
-  onToggle: () => void;
+  module: GeneratedModule
+  moduleIndex: number
+  isExpanded: boolean
+  onToggle: () => void
 }) {
   return (
     <div className="border border-neutral-300 rounded-lg overflow-hidden bg-white">
@@ -262,7 +262,7 @@ function ModuleCard({
           </div>
           <div className="text-sm text-foreground/50 truncate">
             {module.lessons.length} lesson
-            {module.lessons.length === 1 ? "" : "s"}
+            {module.lessons.length === 1 ? '' : 's'}
           </div>
         </div>
       </button>
@@ -285,7 +285,7 @@ function ModuleCard({
                   {lessonIndex + 1}
                 </div>
                 <div className="shrink-0">
-                  {lesson.contentType === "VIDEO" ? (
+                  {lesson.contentType === 'VIDEO' ? (
                     <Video className="size-4 text-accent fill-accent" />
                   ) : (
                     <FileText className="size-4 text-orange-500" />
@@ -313,5 +313,5 @@ function ModuleCard({
         </div>
       )}
     </div>
-  );
+  )
 }

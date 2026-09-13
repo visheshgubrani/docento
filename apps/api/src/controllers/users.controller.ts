@@ -20,7 +20,7 @@ const buildCookieOptions = (overrides: CookieOptions = {}): CookieOptions => ({
 const signupManagedUsers = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const project = req.project
   if (!project) {
@@ -31,8 +31,8 @@ const signupManagedUsers = async (
     return next(
       new ApiError(
         403, // 403 Forbidden is the correct code here.
-        'This project is configured for delegated authentication and cannot create managed users.'
-      )
+        'This project is configured for delegated authentication and cannot create managed users.',
+      ),
     )
   }
   const { email, password, name } = req.body
@@ -85,7 +85,7 @@ const signupManagedUsers = async (
   const token = jwt.sign(
     { userId: newEndUser.id, projectId: project.id },
     process.env.JWT_SECRET!,
-    { expiresIn: '7d' }
+    { expiresIn: '7d' },
   )
 
   res.cookie(
@@ -93,7 +93,7 @@ const signupManagedUsers = async (
     token,
     buildCookieOptions({
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
-    })
+    }),
   )
 
   return res.status(201).json(
@@ -104,14 +104,14 @@ const signupManagedUsers = async (
         projectId: newEndUser.projectId,
       },
       token: token,
-    })
+    }),
   )
 }
 
 const loginManagedUsers = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const project = req.project
   if (!project) {
@@ -122,8 +122,8 @@ const loginManagedUsers = async (
     return next(
       new ApiError(
         403, // 403 Forbidden is the correct code here.
-        'This project is configured for delegated authentication and cannot create managed users.'
-      )
+        'This project is configured for delegated authentication and cannot create managed users.',
+      ),
     )
   }
 
@@ -152,14 +152,14 @@ const loginManagedUsers = async (
     return next(
       new ApiError(
         403,
-        'This account has been banned. Please contact support for help.'
-      )
+        'This account has been banned. Please contact support for help.',
+      ),
     )
   }
 
   const isPasswordCorrect = await bcrypt.compare(
     password,
-    endUser.managedUser.password
+    endUser.managedUser.password,
   )
 
   if (!isPasswordCorrect) {
@@ -169,13 +169,13 @@ const loginManagedUsers = async (
   const accessToken = jwt.sign(
     { userId: endUser.id, projectId: project.id, role: 'EndUser' },
     process.env.JWT_SECRET!,
-    { expiresIn: '1d' }
+    { expiresIn: '1d' },
   )
 
   const refreshToken = jwt.sign(
     { userId: endUser.id },
     process.env.REFRESH_TOKEN_SECRET!,
-    { expiresIn: '7d' }
+    { expiresIn: '7d' },
   )
 
   const hashedRefreshToken = await bcrypt.hash(refreshToken, 10)
@@ -194,14 +194,14 @@ const loginManagedUsers = async (
       accessToken,
       buildCookieOptions({
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
-      })
+      }),
     )
     .cookie(
       'refreshToken',
       refreshToken,
       buildCookieOptions({
         maxAge: 7 * 24 * 60 * 60 * 1000,
-      })
+      }),
     )
 
   return res.status(200).json(
@@ -213,14 +213,14 @@ const loginManagedUsers = async (
       },
       accessToken: accessToken,
       refreshToken: refreshToken,
-    })
+    }),
   )
 }
 
 const signOutManagedUser = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const cookieName = 'authToken'
   res.clearCookie(cookieName, buildCookieOptions())
@@ -234,7 +234,7 @@ const signOutManagedUser = async (
 const refreshAccessToken = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const incomingRefreshToken =
     req.cookies?.refreshToken || req.body.refreshToken
@@ -245,7 +245,7 @@ const refreshAccessToken = async (
 
   const decodedToken = jwt.verify(
     incomingRefreshToken,
-    process.env.REFRESH_TOKEN_SECRET!
+    process.env.REFRESH_TOKEN_SECRET!,
   ) as jwt.JwtPayload
 
   const managedUser = await prisma.managedUser.findFirst({
@@ -261,7 +261,7 @@ const refreshAccessToken = async (
 
   const isTokenValid = await bcrypt.compare(
     incomingRefreshToken,
-    managedUser.refreshToken
+    managedUser.refreshToken,
   )
   if (!isTokenValid) {
     return next(new ApiError(401, 'Unauthorized: Invalid refresh token.'))
@@ -271,8 +271,8 @@ const refreshAccessToken = async (
     return next(
       new ApiError(
         403,
-        'This account has been banned. Please contact support for help.'
-      )
+        'This account has been banned. Please contact support for help.',
+      ),
     )
   }
 
@@ -283,7 +283,7 @@ const refreshAccessToken = async (
       role: 'EndUser',
     },
     process.env.JWT_SECRET!,
-    { expiresIn: '1d' }
+    { expiresIn: '1d' },
   )
 
   res.cookie(
@@ -291,13 +291,13 @@ const refreshAccessToken = async (
     newAccessToken,
     buildCookieOptions({
       maxAge: 15 * 60 * 1000,
-    })
+    }),
   )
 
   return res.status(200).json(
     new ApiResponse(200, 'Access token refreshed successfully.', {
       accessToken: newAccessToken,
-    })
+    }),
   )
 }
 
@@ -305,7 +305,7 @@ const refreshAccessToken = async (
 const requestPasswordReset = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project
@@ -319,8 +319,8 @@ const requestPasswordReset = async (
       return next(
         new ApiError(
           403,
-          'Password reset is only available for managed auth projects.'
-        )
+          'Password reset is only available for managed auth projects.',
+        ),
       )
     }
 
@@ -341,9 +341,13 @@ const requestPasswordReset = async (
     // Do not leak whether the email exists
     if (!endUser || !endUser.managedUser) {
       return res.status(200).json(
-        new ApiResponse(200, 'If the account exists, a reset link was created', {
-          resetToken: isProduction ? undefined : null,
-        })
+        new ApiResponse(
+          200,
+          'If the account exists, a reset link was created',
+          {
+            resetToken: isProduction ? undefined : null,
+          },
+        ),
       )
     }
 
@@ -371,7 +375,7 @@ const requestPasswordReset = async (
         // Return token for MVP/dev testing; in production you would email it
         resetToken: isProduction ? undefined : rawToken,
         expiresAt,
-      })
+      }),
     )
   } catch (error) {
     console.error('[REQUEST_PASSWORD_RESET_ERROR]', error)
@@ -383,7 +387,7 @@ const requestPasswordReset = async (
 const resetPassword = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { token, newPassword } = req.body
@@ -394,7 +398,7 @@ const resetPassword = async (
 
     if (newPassword.length < 8) {
       return next(
-        new ApiError(400, 'Password must be at least 8 characters long')
+        new ApiError(400, 'Password must be at least 8 characters long'),
       )
     }
 
@@ -450,7 +454,7 @@ const resetPassword = async (
 const handleDelegatedUser = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project
@@ -464,8 +468,8 @@ const handleDelegatedUser = async (
       return next(
         new ApiError(
           403,
-          'Forbidden: This project is not configured for delegated authentication.'
-        )
+          'Forbidden: This project is not configured for delegated authentication.',
+        ),
       )
     }
 
@@ -487,10 +491,7 @@ const handleDelegatedUser = async (
 
     if (existingEndUser?.status === 'BANNED') {
       return next(
-        new ApiError(
-          403,
-          'This user is banned from accessing this project.'
-        )
+        new ApiError(403, 'This user is banned from accessing this project.'),
       )
     }
 
@@ -585,7 +586,7 @@ const getProfile = async (req: Request, res: Response, next: NextFunction) => {
   return res.status(200).json(
     new ApiResponse(200, 'User Fetched Successfully', {
       profile: userProfile,
-    })
+    }),
   )
 }
 

@@ -239,7 +239,7 @@ router.get('/:projectId/api-keys', requireAuth, projectController.getApiKeys)
 router.delete(
   '/:projectId/api-keys/:keyId',
   requireAuth,
-  projectController.revokeApiKey
+  projectController.revokeApiKey,
 )
 
 /**
@@ -289,7 +289,7 @@ router.delete(
 router.patch(
   '/:projectId/api-keys/:keyId',
   requireAuth,
-  projectController.updateApiKeyName
+  projectController.updateApiKeyName,
 )
 
 // ===== WEBHOOKS (Owner Authenticated) =====
@@ -388,7 +388,7 @@ router.get('/:projectId/webhooks', requireAuth, webhookController.getWebhook)
 router.post(
   '/:projectId/webhooks',
   requireAuth,
-  webhookController.createWebhook
+  webhookController.createWebhook,
 )
 
 /**
@@ -429,7 +429,7 @@ router.post(
 router.post(
   '/:projectId/webhooks/test',
   requireAuth,
-  webhookController.testWebhook
+  webhookController.testWebhook,
 )
 
 /**
@@ -457,7 +457,7 @@ router.post(
 router.delete(
   '/:projectId/webhooks',
   requireAuth,
-  webhookController.deleteWebhook
+  webhookController.deleteWebhook,
 )
 
 // ===== PROJECT MEMBERS & INVITATIONS =====
@@ -509,7 +509,7 @@ router.post(
   requireAuth,
   authorizeProjectMember,
   requireProjectOwner,
-  inviteController.inviteToProject
+  inviteController.inviteToProject,
 )
 
 /**
@@ -536,7 +536,7 @@ router.get(
   requireAuth,
   authorizeProjectMember,
   requireProjectOwner,
-  inviteController.getProjectMembers
+  inviteController.getProjectMembers,
 )
 
 /**
@@ -569,7 +569,7 @@ router.delete(
   requireAuth,
   authorizeProjectMember,
   requireProjectOwner,
-  inviteController.removeMember
+  inviteController.removeMember,
 )
 
 /**
@@ -602,7 +602,7 @@ router.delete(
   requireAuth,
   authorizeProjectMember,
   requireProjectOwner,
-  inviteController.revokeInvitation
+  inviteController.revokeInvitation,
 )
 
 /**
@@ -637,7 +637,7 @@ router.delete(
 router.post(
   '/invitations/accept',
   requireAuth,
-  inviteController.acceptInvitation
+  inviteController.acceptInvitation,
 )
 
 /**
@@ -672,7 +672,7 @@ router.post(
 router.post(
   '/invitations/reject',
   requireAuth,
-  inviteController.rejectInvitation
+  inviteController.rejectInvitation,
 )
 
 /**
@@ -717,7 +717,7 @@ router.post(
   '/:projectId/payments',
   authorizeProjectAccess,
   requireProjectOwner,
-  projectController.updatePaymentSettings
+  projectController.updatePaymentSettings,
 )
 
 /**
@@ -764,7 +764,7 @@ router.get(
   '/:projectId/payments',
   authorizeProjectAccess,
   requireProjectOwner,
-  projectController.getPaymentSettings
+  projectController.getPaymentSettings,
 )
 
 // ===== PROJECT OPERATIONS (Requires Project Ownership) =====
@@ -857,7 +857,11 @@ router.get('/:projectId', projectController.getProject)
  *       400:
  *         description: Please provide at least one field to update
  */
-router.patch('/:projectId', requireProjectOwner, projectController.updateProject)
+router.patch(
+  '/:projectId',
+  requireProjectOwner,
+  projectController.updateProject,
+)
 
 /**
  * @openapi
@@ -880,7 +884,13 @@ router.patch('/:projectId', requireProjectOwner, projectController.updateProject
  *       200:
  *         description: Project deleted successfully
  */
-router.delete('/:projectId', requireAuth, authorizeProjectMember, requireProjectOwner, projectController.deleteProject)
+router.delete(
+  '/:projectId',
+  requireAuth,
+  authorizeProjectMember,
+  requireProjectOwner,
+  projectController.deleteProject,
+)
 
 // ===== END USERS =====
 
@@ -1074,7 +1084,7 @@ router.get('/:projectId/end-users/:endUserId', projectController.getEndUser)
  */
 router.patch(
   '/:projectId/end-users/:endUserId/status',
-  projectController.updateEndUserStatus
+  projectController.updateEndUserStatus,
 )
 
 /**
@@ -1108,7 +1118,7 @@ router.patch(
  */
 router.delete(
   '/:projectId/end-users/:endUserId',
-  projectController.deleteEndUser
+  projectController.deleteEndUser,
 )
 
 export default router

@@ -1,19 +1,20 @@
-import { getProfile, isAuthenticated } from "@/actions/auth";
-import { NavigationHeader } from "@/components/common/navigation-header";
+import { getProfile, isAuthenticated } from '@/actions/auth'
+import { NavigationHeader } from '@/components/common/navigation-header'
 
 export async function Header() {
-  const authenticated = await isAuthenticated();
+  const authenticated = await isAuthenticated()
   if (!authenticated) {
-    return <NavigationHeader />;
+    return <NavigationHeader />
   }
 
-  const profile = await getProfile();
+  const profile = await getProfile()
 
   if (!profile) {
-    return <NavigationHeader user={{ name: "User" }} />;
+    return <NavigationHeader user={{ name: 'User' }} />
   }
 
-  const userName = profile.profile.managedUser?.name || profile.profile.email.split("@")[0];
+  const userName =
+    profile.profile.managedUser?.name || profile.profile.email.split('@')[0]
 
   return (
     <NavigationHeader
@@ -22,5 +23,5 @@ export async function Header() {
         email: profile.profile.email,
       }}
     />
-  );
+  )
 }

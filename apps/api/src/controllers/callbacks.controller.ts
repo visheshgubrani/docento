@@ -110,7 +110,7 @@ export const handleClipmuxWebhook = async (req: Request, res: Response) => {
 export const verifyClipmuxWebhookSignature = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     // Get Clipmux webhook headers
@@ -131,23 +131,26 @@ export const verifyClipmuxWebhookSignature = (
     const rawBody = Buffer.isBuffer((req as any).rawBody)
       ? (req as any).rawBody.toString('utf-8')
       : JSON.stringify(req.body ?? {})
-    const timestamp = timestampHeader || Math.floor(Date.now() / 1000).toString()
-    
+    const timestamp =
+      timestampHeader || Math.floor(Date.now() / 1000).toString()
+
     const payload = `${timestamp}.${rawBody}`
     const expectedSignature = crypto
       .createHmac('sha256', secret)
       .update(payload)
       .digest('hex')
-    
+
     // Parse signature header (format: sha256=hexsignature)
     const signatureParts = signatureHeader.split('=')
     if (signatureParts.length !== 2 || signatureParts[0] !== 'sha256') {
-      logger.warn('Clipmux webhook invalid signature format', { signatureHeader })
+      logger.warn('Clipmux webhook invalid signature format', {
+        signatureHeader,
+      })
       return res.status(401).json({ message: 'Invalid signature format' })
     }
-    
+
     const receivedSignature = signatureParts[1]
-    
+
     if (receivedSignature !== expectedSignature) {
       logger.warn('Clipmux webhook invalid signature', {
         received: receivedSignature?.substring(0, 30),
@@ -157,8 +160,8 @@ export const verifyClipmuxWebhookSignature = (
       })
       return res.status(401).json({ message: 'Invalid signature' })
     }
-    
-    logger.info('Clipmux webhook signature verified', { 
+
+    logger.info('Clipmux webhook signature verified', {
       event: eventHeader,
       timestamp,
     })
@@ -234,7 +237,7 @@ export const handleRazorpayWebhook = async (req: Request, res: Response) => {
               enrolledAt,
               expiresAt: computeEnrollmentExpiresAt(
                 enrolledAt,
-                order.course.enrollmentValidityDays
+                order.course.enrollmentValidityDays,
               ),
             },
           })
@@ -252,7 +255,7 @@ export const handleRazorpayWebhook = async (req: Request, res: Response) => {
 export const verifyRazorpayWebhookSignature = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const secret = process.env.RAZORPAY_WEBHOOK_SECRET

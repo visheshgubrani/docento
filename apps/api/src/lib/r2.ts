@@ -20,8 +20,7 @@ export const getR2Client = () => {
 }
 
 export const getR2PublicBaseUrl = () => {
-  const publicBase =
-    process.env.R2_PUBLIC_URL || process.env.R2_PUBLIC_BASE_URL
+  const publicBase = process.env.R2_PUBLIC_URL || process.env.R2_PUBLIC_BASE_URL
 
   if (!publicBase) return null
   return normalizeBaseUrl(publicBase.trim())

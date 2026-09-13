@@ -5,7 +5,7 @@ import ApiError from '../utils/ApiError'
 export const resolveLessonContext = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { lessonId } = req.params
@@ -15,8 +15,8 @@ export const resolveLessonContext = async (
       return next(
         new ApiError(
           500,
-          'Module context missing. Ensure resolveModuleContext runs first.'
-        )
+          'Module context missing. Ensure resolveModuleContext runs first.',
+        ),
       )
     }
 
@@ -33,7 +33,10 @@ export const resolveLessonContext = async (
 
     if (!lesson) {
       return next(
-        new ApiError(404, 'Lesson not found or does not belong to this module.')
+        new ApiError(
+          404,
+          'Lesson not found or does not belong to this module.',
+        ),
       )
     }
 

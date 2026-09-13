@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
-import { useCallback, useEffect, useState } from "react"
-import { useThrottledCallback } from "@/hooks/use-throttled-callback"
+import { useCallback, useEffect, useState } from 'react'
+import { useThrottledCallback } from '@/hooks/use-throttled-callback'
 
-export type RectState = Omit<DOMRect, "toJSON">
+export type RectState = Omit<DOMRect, 'toJSON'>
 
 export interface ElementRectOptions {
   /**
@@ -36,8 +36,8 @@ const initialRect: RectState = {
   left: 0,
 }
 
-const isSSR = typeof window === "undefined"
-const hasResizeObserver = !isSSR && typeof ResizeObserver !== "undefined"
+const isSSR = typeof window === 'undefined'
+const hasResizeObserver = !isSSR && typeof ResizeObserver !== 'undefined'
 
 /**
  * Helper function to check if code is running on client side
@@ -65,11 +65,11 @@ export function useElementRect({
       return document.body
     }
 
-    if (typeof element === "string") {
+    if (typeof element === 'string') {
       return document.querySelector(element)
     }
 
-    if ("current" in element) {
+    if ('current' in element) {
       return element.current
     }
 
@@ -100,7 +100,7 @@ export function useElementRect({
     },
     throttleMs,
     [enabled, getTargetElement],
-    { leading: true, trailing: true }
+    { leading: true, trailing: true },
   )
 
   useEffect(() => {
@@ -126,12 +126,12 @@ export function useElementRect({
 
     const handleUpdate = () => updateRect()
 
-    window.addEventListener("scroll", handleUpdate, true)
-    window.addEventListener("resize", handleUpdate, true)
+    window.addEventListener('scroll', handleUpdate, true)
+    window.addEventListener('resize', handleUpdate, true)
 
     cleanup.push(() => {
-      window.removeEventListener("scroll", handleUpdate)
-      window.removeEventListener("resize", handleUpdate)
+      window.removeEventListener('scroll', handleUpdate)
+      window.removeEventListener('resize', handleUpdate)
     })
 
     return () => {
@@ -147,7 +147,7 @@ export function useElementRect({
  * Convenience hook for tracking document.body rect
  */
 export function useBodyRect(
-  options: Omit<ElementRectOptions, "element"> = {}
+  options: Omit<ElementRectOptions, 'element'> = {},
 ): RectState {
   return useElementRect({
     ...options,
@@ -160,7 +160,7 @@ export function useBodyRect(
  */
 export function useRefRect<T extends Element>(
   ref: React.RefObject<T>,
-  options: Omit<ElementRectOptions, "element"> = {}
+  options: Omit<ElementRectOptions, 'element'> = {},
 ): RectState {
   return useElementRect({ ...options, element: ref })
 }

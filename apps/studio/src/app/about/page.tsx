@@ -1,8 +1,8 @@
-"use client";
+'use client'
 
-import { SectionHeader, StaticSectionHeader } from "@/components/landing";
-import { GridPattern } from "@/components/GridPattern";
-import { motion } from "framer-motion";
+import { SectionHeader, StaticSectionHeader } from '@/components/landing'
+import { GridPattern } from '@/components/GridPattern'
+import { motion } from 'framer-motion'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -13,49 +13,49 @@ const containerVariants = {
       delayChildren: 0.15,
     },
   },
-};
+}
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: "easeOut" as const },
+    transition: { duration: 0.5, ease: 'easeOut' as const },
   },
-};
+}
 
 const values = [
   {
-    name: "Learning Should Feel Effortless",
+    name: 'Learning Should Feel Effortless',
     description:
-      "We design Docento to stay out of the way so creators and teams can focus on what truly matters: teaching, sharing, and growing.",
+      'We design Docento to stay out of the way so creators and teams can focus on what truly matters: teaching, sharing, and growing.',
   },
   {
-    name: "Build With Care",
+    name: 'Build With Care',
     description:
       "Every feature is shaped with intention. We only create what brings real clarity and makes someone's day a little easier.",
   },
   {
-    name: "Freedom to Create",
+    name: 'Freedom to Create',
     description:
-      "Everyone teaches differently. We give you the flexibility to shape your learning experience exactly the way you imagine it.",
+      'Everyone teaches differently. We give you the flexibility to shape your learning experience exactly the way you imagine it.',
   },
   {
-    name: "People Over Platforms",
+    name: 'People Over Platforms',
     description:
-      "Behind every lesson is a story. We build tools that respect those stories and support the humans behind them.",
+      'Behind every lesson is a story. We build tools that respect those stories and support the humans behind them.',
   },
   {
-    name: "Keep Things Simple",
+    name: 'Keep Things Simple',
     description:
-      "Technology should feel calm, not overwhelming. Simplicity guides every choice we make at Docento.",
+      'Technology should feel calm, not overwhelming. Simplicity guides every choice we make at Docento.',
   },
   {
-    name: "Security Built In",
+    name: 'Security Built In',
     description:
-      "Your data and your learners deserve full protection. We follow strong, modern security practices so you can build with confidence.",
+      'Your data and your learners deserve full protection. We follow strong, modern security practices so you can build with confidence.',
   },
-];
+]
 
 export default function AboutPage() {
   return (
@@ -69,9 +69,9 @@ export default function AboutPage() {
               className="absolute inset-0 h-full w-full fill-accent-100/30 stroke-neutral-950/3"
               style={{
                 maskImage:
-                  "linear-gradient(to bottom left, white 40%, transparent 50%)",
+                  'linear-gradient(to bottom left, white 40%, transparent 50%)',
                 WebkitMaskImage:
-                  "linear-gradient(to bottom left, white 40%, transparent 50%)",
+                  'linear-gradient(to bottom left, white 40%, transparent 50%)',
               }}
               yOffset={-200}
             />
@@ -83,7 +83,7 @@ export default function AboutPage() {
             <div
               style={{
                 clipPath:
-                  "polygon(63.1% 29.5%, 100% 17.1%, 76.6% 3%, 48.4% 0%, 44.6% 4.7%, 54.5% 25.3%, 59.8% 49%, 55.2% 57.8%, 44.4% 57.2%, 27.8% 47.9%, 35.1% 81.5%, 0% 97.7%, 39.2% 100%, 35.2% 81.4%, 97.2% 52.8%, 63.1% 29.5%)",
+                  'polygon(63.1% 29.5%, 100% 17.1%, 76.6% 3%, 48.4% 0%, 44.6% 4.7%, 54.5% 25.3%, 59.8% 49%, 55.2% 57.8%, 44.4% 57.2%, 27.8% 47.9%, 35.1% 81.5%, 0% 97.7%, 39.2% 100%, 35.2% 81.4%, 97.2% 52.8%, 63.1% 29.5%)',
               }}
               className="aspect-801/1036 w-200.25 bg-linear-to-tr from-[#ffb5d4] to-[#bebaf9] opacity-30"
             />
@@ -95,7 +95,7 @@ export default function AboutPage() {
             <div
               style={{
                 clipPath:
-                  "polygon(63.1% 29.5%, 100% 17.1%, 76.6% 3%, 48.4% 0%, 44.6% 4.7%, 54.5% 25.3%, 59.8% 49%, 55.2% 57.8%, 44.4% 57.2%, 27.8% 47.9%, 35.1% 81.5%, 0% 97.7%, 39.2% 100%, 35.2% 81.4%, 97.2% 52.8%, 63.1% 29.5%)",
+                  'polygon(63.1% 29.5%, 100% 17.1%, 76.6% 3%, 48.4% 0%, 44.6% 4.7%, 54.5% 25.3%, 59.8% 49%, 55.2% 57.8%, 44.4% 57.2%, 27.8% 47.9%, 35.1% 81.5%, 0% 97.7%, 39.2% 100%, 35.2% 81.4%, 97.2% 52.8%, 63.1% 29.5%)',
               }}
               className="aspect-801/1036 w-200.25 bg-linear-to-tr from-[#fec6dd] to-[#fcfcdd] opacity-30"
             />
@@ -117,8 +117,8 @@ export default function AboutPage() {
             >
               We wanted something flexible and clean. Something that let
               creators and teams build learning products without fighting the
-              tool itself. That idea grew into Docento, a headless LMS that stays
-              out of the way and gives you full control.
+              tool itself. That idea grew into Docento, a headless LMS that
+              stays out of the way and gives you full control.
             </motion.p>
             <motion.p
               initial={{ opacity: 0, y: 15 }}
@@ -127,8 +127,8 @@ export default function AboutPage() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-center font-noto text-lg max-w-3xl text-pretty text-neutral-600 sm:text-lg/7"
             >
-              Today, Docento helps anyone create learning platforms that look and
-              feel like their own. Whether it is courses, onboarding, or
+              Today, Docento helps anyone create learning platforms that look
+              and feel like their own. Whether it is courses, onboarding, or
               training, our goal is to make the process simple, modern, and
               enjoyable.
             </motion.p>
@@ -144,7 +144,7 @@ export default function AboutPage() {
             <div
               style={{
                 clipPath:
-                  "polygon(63.1% 29.5%, 100% 17.1%, 76.6% 3%, 48.4% 0%, 44.6% 4.7%, 54.5% 25.3%, 59.8% 49%, 55.2% 57.8%, 44.4% 57.2%, 27.8% 47.9%, 35.1% 81.5%, 0% 97.7%, 39.2% 100%, 35.2% 81.4%, 97.2% 52.8%, 63.1% 29.5%)",
+                  'polygon(63.1% 29.5%, 100% 17.1%, 76.6% 3%, 48.4% 0%, 44.6% 4.7%, 54.5% 25.3%, 59.8% 49%, 55.2% 57.8%, 44.4% 57.2%, 27.8% 47.9%, 35.1% 81.5%, 0% 97.7%, 39.2% 100%, 35.2% 81.4%, 97.2% 52.8%, 63.1% 29.5%)',
               }}
               className="aspect-801/1036 w-200.25 bg-linear-to-tr from-[#f6b2ce] to-[#ffffd1] opacity-30"
             />
@@ -159,7 +159,7 @@ export default function AboutPage() {
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
+            viewport={{ once: true, margin: '-50px' }}
             className="mx-auto mt-8 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 text-base/7 sm:grid-cols-2 lg:mx-0 lg:max-w-none lg:grid-cols-3"
           >
             {values.map((value) => (
@@ -174,5 +174,5 @@ export default function AboutPage() {
         </div>
       </main>
     </div>
-  );
+  )
 }

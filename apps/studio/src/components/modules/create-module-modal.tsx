@@ -50,10 +50,10 @@ export function CreateModuleModal({
   onModuleCreated,
 }: CreateModuleModalProps) {
   const { toast } = useToast()
-  const {
-    mutateAsync: createModuleMutation,
-    isPending,
-  } = useCreateModule(projectId, courseId)
+  const { mutateAsync: createModuleMutation, isPending } = useCreateModule(
+    projectId,
+    courseId,
+  )
 
   const {
     register,
@@ -135,7 +135,9 @@ export function CreateModuleModal({
                 className={errors.title ? 'border-destructive' : undefined}
               />
               {errors.title ? (
-                <p className="text-sm text-destructive">{errors.title.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.title.message}
+                </p>
               ) : null}
             </div>
             <div className="grid gap-2">

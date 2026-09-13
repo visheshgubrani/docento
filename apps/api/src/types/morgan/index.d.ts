@@ -11,7 +11,11 @@ declare module 'morgan' {
     stream?: StreamOptions
   }
 
-  type FormatFn = (tokens: unknown, req: Request, res: Response) => string | undefined
+  type FormatFn = (
+    tokens: unknown,
+    req: Request,
+    res: Response,
+  ) => string | undefined
 
   function morgan(format: string | FormatFn, options?: Options): RequestHandler
 

@@ -62,7 +62,9 @@ describe('writes are stamped', () => {
   it('stamps the academy onto a created row', async () => {
     const scoped = createAcademyScopedPrisma(academyAId)
 
-    const created = await scoped.learner.create({ data: newLearner(academyAId, EMAIL_A) })
+    const created = await scoped.learner.create({
+      data: newLearner(academyAId, EMAIL_A),
+    })
     expect(created.academyId).toBe(academyAId)
   })
 
@@ -76,17 +78,23 @@ describe('writes are stamped', () => {
 })
 
 describe('reads cannot cross academies', () => {
-  it('does not return another academy\'s row from findUnique', async () => {
-    const rowInA = await prisma.learner.create({ data: newLearner(academyAId, EMAIL_A) })
+  it("does not return another academy's row from findUnique", async () => {
+    const rowInA = await prisma.learner.create({
+      data: newLearner(academyAId, EMAIL_A),
+    })
     const scopedB = createAcademyScopedPrisma(academyBId)
 
-    expect(await scopedB.learner.findUnique({ where: { id: rowInA.id } })).toBeNull()
+    expect(
+      await scopedB.learner.findUnique({ where: { id: rowInA.id } }),
+    ).toBeNull()
   })
 
   it('throws from findUniqueOrThrow, as Prisma contracts', async () => {
     // The previous implementation returned null here, which Prisma types as
     // impossible and which becomes a TypeError far from the cause.
-    const rowInA = await prisma.learner.create({ data: newLearner(academyAId, EMAIL_A) })
+    const rowInA = await prisma.learner.create({
+      data: newLearner(academyAId, EMAIL_A),
+    })
     const scopedB = createAcademyScopedPrisma(academyBId)
 
     await expect(
@@ -108,34 +116,51 @@ describe('reads cannot cross academies', () => {
   })
 
   it('finds its own row normally', async () => {
-    const rowInA = await prisma.learner.create({ data: newLearner(academyAId, EMAIL_A) })
+    const rowInA = await prisma.learner.create({
+      data: newLearner(academyAId, EMAIL_A),
+    })
     const scopedA = createAcademyScopedPrisma(academyAId)
 
-    const found = await scopedA.learner.findUniqueOrThrow({ where: { id: rowInA.id } })
+    const found = await scopedA.learner.findUniqueOrThrow({
+      where: { id: rowInA.id },
+    })
     expect(found.id).toBe(rowInA.id)
   })
 })
 
 describe('mutations cannot cross academies', () => {
   it('throws from delete rather than returning null', async () => {
-    const rowInA = await prisma.learner.create({ data: newLearner(academyAId, EMAIL_A) })
-    const scopedB = createAcademyScopedPrisma(academyBId)
-
-    await expect(scopedB.learner.delete({ where: { id: rowInA.id } })).rejects.toThrow()
-
-    // And the row is untouched.
-    expect(await prisma.learner.findUnique({ where: { id: rowInA.id } })).not.toBeNull()
-  })
-
-  it('throws from update rather than silently doing nothing', async () => {
-    const rowInA = await prisma.learner.create({ data: newLearner(academyAId, EMAIL_A) })
+    const rowInA = await prisma.learner.create({
+      data: newLearner(academyAId, EMAIL_A),
+    })
     const scopedB = createAcademyScopedPrisma(academyBId)
 
     await expect(
-      scopedB.learner.update({ where: { id: rowInA.id }, data: { name: 'Hijacked' } }),
+      scopedB.learner.delete({ where: { id: rowInA.id } }),
     ).rejects.toThrow()
 
-    const unchanged = await prisma.learner.findUnique({ where: { id: rowInA.id } })
+    // And the row is untouched.
+    expect(
+      await prisma.learner.findUnique({ where: { id: rowInA.id } }),
+    ).not.toBeNull()
+  })
+
+  it('throws from update rather than silently doing nothing', async () => {
+    const rowInA = await prisma.learner.create({
+      data: newLearner(academyAId, EMAIL_A),
+    })
+    const scopedB = createAcademyScopedPrisma(academyBId)
+
+    await expect(
+      scopedB.learner.update({
+        where: { id: rowInA.id },
+        data: { name: 'Hijacked' },
+      }),
+    ).rejects.toThrow()
+
+    const unchanged = await prisma.learner.findUnique({
+      where: { id: rowInA.id },
+    })
     expect(unchanged?.name).toBe('Learner')
   })
 
@@ -143,18 +168,24 @@ describe('mutations cannot cross academies', () => {
     await prisma.learner.create({ data: newLearner(academyAId, EMAIL_A) })
     const scopedB = createAcademyScopedPrisma(academyBId)
 
-    const updated = await scopedB.learner.updateMany({ data: { name: 'Hijacked' } })
+    const updated = await scopedB.learner.updateMany({
+      data: { name: 'Hijacked' },
+    })
     const deleted = await scopedB.learner.deleteMany({})
 
     expect(updated.count).toBe(0)
     expect(deleted.count).toBe(0)
 
-    const survivor = await prisma.learner.findFirst({ where: { academyId: academyAId } })
+    const survivor = await prisma.learner.findFirst({
+      where: { academyId: academyAId },
+    })
     expect(survivor?.name).toBe('Learner')
   })
 
   it('updates its own row normally', async () => {
-    const rowInA = await prisma.learner.create({ data: newLearner(academyAId, EMAIL_A) })
+    const rowInA = await prisma.learner.create({
+      data: newLearner(academyAId, EMAIL_A),
+    })
     const scopedA = createAcademyScopedPrisma(academyAId)
 
     const updated = await scopedA.learner.update({

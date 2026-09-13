@@ -1,12 +1,13 @@
 export { default as LandingHeader } from './header'
 export { HeroSection } from './hero'
 export { BenefitsSection } from './benefits'
-export { CourseBuilderSection, AIToolsSection, DashboardSection } from './features'
-export { TestimonialHighlight } from './testimonial-highlight'
+export {
+  CourseBuilderSection,
+  AIToolsSection,
+  DashboardSection,
+} from './features'
 export { DeveloperExperienceSection } from './developer-experience'
 export { StarterTemplatesSection } from './starter-templates'
-export { UseCasesSection } from './use-cases'
-export { TestimonialsSection } from './testimonials'
 export { CTASection } from './cta'
 export { LandingFooter } from './footer'
 export { SectionHeader } from './section-header'

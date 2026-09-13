@@ -1,9 +1,9 @@
-"use client"
+'use client'
 
-import type { Editor } from "@tiptap/react"
-import { useWindowSize } from "@/hooks/use-window-size"
-import { useBodyRect } from "@/hooks/use-element-rect"
-import { useEffect } from "react"
+import type { Editor } from '@tiptap/react'
+import { useWindowSize } from '@/hooks/use-window-size'
+import { useBodyRect } from '@/hooks/use-element-rect'
+import { useEffect } from 'react'
 
 export interface CursorVisibilityOptions {
   /**
@@ -58,7 +58,7 @@ export function useCursorVisibility({
 
           window.scrollTo({
             top: Math.max(0, newScrollY),
-            behavior: "smooth",
+            behavior: 'smooth',
           })
         }
       }

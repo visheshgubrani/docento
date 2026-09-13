@@ -5,13 +5,13 @@ import ApiError from '../utils/ApiError'
 export const resolveCourseContext = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const mwStart = process.hrtime.bigint()
   const recordTiming = () => {
     if ((req as any).__mwTimings) {
       const ms = Number(process.hrtime.bigint() - mwStart) / 1_000_000
-        ; (req as any).__mwTimings.push({ name: 'resolveCourse', ms })
+      ;(req as any).__mwTimings.push({ name: 'resolveCourse', ms })
     }
   }
   try {
@@ -23,8 +23,8 @@ export const resolveCourseContext = async (
       return next(
         new ApiError(
           500,
-          'Project context missing. Ensure authorizeProjectAccess runs first.'
-        )
+          'Project context missing. Ensure authorizeProjectAccess runs first.',
+        ),
       )
     }
 
@@ -52,8 +52,8 @@ export const resolveCourseContext = async (
       return next(
         new ApiError(
           404,
-          'Course not found or does not belong to this project.'
-        )
+          'Course not found or does not belong to this project.',
+        ),
       )
     }
 

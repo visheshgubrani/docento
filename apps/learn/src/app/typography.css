@@ -1,6 +1,6 @@
 @layer components {
   .font-cinzel {
-    font-family: var(--font-cinzel), Georgia, "Times New Roman", serif;
+    font-family: var(--font-cinzel), Georgia, 'Times New Roman', serif;
   }
 
   .font-brand {
@@ -8,11 +8,11 @@
   }
 
   .font-tangerine {
-    font-family: var(--font-tangerine), "Brush Script MT", cursive;
+    font-family: var(--font-tangerine), 'Brush Script MT', cursive;
   }
 
   .font-baskerville {
-    font-family: var(--font-baskerville), Georgia, "Times New Roman", serif;
+    font-family: var(--font-baskerville), Georgia, 'Times New Roman', serif;
   }
 
   .lesson-prose {
@@ -74,11 +74,19 @@
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 3px;
-    text-decoration-color: color-mix(in oklab, var(--foreground) 28%, transparent);
+    text-decoration-color: color-mix(
+      in oklab,
+      var(--foreground) 28%,
+      transparent
+    );
   }
 
   .lesson-prose a:hover {
-    text-decoration-color: color-mix(in oklab, var(--foreground) 50%, transparent);
+    text-decoration-color: color-mix(
+      in oklab,
+      var(--foreground) 50%,
+      transparent
+    );
   }
 
   .lesson-prose ul,
@@ -124,7 +132,8 @@
   .lesson-prose blockquote {
     margin-top: 1rem;
     margin-bottom: 1rem;
-    border-inline-start: 3px solid color-mix(in oklab, var(--foreground) 28%, transparent);
+    border-inline-start: 3px solid
+      color-mix(in oklab, var(--foreground) 28%, transparent);
     padding-inline-start: 0.9rem;
     color: var(--muted-foreground);
   }

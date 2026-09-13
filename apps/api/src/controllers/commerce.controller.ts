@@ -51,7 +51,10 @@ const evaluateCouponForCourse = async ({
           OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
         },
         {
-          OR: [{ appliesToAll: true }, { couponCourses: { some: { courseId } } }],
+          OR: [
+            { appliesToAll: true },
+            { couponCourses: { some: { courseId } } },
+          ],
         },
       ],
     },
@@ -98,7 +101,7 @@ const evaluateCouponForCourse = async ({
 export const createCheckoutSession = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const endUser = req.endUser!
@@ -160,7 +163,7 @@ export const createCheckoutSession = async (
             enrolledAt,
             expiresAt: computeEnrollmentExpiresAt(
               enrolledAt,
-              course.enrollmentValidityDays
+              course.enrollmentValidityDays,
             ),
           },
         })
@@ -173,33 +176,31 @@ export const createCheckoutSession = async (
         }
       })
 
-      return res
-        .status(200)
-        .json(
-          new ApiResponse(200, 'Enrolled successfully', {
-            pricing: {
-              courseAmount,
-              discountAmount: couponEvaluation?.discountAmount ?? 0,
-              totalAmount: 0,
-              couponCode: couponEvaluation?.coupon.code ?? null,
-            },
-          })
-        )
+      return res.status(200).json(
+        new ApiResponse(200, 'Enrolled successfully', {
+          pricing: {
+            courseAmount,
+            discountAmount: couponEvaluation?.discountAmount ?? 0,
+            totalAmount: 0,
+            couponCode: couponEvaluation?.coupon.code ?? null,
+          },
+        }),
+      )
     }
 
     if (amountInPaise < 100) {
       return next(
         new ApiError(
           400,
-          'Payable amount is below minimum allowed value. Try a different coupon.'
-        )
+          'Payable amount is below minimum allowed value. Try a different coupon.',
+        ),
       )
     }
 
     // Initialize Razorpay
     const razorpay = getRazorpayForProject(
       course.project.razorpayKeyId,
-      course.project.razorpayKeySecret
+      course.project.razorpayKeySecret,
     )
 
     const options = {
@@ -256,7 +257,7 @@ export const createCheckoutSession = async (
           totalAmount: payableAmount,
           couponCode: couponEvaluation?.coupon.code ?? null,
         },
-      })
+      }),
     )
   } catch (error) {
     next(error)
@@ -267,7 +268,7 @@ export const createCheckoutSession = async (
 export const cancelPendingOrder = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const endUser = req.endUser!
@@ -290,7 +291,7 @@ export const cancelPendingOrder = async (
 
     if (order.status !== 'PENDING') {
       return next(
-        new ApiError(400, 'Only pending orders can be cancelled by the user.')
+        new ApiError(400, 'Only pending orders can be cancelled by the user.'),
       )
     }
 
@@ -311,7 +312,7 @@ export const cancelPendingOrder = async (
 export const verifyCheckout = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const endUser = req.endUser!
@@ -363,7 +364,7 @@ export const verifyCheckout = async (
 
     if (expectedSignature !== razorpay_signature) {
       return next(
-        new ApiError(400, 'Payment verification failed. Invalid signature.')
+        new ApiError(400, 'Payment verification failed. Invalid signature.'),
       )
     }
 
@@ -385,7 +386,9 @@ export const verifyCheckout = async (
       })
 
       const orderMetadata =
-        order.metadata && typeof order.metadata === 'object' && !Array.isArray(order.metadata)
+        order.metadata &&
+        typeof order.metadata === 'object' &&
+        !Array.isArray(order.metadata)
           ? (order.metadata as Record<string, unknown>)
           : null
       const couponId =
@@ -423,7 +426,7 @@ export const verifyCheckout = async (
           enrolledAt,
           expiresAt: computeEnrollmentExpiresAt(
             enrolledAt,
-            order.course.enrollmentValidityDays
+            order.course.enrollmentValidityDays,
           ),
         },
         update: {}, // If exists, do nothing
@@ -442,7 +445,7 @@ export const verifyCheckout = async (
 export const validateCoupon = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const endUser = req.endUser!
@@ -496,7 +499,7 @@ export const validateCoupon = async (
           discountAmount: couponEvaluation.discountAmount,
           totalAmount: couponEvaluation.totalAmount,
         },
-      })
+      }),
     )
   } catch (error) {
     next(error)
@@ -575,7 +578,7 @@ const createPdfBuffer = (title: string, bodyLines: string[]) => {
   const generatedAt = new Date().toISOString().replace('T', ' ').slice(0, 19)
   const safeTitle = escapePdfText(normalizePdfText(title))
   const flattenedLines = bodyLines.flatMap((line) =>
-    wrapPdfText(normalizePdfText(line))
+    wrapPdfText(normalizePdfText(line)),
   )
 
   let y = 770
@@ -585,14 +588,14 @@ const createPdfBuffer = (title: string, bodyLines: string[]) => {
 
   y -= 28
   contentCommands.push(
-    `BT /F1 10 Tf 1 0 0 1 50 ${y} Tm (${escapePdfText(`Generated: ${generatedAt} UTC`)}) Tj ET`
+    `BT /F1 10 Tf 1 0 0 1 50 ${y} Tm (${escapePdfText(`Generated: ${generatedAt} UTC`)}) Tj ET`,
   )
   y -= 24
 
   for (const line of flattenedLines) {
     if (y < 40) break
     contentCommands.push(
-      `BT /F1 12 Tf 1 0 0 1 50 ${y} Tm (${escapePdfText(line)}) Tj ET`
+      `BT /F1 12 Tf 1 0 0 1 50 ${y} Tm (${escapePdfText(line)}) Tj ET`,
     )
     y -= 16
   }
@@ -608,11 +611,11 @@ const createPdfBuffer = (title: string, bodyLines: string[]) => {
   addObject('<< /Type /Catalog /Pages 2 0 R >>')
   addObject('<< /Type /Pages /Kids [3 0 R] /Count 1 >>')
   addObject(
-    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>'
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>',
   )
   addObject('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>')
   addObject(
-    `<< /Length ${Buffer.byteLength(content, 'utf8')} >>\nstream\n${content}\nendstream`
+    `<< /Length ${Buffer.byteLength(content, 'utf8')} >>\nstream\n${content}\nendstream`,
   )
 
   let pdf = '%PDF-1.4\n'
@@ -637,14 +640,17 @@ const createPdfBuffer = (title: string, bodyLines: string[]) => {
 
 const buildDocumentPdf = (
   kind: 'receipt' | 'invoice',
-  document: OrderDocumentData
+  document: OrderDocumentData,
 ) => {
   const issueDate = document.order.createdAt.toLocaleDateString('en-IN', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   })
-  const amount = formatMinorAmount(document.order.amount, document.order.currency)
+  const amount = formatMinorAmount(
+    document.order.amount,
+    document.order.currency,
+  )
   const referenceId = document.order.providerTxId || document.order.id
   const metadata =
     document.order.metadata &&
@@ -701,7 +707,7 @@ const buildDocumentPdf = (
 
 const resolveOrderDocumentData = async (
   endUserId: string,
-  orderId: string
+  orderId: string,
 ): Promise<OrderDocumentData | null> => {
   if (orderId.startsWith(FREE_ENROLLMENT_PREFIX)) {
     const enrollmentId = orderId.slice(FREE_ENROLLMENT_PREFIX.length)
@@ -826,7 +832,7 @@ const handleOrderDocumentRequest = async (
   res: Response,
   next: NextFunction,
   kind: 'receipt' | 'invoice',
-  forcePdf = false
+  forcePdf = false,
 ) => {
   try {
     const endUser = req.endUser!
@@ -850,7 +856,10 @@ const handleOrderDocumentRequest = async (
       const pdfBuffer = buildDocumentPdf(kind, documentData)
 
       res.setHeader('Content-Type', 'application/pdf')
-      res.setHeader('Content-Disposition', `attachment; filename=\"${fileName}\"`)
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename=\"${fileName}\"`,
+      )
       res.setHeader('Content-Length', pdfBuffer.length.toString())
       return res.status(200).send(pdfBuffer)
     }
@@ -860,7 +869,9 @@ const handleOrderDocumentRequest = async (
         ? 'Receipt details fetched successfully'
         : 'Invoice details fetched successfully'
 
-    return res.status(200).json(new ApiResponse(200, successMessage, documentData))
+    return res
+      .status(200)
+      .json(new ApiResponse(200, successMessage, documentData))
   } catch (error) {
     next(error)
   }
@@ -870,23 +881,23 @@ const handleOrderDocumentRequest = async (
 export const getOrderReceipt = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => handleOrderDocumentRequest(req, res, next, 'receipt')
 
 export const getOrderInvoice = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => handleOrderDocumentRequest(req, res, next, 'invoice')
 
 export const getOrderReceiptPdf = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => handleOrderDocumentRequest(req, res, next, 'receipt', true)
 
 export const getOrderInvoicePdf = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => handleOrderDocumentRequest(req, res, next, 'invoice', true)

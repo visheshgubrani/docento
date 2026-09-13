@@ -47,7 +47,7 @@ const resolvePublicUrl = (bucket: string, key: string, endpoint?: string) => {
 const createUpload = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -72,8 +72,8 @@ const createUpload = async (
       return next(
         new ApiError(
           500,
-          'Missing R2_PUBLIC_URL (or R2_PUBLIC_BASE_URL) for fileUrl generation.'
-        )
+          'Missing R2_PUBLIC_URL (or R2_PUBLIC_BASE_URL) for fileUrl generation.',
+        ),
       )
     }
 
@@ -105,7 +105,7 @@ const createUpload = async (
         headers: {
           'Content-Type': type,
         },
-      })
+      }),
     )
   } catch (error) {
     return next(error)
@@ -123,7 +123,7 @@ const getUploads = async (req: Request, res: Response, next: NextFunction) => {
     return res.status(200).json(
       new ApiResponse(200, 'Uploads fetched successfully.', {
         uploads,
-      })
+      }),
     )
   } catch (error) {
     return next(error)
@@ -133,7 +133,7 @@ const getUploads = async (req: Request, res: Response, next: NextFunction) => {
 const deleteUpload = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!

@@ -45,7 +45,8 @@ const createVideoUpload = async (
     }
     const { playbackPolicy, generateSubtitle } = parsedBody.data
     // Chapters require subtitles — enforce the dependency server-side
-    const generateChapters = parsedBody.data.generateChapters && generateSubtitle
+    const generateChapters =
+      parsedBody.data.generateChapters && generateSubtitle
 
     // 1. Validation
     if (lesson.contentType !== 'VIDEO')
@@ -204,7 +205,9 @@ const getVideoId = (lesson: any) => {
   return null
 }
 
-const firstHeaderValue = (value: string | string[] | undefined): string | null => {
+const firstHeaderValue = (
+  value: string | string[] | undefined,
+): string | null => {
   if (!value) return null
   const raw = Array.isArray(value) ? value[0] : value
   if (!raw) return null
@@ -244,11 +247,11 @@ const getViewerIpFromRequest = async (req: Request): Promise<string> => {
   const candidate = ipFromHeaders || req.ip || req.socket.remoteAddress || ''
   const normalized = normalizeViewerIp(candidate) || '127.0.0.1'
 
-  const isLocalIp = 
-    normalized === '127.0.0.1' || 
-    normalized === '::1' || 
-    normalized.startsWith('192.168.') || 
-    normalized.startsWith('10.') || 
+  const isLocalIp =
+    normalized === '127.0.0.1' ||
+    normalized === '::1' ||
+    normalized.startsWith('192.168.') ||
+    normalized.startsWith('10.') ||
     /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(normalized)
 
   if (process.env.NODE_ENV !== 'production' && isLocalIp) {
@@ -256,12 +259,14 @@ const getViewerIpFromRequest = async (req: Request): Promise<string> => {
       // Fetch the actual public IP of the developer's machine to pass to Clipmux
       // Added a 3 second timeout so local dev doesn't hang if offline
       const response = await fetch('https://api.ipify.org', {
-        signal: AbortSignal.timeout(3000)
+        signal: AbortSignal.timeout(3000),
       })
       const publicIp = await response.text()
       return publicIp.trim() || '8.8.8.8'
     } catch (e) {
-      console.warn('Failed to fetch public IP for local dev, falling back to 8.8.8.8')
+      console.warn(
+        'Failed to fetch public IP for local dev, falling back to 8.8.8.8',
+      )
       return '8.8.8.8' // Fallback dummy public IP
     }
   }
@@ -296,8 +301,13 @@ const playableVideoUrl = async (
     const viewerIp = await getViewerIpFromRequest(req)
     const userAgentHeader = req.headers['user-agent']
     const viewerUserAgent =
-      (Array.isArray(userAgentHeader) ? userAgentHeader[0] : userAgentHeader) || 'unknown'
-    const playbackData = await getPlaybackUrl(videoId, viewerIp, viewerUserAgent)
+      (Array.isArray(userAgentHeader) ? userAgentHeader[0] : userAgentHeader) ||
+      'unknown'
+    const playbackData = await getPlaybackUrl(
+      videoId,
+      viewerIp,
+      viewerUserAgent,
+    )
 
     return res.status(200).json(
       new ApiResponse(200, 'Playback authorized', {

@@ -1,26 +1,26 @@
-import React from "react";
+import React from 'react'
 
 interface SectionHeadingProps {
-  tag?: string;
-  heading: string;
-  subheading: string;
-  alignment?: "left" | "center";
+  tag?: string
+  heading: string
+  subheading: string
+  alignment?: 'left' | 'center'
 }
 
 export default function SectionHeading({
   tag,
   heading,
   subheading,
-  alignment = "left",
+  alignment = 'left',
 }: SectionHeadingProps) {
-  const isCentered = alignment === "center";
+  const isCentered = alignment === 'center'
   const containerClasses = `max-w-3xl w-full ${
-    isCentered ? "text-center" : "text-left"
-  }`;
+    isCentered ? 'text-center' : 'text-left'
+  }`
 
   const textContentClasses = `mt-4 font-noto text-base max-w-3xl text-pretty text-neutral-600 sm:text-lg/7 ${
-    isCentered ? "lg:mx-auto" : ""
-  }`;
+    isCentered ? 'lg:mx-auto' : ''
+  }`
 
   return (
     <div className={containerClasses}>
@@ -39,5 +39,5 @@ export default function SectionHeading({
       {/* 3. Subheading */}
       <p className={textContentClasses}>{subheading}</p>
     </div>
-  );
+  )
 }

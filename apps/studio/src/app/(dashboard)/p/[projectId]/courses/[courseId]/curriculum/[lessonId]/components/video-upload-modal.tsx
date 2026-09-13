@@ -1,41 +1,41 @@
-"use client";
+'use client'
 
-import { useState, useRef, type DragEvent } from "react";
-import Image from "next/image";
-import { X, Loader2, Sparkles } from "lucide-react";
-import { BsStars } from "react-icons/bs";
-import { CiCircleAlert } from "react-icons/ci";
+import { useState, useRef, type DragEvent } from 'react'
+import Image from 'next/image'
+import { X, Loader2, Sparkles } from 'lucide-react'
+import { BsStars } from 'react-icons/bs'
+import { CiCircleAlert } from 'react-icons/ci'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
-import { uploadVideoFile } from "@/app/(dashboard)/p/[projectId]/courses/[courseId]/components/helpers/upload-video";
-import { TbLoaderQuarter } from "react-icons/tb";
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
+import { uploadVideoFile } from '@/app/(dashboard)/p/[projectId]/courses/[courseId]/components/helpers/upload-video'
+import { TbLoaderQuarter } from 'react-icons/tb'
 
 type VideoUploadModalProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  lessonTitle: string;
-  projectId: string;
-  courseId: string;
-  moduleId: string;
-  lessonId: string;
-  onUploadComplete?: () => void;
-};
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  lessonTitle: string
+  projectId: string
+  courseId: string
+  moduleId: string
+  lessonId: string
+  onUploadComplete?: () => void
+}
 
 function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "0 Bytes";
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
 export function VideoUploadModal({
@@ -48,63 +48,63 @@ export function VideoUploadModal({
   lessonId,
   onUploadComplete,
 }: VideoUploadModalProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploadState, setUploadState] = useState<
-    "idle" | "uploading" | "success" | "error"
-  >("idle");
-  const [progress, setProgress] = useState(0);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [generateSubtitle, setGenerateSubtitle] = useState(false);
-  const [generateChapters, setGenerateChapters] = useState(false);
+    'idle' | 'uploading' | 'success' | 'error'
+  >('idle')
+  const [progress, setProgress] = useState(0)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [generateSubtitle, setGenerateSubtitle] = useState(false)
+  const [generateChapters, setGenerateChapters] = useState(false)
 
   const handleFileSelection = (files: FileList | null) => {
-    const file = files?.[0];
-    if (!file) return;
+    const file = files?.[0]
+    if (!file) return
 
     // Validate file type
-    if (!file.type.startsWith("video/")) {
-      setErrorMessage("Please select a video file");
-      return;
+    if (!file.type.startsWith('video/')) {
+      setErrorMessage('Please select a video file')
+      return
     }
 
     // Validate file size (5GB max)
-    const maxSize = 5 * 1024 * 1024 * 1024; // 5GB
+    const maxSize = 5 * 1024 * 1024 * 1024 // 5GB
     if (file.size > maxSize) {
-      setErrorMessage("File size must be less than 5 GB");
-      return;
+      setErrorMessage('File size must be less than 5 GB')
+      return
     }
 
-    setSelectedFile(file);
-    setErrorMessage(null);
-    setUploadState("idle");
-    setProgress(0);
-  };
+    setSelectedFile(file)
+    setErrorMessage(null)
+    setUploadState('idle')
+    setProgress(0)
+  }
 
   const handleDrop = (event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    setIsDragging(false);
-    handleFileSelection(event.dataTransfer.files);
-  };
+    event.preventDefault()
+    setIsDragging(false)
+    handleFileSelection(event.dataTransfer.files)
+  }
 
   const handleBrowse = () => {
-    fileInputRef.current?.click();
-  };
+    fileInputRef.current?.click()
+  }
 
   const handleRemoveFile = () => {
-    setSelectedFile(null);
-    setUploadState("idle");
-    setProgress(0);
-    setErrorMessage(null);
-  };
+    setSelectedFile(null)
+    setUploadState('idle')
+    setProgress(0)
+    setErrorMessage(null)
+  }
 
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile) return
 
-    setUploadState("uploading");
-    setProgress(0);
-    setErrorMessage(null);
+    setUploadState('uploading')
+    setProgress(0)
+    setErrorMessage(null)
 
     try {
       await uploadVideoFile(
@@ -118,41 +118,41 @@ export function VideoUploadModal({
           generateChapters,
         },
         (nextProgress) => {
-          setProgress(nextProgress);
-        }
-      );
+          setProgress(nextProgress)
+        },
+      )
 
-      setUploadState("success");
-      setProgress(100);
+      setUploadState('success')
+      setProgress(100)
 
       // Close modal and notify parent after a brief delay
       setTimeout(() => {
-        onOpenChange(false);
-        setSelectedFile(null);
-        setUploadState("idle");
-        setProgress(0);
-        onUploadComplete?.();
-      }, 1000);
+        onOpenChange(false)
+        setSelectedFile(null)
+        setUploadState('idle')
+        setProgress(0)
+        onUploadComplete?.()
+      }, 1000)
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Upload failed";
-      setErrorMessage(message);
-      setUploadState("error");
+      const message = error instanceof Error ? error.message : 'Upload failed'
+      setErrorMessage(message)
+      setUploadState('error')
     }
-  };
+  }
 
   const handleClose = () => {
-    if (uploadState === "uploading") return; // Prevent closing during upload
-    onOpenChange(false);
+    if (uploadState === 'uploading') return // Prevent closing during upload
+    onOpenChange(false)
     // Reset state when closing
-    setSelectedFile(null);
-    setUploadState("idle");
-    setProgress(0);
-    setErrorMessage(null);
-    setGenerateSubtitle(false);
-    setGenerateChapters(false);
-  };
+    setSelectedFile(null)
+    setUploadState('idle')
+    setProgress(0)
+    setErrorMessage(null)
+    setGenerateSubtitle(false)
+    setGenerateChapters(false)
+  }
 
-  const isUploading = uploadState === "uploading";
+  const isUploading = uploadState === 'uploading'
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -174,8 +174,8 @@ export function VideoUploadModal({
                 onClick={handleRemoveFile}
                 disabled={isUploading}
                 className={cn(
-                  "absolute right-3 top-3 p-1 rounded-md hover:bg-neutral-200 transition-colors",
-                  isUploading && "opacity-50 cursor-not-allowed"
+                  'absolute right-3 top-3 p-1 rounded-md hover:bg-neutral-200 transition-colors',
+                  isUploading && 'opacity-50 cursor-not-allowed',
                 )}
               >
                 <X className="size-4 text-foreground/70" />
@@ -207,12 +207,12 @@ export function VideoUploadModal({
           ) : (
             <div
               className={cn(
-                "rounded-lg border-2 border-dashed border-neutral-300 bg-neutral-50 p-10 text-center transition-colors cursor-pointer",
-                isDragging && "border-accent bg-accent/5"
+                'rounded-lg border-2 border-dashed border-neutral-300 bg-neutral-50 p-10 text-center transition-colors cursor-pointer',
+                isDragging && 'border-accent bg-accent/5',
               )}
               onDragOver={(event) => {
-                event.preventDefault();
-                setIsDragging(true);
+                event.preventDefault()
+                setIsDragging(true)
               }}
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
@@ -245,8 +245,8 @@ export function VideoUploadModal({
             accept="video/*"
             className="hidden"
             onChange={(e) => {
-              handleFileSelection(e.target.files);
-              e.target.value = "";
+              handleFileSelection(e.target.files)
+              e.target.value = ''
             }}
           />
 
@@ -267,7 +267,7 @@ export function VideoUploadModal({
           )}
 
           {/* Success Message */}
-          {uploadState === "success" && (
+          {uploadState === 'success' && (
             <div className="flex items-center gap-2 text-sm text-emerald-600">
               <span>✓</span>
               <span>Upload completed! Video is now processing...</span>
@@ -293,9 +293,9 @@ export function VideoUploadModal({
                   id="modal-generate-subtitle"
                   checked={generateSubtitle}
                   onCheckedChange={(checked) => {
-                    const next = checked === true;
-                    setGenerateSubtitle(next);
-                    if (!next) setGenerateChapters(false);
+                    const next = checked === true
+                    setGenerateSubtitle(next)
+                    if (!next) setGenerateChapters(false)
                   }}
                   disabled={isUploading}
                   className="cursor-pointer border-foreground/50 bg-white mt-1 shadow-sm"
@@ -326,18 +326,18 @@ export function VideoUploadModal({
                   <Label
                     htmlFor="modal-generate-chapters"
                     className={cn(
-                      "cursor-pointer text-sm font-medium",
+                      'cursor-pointer text-sm font-medium',
                       !generateSubtitle
-                        ? "text-foreground/50"
-                        : "text-foreground"
+                        ? 'text-foreground/50'
+                        : 'text-foreground',
                     )}
                   >
                     AI-generated chapters
                   </Label>
                   <p className="text-xs text-foreground/70 mt-1">
                     {generateSubtitle
-                      ? "Break the video into titled chapters automatically."
-                      : "Requires AI subtitles to be enabled."}
+                      ? 'Break the video into titled chapters automatically.'
+                      : 'Requires AI subtitles to be enabled.'}
                     {!generateSubtitle && (
                       <CiCircleAlert className="ml-1 inline-block size-4 align-[-1px] text-foreground/70" />
                     )}
@@ -359,11 +359,11 @@ export function VideoUploadModal({
                 Uploading...
               </>
             ) : (
-              "Upload Video"
+              'Upload Video'
             )}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

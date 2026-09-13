@@ -61,7 +61,7 @@ class ResendEmailProvider implements EmailProvider {
             Authorization: `Bearer ${this.apiKey}`,
             'Content-Type': 'application/json',
           },
-        }
+        },
       )
     } catch (error) {
       const status =
@@ -75,7 +75,7 @@ class ResendEmailProvider implements EmailProvider {
       throw new Error(
         `Resend email send failed with status ${status}${
           body ? `: ${body}` : ''
-        }`
+        }`,
       )
     }
   }
@@ -89,7 +89,9 @@ const createEmailProvider = (): EmailProvider => {
 
   if (shouldUseResend) {
     if (!resendApiKey) {
-      console.warn('[EMAIL] EMAIL_PROVIDER is resend but RESEND_API_KEY is missing')
+      console.warn(
+        '[EMAIL] EMAIL_PROVIDER is resend but RESEND_API_KEY is missing',
+      )
       return new ConsoleEmailProvider()
     }
 
@@ -184,11 +186,11 @@ export const sendAuthVerificationEmail = async ({
     html: renderEmailShell({
       eyebrow: 'Docento Account Security',
       title: 'Verify your email address',
-      body:
-        'Confirm your email address to activate your account and continue into your dashboard.',
+      body: 'Confirm your email address to activate your account and continue into your dashboard.',
       ctaLabel: 'Verify email',
       ctaUrl: verificationUrl,
-      fallbackLabel: 'If the button does not work, open this link in your browser:',
+      fallbackLabel:
+        'If the button does not work, open this link in your browser:',
     }),
   })
 }
@@ -206,11 +208,11 @@ export const sendAuthPasswordResetEmail = async ({
     html: renderEmailShell({
       eyebrow: 'Docento Account Security',
       title: 'Reset your password',
-      body:
-        'We received a request to reset your password. Use the link below to choose a new one.',
+      body: 'We received a request to reset your password. Use the link below to choose a new one.',
       ctaLabel: 'Reset password',
       ctaUrl: resetUrl,
-      fallbackLabel: 'If the button does not work, open this link in your browser:',
+      fallbackLabel:
+        'If the button does not work, open this link in your browser:',
     }),
   })
 }

@@ -1,15 +1,15 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { faqData } from "@/config/marketing/home";
-import { HiPlus, HiMinus } from "react-icons/hi2";
+import { useState } from 'react'
+import { faqData } from '@/config/marketing/home'
+import { HiPlus, HiMinus } from 'react-icons/hi2'
 
 interface FaqItemProps {
-  id: string;
-  question: string;
-  answer: string;
-  isOpen: boolean;
-  onToggle: () => void;
+  id: string
+  question: string
+  answer: string
+  isOpen: boolean
+  onToggle: () => void
 }
 
 function FaqItem({ id, question, answer, isOpen, onToggle }: FaqItemProps) {
@@ -30,21 +30,23 @@ function FaqItem({ id, question, answer, isOpen, onToggle }: FaqItemProps) {
       </button>
       <div
         className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="-mt-2 pr-12 pb-4 text-sm/7 text-foreground/75">{answer}</div>
+        <div className="-mt-2 pr-12 pb-4 text-sm/7 text-foreground/75">
+          {answer}
+        </div>
       </div>
     </div>
-  );
+  )
 }
 
 export function FAQ() {
-  const [openId, setOpenId] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null)
 
   const handleToggle = (id: string) => {
-    setOpenId(openId === id ? null : id);
-  };
+    setOpenId(openId === id ? null : id)
+  }
 
   return (
     <section className="pt-16 pb-12 md:pt-20">
@@ -71,5 +73,5 @@ export function FAQ() {
         </div>
       </div>
     </section>
-  );
+  )
 }

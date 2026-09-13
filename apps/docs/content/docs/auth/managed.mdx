@@ -50,6 +50,7 @@ Content-Type: application/json
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "status": 200,
@@ -66,14 +67,14 @@ Content-Type: application/json
 }
 ```
 
-*Note: The access token should be provided as a `Bearer` token in the `Authorization` header for subsequent requests fetching course content or tracking progress.*
+_Note: The access token should be provided as a `Bearer` token in the `Authorization` header for subsequent requests fetching course content or tracking progress._
 
 ### 3. Password Resets
 
 Docento provides password reset flows out of the box.
 
-*   **Request Reset:** `POST /v1/auth/forgot-password` with the user's email.
-*   **Complete Reset:** `POST /v1/auth/reset-password` with the reset token and new password.
+- **Request Reset:** `POST /v1/auth/forgot-password` with the user's email.
+- **Complete Reset:** `POST /v1/auth/reset-password` with the reset token and new password.
 
 ### 4. Managing User Sessions
 

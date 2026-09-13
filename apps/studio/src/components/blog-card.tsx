@@ -1,15 +1,15 @@
-import { Post } from "@/lib/blog";
-import { formatDate } from "@/lib/utils";
-import Image from "next/image";
-import Link from "next/link";
-import { RxTriangleRight } from "react-icons/rx";
+import { Post } from '@/lib/blog'
+import { formatDate } from '@/lib/utils'
+import Image from 'next/image'
+import Link from 'next/link'
+import { RxTriangleRight } from 'react-icons/rx'
 
 export default function BlogCard({
   data,
   priority,
 }: {
-  data: Post;
-  priority?: boolean;
+  data: Post
+  priority?: boolean
 }) {
   return (
     <Link href={`/blog/${data.slug}`} className="group block">
@@ -33,8 +33,12 @@ export default function BlogCard({
             {formatDate(data.publishedAt)}
           </time>
         </p>
-        <h3 className="text-2xl/8 font-noto text-foreground/80 font-semibold mb-2 group-hover:text-foreground/90">{data.title}</h3>
-        <p className="text-foreground/55 text-sm/6 mt-2.5 mb-6 line-clamp-2">{data.summary}</p>
+        <h3 className="text-2xl/8 font-noto text-foreground/80 font-semibold mb-2 group-hover:text-foreground/90">
+          {data.title}
+        </h3>
+        <p className="text-foreground/55 text-sm/6 mt-2.5 mb-6 line-clamp-2">
+          {data.summary}
+        </p>
         <span className="group inline-flex font-ibm items-center text-lg font-medium text-neutral-600 ">
           <span className="group-hover:text-neutral-900">Read More</span>
           <RxTriangleRight
@@ -44,5 +48,5 @@ export default function BlogCard({
         </span>
       </div>
     </Link>
-  );
+  )
 }

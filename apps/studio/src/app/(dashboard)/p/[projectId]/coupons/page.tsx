@@ -1,16 +1,16 @@
-"use client";
+'use client'
 
-import { FormEvent, useMemo, useState } from "react";
-import { Loader2, Plus } from "lucide-react";
-import { TbRosetteDiscountFilled } from "react-icons/tb";
-import { BsStars } from "react-icons/bs";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DatePickerInput } from "@/components/ui/date-picker";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { FormEvent, useMemo, useState } from 'react'
+import { Loader2, Plus } from 'lucide-react'
+import { TbRosetteDiscountFilled } from 'react-icons/tb'
+import { BsStars } from 'react-icons/bs'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { DatePickerInput } from '@/components/ui/date-picker'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import {
   Sheet,
   SheetContent,
@@ -18,7 +18,7 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
+} from '@/components/ui/sheet'
 import {
   Table,
   TableBody,
@@ -26,42 +26,42 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { useToast } from "@/components/ui/use-toast";
-import { IoIosSearch } from "react-icons/io";
-import { useProjectRouteId } from "@/lib/hooks/use-project-route-id";
-import { useProject } from "@/lib/hooks/use-projects";
-import { useProjectCourses } from "@/lib/hooks/use-courses";
+} from '@/components/ui/table'
+import { useToast } from '@/components/ui/use-toast'
+import { IoIosSearch } from 'react-icons/io'
+import { useProjectRouteId } from '@/lib/hooks/use-project-route-id'
+import { useProject } from '@/lib/hooks/use-projects'
+import { useProjectCourses } from '@/lib/hooks/use-courses'
 import {
   useCreateProjectCoupon,
   useProjectCoupons,
   useUpdateProjectCouponStatus,
-} from "@/lib/hooks/use-coupons";
-import type { ProjectCoupon, ProjectCouponStatus } from "@/lib/api";
-import { cn } from "@/lib/utils";
+} from '@/lib/hooks/use-coupons'
+import type { ProjectCoupon, ProjectCouponStatus } from '@/lib/api'
+import { cn } from '@/lib/utils'
 
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  dateStyle: "medium",
-});
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'medium',
+})
 
 function generateRandomCode() {
-  const charset = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const charset = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
   return Array.from({ length: 8 }, () =>
-    charset.charAt(Math.floor(Math.random() * charset.length))
-  ).join("");
+    charset.charAt(Math.floor(Math.random() * charset.length)),
+  ).join('')
 }
 
 function formatExpiryDate(value: string | null) {
-  if (!value) return "No expiry";
+  if (!value) return 'No expiry'
   try {
-    return dateFormatter.format(new Date(value));
+    return dateFormatter.format(new Date(value))
   } catch {
-    return "No expiry";
+    return 'No expiry'
   }
 }
 
 function formatUsage(usageCount: number, usageLimit: number | null) {
-  return `${usageCount}/${usageLimit ? usageLimit : "∞"}`;
+  return `${usageCount}/${usageLimit ? usageLimit : '∞'}`
 }
 
 function CouponsTableSkeleton() {
@@ -90,7 +90,7 @@ function CouponsTableSkeleton() {
         </TableRow>
       ))}
     </>
-  );
+  )
 }
 
 function CouponsFetchingRows({ rows = 2 }: { rows?: number }) {
@@ -119,7 +119,7 @@ function CouponsFetchingRows({ rows = 2 }: { rows?: number }) {
         </TableRow>
       ))}
     </>
-  );
+  )
 }
 
 function CouponsMobileSkeleton({ rows = 3 }: { rows?: number }) {
@@ -150,7 +150,7 @@ function CouponsMobileSkeleton({ rows = 3 }: { rows?: number }) {
         </div>
       ))}
     </div>
-  );
+  )
 }
 
 function CouponStatusToggle({
@@ -158,28 +158,28 @@ function CouponStatusToggle({
   isUpdating,
   onToggle,
 }: {
-  coupon: ProjectCoupon;
-  isUpdating: boolean;
-  onToggle: (coupon: ProjectCoupon) => void;
+  coupon: ProjectCoupon
+  isUpdating: boolean
+  onToggle: (coupon: ProjectCoupon) => void
 }) {
-  const isActive = coupon.status === "ACTIVE";
+  const isActive = coupon.status === 'ACTIVE'
 
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-2 rounded-full border px-2.5 py-1",
+        'inline-flex items-center gap-2 rounded-full border px-2.5 py-1',
         isActive
-          ? "border-lime-400 bg-lime-50/70"
-          : "border-amber-400 bg-amber-50/70"
+          ? 'border-lime-400 bg-lime-50/70'
+          : 'border-amber-400 bg-amber-50/70',
       )}
     >
       <span
         className={cn(
-          "text-xs font-semibold",
-          isActive ? "text-lime-800" : "text-amber-700"
+          'text-xs font-semibold',
+          isActive ? 'text-lime-800' : 'text-amber-700',
         )}
       >
-        {isActive ? "Active" : "Paused"}
+        {isActive ? 'Active' : 'Paused'}
       </span>
       {isUpdating ? (
         <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
@@ -192,28 +192,28 @@ function CouponStatusToggle({
         />
       )}
     </div>
-  );
+  )
 }
 
 export default function ProjectCouponsPage() {
-  const projectId = useProjectRouteId();
-  const { data: project } = useProject(projectId);
-  const { toast } = useToast();
+  const projectId = useProjectRouteId()
+  const { data: project } = useProject(projectId)
+  const { toast } = useToast()
 
-  const [isCreateOpen, setCreateOpen] = useState(false);
-  const [updatingCouponId, setUpdatingCouponId] = useState<string | null>(null);
+  const [isCreateOpen, setCreateOpen] = useState(false)
+  const [updatingCouponId, setUpdatingCouponId] = useState<string | null>(null)
 
-  const [couponCode, setCouponCode] = useState("");
-  const [discountType, setDiscountType] = useState<"PERCENTAGE" | "FLAT">(
-    "PERCENTAGE"
-  );
-  const [discountValue, setDiscountValue] = useState("");
-  const [appliesToAll, setAppliesToAll] = useState(true);
-  const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([]);
-  const [courseSearchTerm, setCourseSearchTerm] = useState("");
-  const [usageLimit, setUsageLimit] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
-  const [formError, setFormError] = useState<string | null>(null);
+  const [couponCode, setCouponCode] = useState('')
+  const [discountType, setDiscountType] = useState<'PERCENTAGE' | 'FLAT'>(
+    'PERCENTAGE',
+  )
+  const [discountValue, setDiscountValue] = useState('')
+  const [appliesToAll, setAppliesToAll] = useState(true)
+  const [selectedCourseIds, setSelectedCourseIds] = useState<string[]>([])
+  const [courseSearchTerm, setCourseSearchTerm] = useState('')
+  const [usageLimit, setUsageLimit] = useState('')
+  const [expiryDate, setExpiryDate] = useState('')
+  const [formError, setFormError] = useState<string | null>(null)
 
   const {
     data: coupons = [],
@@ -222,104 +222,104 @@ export default function ProjectCouponsPage() {
     isError: isCouponsError,
     error: couponsError,
     refetch: refetchCoupons,
-  } = useProjectCoupons(projectId);
+  } = useProjectCoupons(projectId)
 
   const { mutateAsync: createCouponMutation, isPending: isCreating } =
-    useCreateProjectCoupon(projectId);
+    useCreateProjectCoupon(projectId)
 
   const { mutateAsync: updateCouponStatusMutation } =
-    useUpdateProjectCouponStatus(projectId);
+    useUpdateProjectCouponStatus(projectId)
 
-  const { data: projectCourses } = useProjectCourses(projectId);
+  const { data: projectCourses } = useProjectCourses(projectId)
 
   const availableCourses = useMemo(() => {
     if (!projectCourses || projectCourses.length === 0) {
-      return [];
+      return []
     }
 
     return projectCourses.map((course) => ({
       id: course.id,
-      title: course.title || "Untitled course",
-    }));
-  }, [projectCourses]);
+      title: course.title || 'Untitled course',
+    }))
+  }, [projectCourses])
 
   const filteredCourses = useMemo(() => {
-    const normalizedSearch = courseSearchTerm.trim().toLowerCase();
-    if (!normalizedSearch) return availableCourses;
+    const normalizedSearch = courseSearchTerm.trim().toLowerCase()
+    if (!normalizedSearch) return availableCourses
     return availableCourses.filter((course) =>
-      course.title.toLowerCase().includes(normalizedSearch)
-    );
-  }, [availableCourses, courseSearchTerm]);
+      course.title.toLowerCase().includes(normalizedSearch),
+    )
+  }, [availableCourses, courseSearchTerm])
 
   const resetCreateForm = () => {
-    setCouponCode("");
-    setDiscountType("PERCENTAGE");
-    setDiscountValue("");
-    setAppliesToAll(true);
-    setSelectedCourseIds([]);
-    setCourseSearchTerm("");
-    setUsageLimit("");
-    setExpiryDate("");
-    setFormError(null);
-  };
+    setCouponCode('')
+    setDiscountType('PERCENTAGE')
+    setDiscountValue('')
+    setAppliesToAll(true)
+    setSelectedCourseIds([])
+    setCourseSearchTerm('')
+    setUsageLimit('')
+    setExpiryDate('')
+    setFormError(null)
+  }
 
   const handleCreateDrawerChange = (open: boolean) => {
-    setCreateOpen(open);
+    setCreateOpen(open)
     if (!open) {
-      resetCreateForm();
+      resetCreateForm()
     }
-  };
+  }
 
   const handleGenerateCode = () => {
-    setCouponCode(generateRandomCode());
-  };
+    setCouponCode(generateRandomCode())
+  }
 
   const handleToggleCourse = (courseId: string, isChecked: boolean) => {
     setSelectedCourseIds((currentIds) => {
       if (isChecked) {
         return currentIds.includes(courseId)
           ? currentIds
-          : [...currentIds, courseId];
+          : [...currentIds, courseId]
       }
-      return currentIds.filter((id) => id !== courseId);
-    });
-  };
+      return currentIds.filter((id) => id !== courseId)
+    })
+  }
 
   const handleCreateCoupon = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setFormError(null);
+    event.preventDefault()
+    setFormError(null)
 
-    const normalizedCode = couponCode.trim().toUpperCase();
-    const parsedDiscountValue = Number(discountValue);
+    const normalizedCode = couponCode.trim().toUpperCase()
+    const parsedDiscountValue = Number(discountValue)
     const parsedUsageLimit =
-      usageLimit.trim() === "" ? null : Number(usageLimit);
+      usageLimit.trim() === '' ? null : Number(usageLimit)
 
     if (!normalizedCode) {
-      setFormError("Coupon code is required.");
-      return;
+      setFormError('Coupon code is required.')
+      return
     }
 
     if (!Number.isFinite(parsedDiscountValue) || parsedDiscountValue <= 0) {
-      setFormError("Discount value must be greater than 0.");
-      return;
+      setFormError('Discount value must be greater than 0.')
+      return
     }
 
-    if (discountType === "PERCENTAGE" && parsedDiscountValue > 100) {
-      setFormError("Percentage discount cannot be greater than 100.");
-      return;
+    if (discountType === 'PERCENTAGE' && parsedDiscountValue > 100) {
+      setFormError('Percentage discount cannot be greater than 100.')
+      return
     }
 
     if (
       parsedUsageLimit !== null &&
       (!Number.isInteger(parsedUsageLimit) || parsedUsageLimit <= 0)
     ) {
-      setFormError("Usage limit must be a positive integer.");
-      return;
+      setFormError('Usage limit must be a positive integer.')
+      return
     }
 
     if (!appliesToAll && selectedCourseIds.length === 0) {
-      setFormError("Select at least one course or choose All Courses.");
-      return;
+      setFormError('Select at least one course or choose All Courses.')
+      return
     }
 
     try {
@@ -331,53 +331,53 @@ export default function ProjectCouponsPage() {
         courseIds: appliesToAll ? [] : selectedCourseIds,
         usageLimit: parsedUsageLimit,
         expiresAt: expiryDate || null,
-      });
+      })
 
-      setCreateOpen(false);
-      resetCreateForm();
+      setCreateOpen(false)
+      resetCreateForm()
 
       toast({
-        title: "Coupon created",
+        title: 'Coupon created',
         description: `${normalizedCode} is now ready to use at checkout.`,
-      });
+      })
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to create coupon.";
-      setFormError(message);
+        error instanceof Error ? error.message : 'Failed to create coupon.'
+      setFormError(message)
     }
-  };
+  }
 
   const handleToggleCouponStatus = async (coupon: ProjectCoupon) => {
     const nextStatus: ProjectCouponStatus =
-      coupon.status === "ACTIVE" ? "PAUSED" : "ACTIVE";
+      coupon.status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE'
 
-    setUpdatingCouponId(coupon.id);
+    setUpdatingCouponId(coupon.id)
     try {
       await updateCouponStatusMutation({
         couponId: coupon.id,
         status: nextStatus,
-      });
+      })
 
       toast({
-        title: nextStatus === "ACTIVE" ? "Coupon activated" : "Coupon paused",
+        title: nextStatus === 'ACTIVE' ? 'Coupon activated' : 'Coupon paused',
         description:
-          nextStatus === "ACTIVE"
+          nextStatus === 'ACTIVE'
             ? `${coupon.code} can now be used at checkout.`
             : `${coupon.code} is paused and won't apply at checkout.`,
-      });
+      })
     } catch (error) {
       toast({
-        title: "Unable to update coupon",
+        title: 'Unable to update coupon',
         description:
           error instanceof Error
             ? error.message
-            : "Please try again in a moment.",
-        variant: "destructive",
-      });
+            : 'Please try again in a moment.',
+        variant: 'destructive',
+      })
     } finally {
-      setUpdatingCouponId(null);
+      setUpdatingCouponId(null)
     }
-  };
+  }
 
   return (
     <div className="space-y-10">
@@ -387,7 +387,7 @@ export default function ProjectCouponsPage() {
             Coupons
           </h2>
           <p className="text-lg font-stix text-foreground/80 max-w-2xl tracking-wide">
-            Run limited-time promotions for {project?.name ?? "this project"}.
+            Run limited-time promotions for {project?.name ?? 'this project'}.
             <br />
             Create, pause, and monitor coupon codes used during checkout.
           </p>
@@ -439,7 +439,7 @@ export default function ProjectCouponsPage() {
             Unable to load coupons
           </p>
           <p className="text-sm text-destructive/85 mt-1">
-            {couponsError?.message ?? "Please try again in a moment."}
+            {couponsError?.message ?? 'Please try again in a moment.'}
           </p>
           <Button
             variant="outline"
@@ -486,7 +486,7 @@ export default function ProjectCouponsPage() {
                     </p>
                     <p className="text-xs text-foreground/60">
                       {coupon.appliesToAll
-                        ? "All Courses"
+                        ? 'All Courses'
                         : `${coupon.courseIds.length} specific course(s)`}
                     </p>
                   </div>
@@ -507,10 +507,10 @@ export default function ProjectCouponsPage() {
                         variant="secondary"
                         className="rounded-xs bg-muted text-foreground border border-neutral-200"
                       >
-                        {coupon.discountType === "PERCENTAGE" ? "%" : "Flat"}
+                        {coupon.discountType === 'PERCENTAGE' ? '%' : 'Flat'}
                       </Badge>
                       <span className="font-medium text-foreground/90">
-                        {coupon.discountType === "PERCENTAGE"
+                        {coupon.discountType === 'PERCENTAGE'
                           ? `${coupon.discountValue}%`
                           : `₹${coupon.discountValue}`}
                       </span>
@@ -572,7 +572,7 @@ export default function ProjectCouponsPage() {
                         </p>
                         <p className="text-xs text-foreground/60">
                           {coupon.appliesToAll
-                            ? "All Courses"
+                            ? 'All Courses'
                             : `${coupon.courseIds.length} specific course(s)`}
                         </p>
                       </div>
@@ -583,10 +583,10 @@ export default function ProjectCouponsPage() {
                           variant="secondary"
                           className="rounded-xs bg-muted text-foreground border border-neutral-200"
                         >
-                          {coupon.discountType === "PERCENTAGE" ? "%" : "Flat"}
+                          {coupon.discountType === 'PERCENTAGE' ? '%' : 'Flat'}
                         </Badge>
                         <span className="text-sm text-foreground/90">
-                          {coupon.discountType === "PERCENTAGE"
+                          {coupon.discountType === 'PERCENTAGE'
                             ? `${coupon.discountValue}%`
                             : `₹${coupon.discountValue}`}
                         </span>
@@ -645,7 +645,7 @@ export default function ProjectCouponsPage() {
                       value={couponCode}
                       onChange={(event) =>
                         setCouponCode(
-                          event.target.value.toUpperCase().replace(/\s+/g, "")
+                          event.target.value.toUpperCase().replace(/\s+/g, ''),
                         )
                       }
                       className=" bg-white rounded-xs shadow-none border border-muted-foreground/85 placeholder:text-foreground/60 h-11"
@@ -672,10 +672,10 @@ export default function ProjectCouponsPage() {
                       id="discount-value"
                       type="number"
                       min="1"
-                      max={discountType === "PERCENTAGE" ? "100" : undefined}
+                      max={discountType === 'PERCENTAGE' ? '100' : undefined}
                       value={discountValue}
                       onChange={(event) => setDiscountValue(event.target.value)}
-                      placeholder={discountType === "PERCENTAGE" ? "10" : "500"}
+                      placeholder={discountType === 'PERCENTAGE' ? '10' : '500'}
                       className=" bg-white rounded-xs shadow-none border border-muted-foreground/85 placeholder:text-foreground/60 h-11"
                       required
                     />
@@ -684,12 +684,12 @@ export default function ProjectCouponsPage() {
                         type="button"
                         variant="ghost"
                         className={cn(
-                          "h-11 rounded-xs px-4",
-                          discountType === "PERCENTAGE"
-                            ? "bg-sidebar/70 text-white"
-                            : "text-foreground/50 bg-muted  border-l border-y border-foreground/40"
+                          'h-11 rounded-xs px-4',
+                          discountType === 'PERCENTAGE'
+                            ? 'bg-sidebar/70 text-white'
+                            : 'text-foreground/50 bg-muted  border-l border-y border-foreground/40',
                         )}
-                        onClick={() => setDiscountType("PERCENTAGE")}
+                        onClick={() => setDiscountType('PERCENTAGE')}
                       >
                         % Percentage
                       </Button>
@@ -697,12 +697,12 @@ export default function ProjectCouponsPage() {
                         type="button"
                         variant="ghost"
                         className={cn(
-                          "h-11 rounded-xs px-4",
-                          discountType === "FLAT"
-                            ? "bg-sidebar/70 text-white"
-                            : "text-foreground/50 bg-muted border-r border-y border-foreground/40"
+                          'h-11 rounded-xs px-4',
+                          discountType === 'FLAT'
+                            ? 'bg-sidebar/70 text-white'
+                            : 'text-foreground/50 bg-muted border-r border-y border-foreground/40',
                         )}
-                        onClick={() => setDiscountType("FLAT")}
+                        onClick={() => setDiscountType('FLAT')}
                       >
                         ₹ Flat
                       </Button>
@@ -721,11 +721,11 @@ export default function ProjectCouponsPage() {
                         id="all-courses"
                         checked={appliesToAll}
                         onCheckedChange={(checked) => {
-                          const isChecked = checked === true;
-                          setAppliesToAll(isChecked);
+                          const isChecked = checked === true
+                          setAppliesToAll(isChecked)
                           if (isChecked) {
-                            setSelectedCourseIds([]);
-                            setCourseSearchTerm("");
+                            setSelectedCourseIds([])
+                            setCourseSearchTerm('')
                           }
                         }}
                       />
@@ -754,14 +754,14 @@ export default function ProjectCouponsPage() {
                           {filteredCourses.length === 0 ? (
                             <p className="text-sm text-muted-foreground">
                               {availableCourses.length === 0
-                                ? "No courses available yet."
-                                : "No courses match your search."}
+                                ? 'No courses available yet.'
+                                : 'No courses match your search.'}
                             </p>
                           ) : (
                             filteredCourses.map((course) => {
                               const isChecked = selectedCourseIds.includes(
-                                course.id
-                              );
+                                course.id,
+                              )
                               return (
                                 <div
                                   key={course.id}
@@ -773,7 +773,7 @@ export default function ProjectCouponsPage() {
                                     onCheckedChange={(checked) =>
                                       handleToggleCourse(
                                         course.id,
-                                        checked === true
+                                        checked === true,
                                       )
                                     }
                                   />
@@ -784,7 +784,7 @@ export default function ProjectCouponsPage() {
                                     {course.title}
                                   </Label>
                                 </div>
-                              );
+                              )
                             })
                           )}
                         </div>
@@ -850,7 +850,7 @@ export default function ProjectCouponsPage() {
                       Creating...
                     </span>
                   ) : (
-                    "Create Coupon"
+                    'Create Coupon'
                   )}
                 </Button>
               </SheetFooter>
@@ -859,5 +859,5 @@ export default function ProjectCouponsPage() {
         </SheetContent>
       </Sheet>
     </div>
-  );
+  )
 }

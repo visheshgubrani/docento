@@ -72,7 +72,7 @@ router.post(
   resolveCourseContext,
   resolveModuleContext,
   resolveLessonContext,
-  createVideoUpload
+  createVideoUpload,
 )
 
 // ADMIN: Link uploaded video to lesson
@@ -133,7 +133,7 @@ router.post(
   resolveCourseContext,
   resolveModuleContext,
   resolveLessonContext,
-  linkVideoToLesson
+  linkVideoToLesson,
 )
 
 // ADMIN: Get video status
@@ -160,7 +160,7 @@ router.get(
   resolveCourseContext,
   resolveModuleContext,
   resolveLessonContext,
-  getVideoStatus
+  getVideoStatus,
 )
 
 // ADMIN: Delete video from lesson
@@ -171,7 +171,7 @@ router.delete(
   resolveCourseContext,
   resolveModuleContext,
   resolveLessonContext,
-  deleteVideoFromLesson
+  deleteVideoFromLesson,
 )
 
 // ADMIN: Get playable video URL for preview in dashboard
@@ -182,7 +182,7 @@ router.get(
   resolveCourseContext,
   resolveModuleContext,
   resolveLessonContext,
-  playableVideoUrl
+  playableVideoUrl,
 )
 
 export default router

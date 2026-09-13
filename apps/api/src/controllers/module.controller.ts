@@ -7,7 +7,7 @@ import ApiResponse from '../utils/ApiResponse'
 const createModule = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const course = req.course!
   const { title, description } = req.body
@@ -44,14 +44,14 @@ const createModule = async (
   return res.status(201).json(
     new ApiResponse(201, 'Module created successfully', {
       module,
-    })
+    }),
   )
 }
 
 const updateModule = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const module = req.module!
   const { title, description, order } = req.body
@@ -73,14 +73,14 @@ const updateModule = async (
   return res.status(200).json(
     new ApiResponse(200, 'Module updated successfully', {
       module: updated,
-    })
+    }),
   )
 }
 
 const deleteModule = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const module = req.module!
 
@@ -126,7 +126,7 @@ const getModules = async (req: Request, res: Response, next: NextFunction) => {
   return res.status(200).json(
     new ApiResponse(200, 'Modules fetched successfully', {
       modules,
-    })
+    }),
   )
 }
 
@@ -152,14 +152,14 @@ const getModule = async (req: Request, res: Response, next: NextFunction) => {
   return res.status(200).json(
     new ApiResponse(200, 'Module fetched successfully', {
       module: moduleWithDetails,
-    })
+    }),
   )
 }
 
 const reorderModules = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const course = req.course!
   const { moduleOrders } = req.body // Array of { id, order }
@@ -171,7 +171,9 @@ const reorderModules = async (
   // Validate structure
   for (const item of moduleOrders) {
     if (!item.id || typeof item.order !== 'number' || item.order < 1) {
-      return next(new ApiError(400, 'Each item must have id and a positive order number'))
+      return next(
+        new ApiError(400, 'Each item must have id and a positive order number'),
+      )
     }
   }
 

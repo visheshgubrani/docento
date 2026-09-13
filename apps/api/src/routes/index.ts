@@ -34,23 +34,23 @@ router.use('/projects/:projectId/courses/:courseId/modules', moduleRoutes)
 // Lessons (nested under modules)
 router.use(
   '/projects/:projectId/courses/:courseId/modules/:moduleId/lessons',
-  lessonRoutes
+  lessonRoutes,
 )
 
 // Video upload (nested under lessons)
 router.use(
   '/projects/:projectId/courses/:courseId/modules/:moduleId/lessons/:lessonId',
-  videoRoutes
+  videoRoutes,
 )
 router.use(
   '/projects/:projectId/courses/:courseId/modules/:moduleId/lessons/:lessonId/uploads',
-  uploadRoutes
+  uploadRoutes,
 )
 
 // Enrollments (nested under courses)
 router.use(
   '/projects/:projectId/courses/:courseId/enrollments',
-  enrollmentRoutes
+  enrollmentRoutes,
 )
 
 router.use('/billing', billingRoutes)
@@ -68,11 +68,11 @@ router.use('/student', studentRoutes)
 router.use('/student', certificateRoutes)
 router.use(
   '/projects/:projectId/courses/:courseId/modules/:moduleId/lessons/:lessonId/quizzes',
-  quizRoutes
+  quizRoutes,
 )
 router.use(
   '/projects/:projectId/courses/:courseId/modules/:moduleId/lessons/:lessonId/assignments',
-  assignmentRoutes
+  assignmentRoutes,
 )
 router.use('/storefront', storefrontRoutes)
 router.use('/commerce', commerceRoutes)
@@ -84,7 +84,7 @@ router.use('/projects/:projectId/ai', aiRoutes)
 // AI routes (nested under lessons for video-related AI features)
 router.use(
   '/projects/:projectId/courses/:courseId/modules/:moduleId/lessons/:lessonId/ai',
-  aiRoutes
+  aiRoutes,
 )
 
 export default router

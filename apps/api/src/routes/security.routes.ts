@@ -8,7 +8,7 @@ const router = Router({ mergeParams: true })
 router.get(
   '/:projectId/allowed-origins',
   requireAuth,
-  securityController.getAllowedOrigins
+  securityController.getAllowedOrigins,
 )
 
 /**
@@ -38,7 +38,7 @@ router.get(
 router.post(
   '/:projectId/allowed-origins',
   requireAuth,
-  securityController.addAllowedOrigin
+  securityController.addAllowedOrigin,
 )
 
 /**
@@ -83,7 +83,7 @@ router.post(
 router.delete(
   '/:projectId/allowed-origins',
   requireAuth,
-  securityController.deleteAllowedOrigin
+  securityController.deleteAllowedOrigin,
 )
 
 /**

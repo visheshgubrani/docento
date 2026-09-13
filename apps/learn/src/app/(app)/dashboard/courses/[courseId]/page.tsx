@@ -2,7 +2,10 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
 import { APIError, fetchAPI } from '@/lib/fetch-api'
-import type { StorefrontCourseDetail, StudentCourseContent } from '@/lib/lms-api-client'
+import type {
+  StorefrontCourseDetail,
+  StudentCourseContent,
+} from '@/lib/lms-api-client'
 
 type StudentCourseContentResponse = {
   data: StudentCourseContent
@@ -16,7 +19,7 @@ type StorefrontCourseResponse = {
 
 function resolveLessonId(
   content: StudentCourseContent,
-  requestedLessonId?: string | null
+  requestedLessonId?: string | null,
 ) {
   const allLessons = content.course.modules.flatMap((module) => module.lessons)
   if (allLessons.length < 1) return null
@@ -64,7 +67,7 @@ export default async function DashboardCourseRedirectPage({
       `/student/courses/${courseId}`,
       {
         requireAuth: true,
-      }
+      },
     )
 
     const lessonId = resolveLessonId(response.data, lesson)
@@ -74,16 +77,20 @@ export default async function DashboardCourseRedirectPage({
 
     redirect(`/courses/${courseId}/${lessonId}`)
   } catch (error) {
-    if (error instanceof APIError && (error.status === 401 || error.status === 403)) {
+    if (
+      error instanceof APIError &&
+      (error.status === 401 || error.status === 403)
+    ) {
       redirect(`/courses/${courseId}`)
     }
 
     try {
       const courseResponse = await fetchAPI<StorefrontCourseResponse>(
-        `/storefront/courses/${courseId}`
+        `/storefront/courses/${courseId}`,
       )
-      const firstLessonId =
-        courseResponse.data?.course?.modules.flatMap((module) => module.lessons)[0]?.id
+      const firstLessonId = courseResponse.data?.course?.modules.flatMap(
+        (module) => module.lessons,
+      )[0]?.id
 
       if (firstLessonId) {
         redirect(`/courses/${courseId}/${firstLessonId}`)

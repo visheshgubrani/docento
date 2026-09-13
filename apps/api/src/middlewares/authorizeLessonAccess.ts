@@ -6,7 +6,7 @@ import ApiError from '../utils/ApiError'
 export const authorizeLessonAccess = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { lessonId } = req.params
@@ -51,7 +51,7 @@ export const authorizeLessonAccess = async (
     // 3. Now we check for the user
     if (!req.endUser) {
       return next(
-        new ApiError(401, 'Unauthorized: Login required for this lesson.')
+        new ApiError(401, 'Unauthorized: Login required for this lesson.'),
       )
     }
 
@@ -68,7 +68,7 @@ export const authorizeLessonAccess = async (
 
     if (!enrollment) {
       return next(
-        new ApiError(403, 'Forbidden: Purchase required to view this lesson.')
+        new ApiError(403, 'Forbidden: Purchase required to view this lesson.'),
       )
     }
 

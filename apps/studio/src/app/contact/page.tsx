@@ -1,19 +1,19 @@
-"use client";
+'use client'
 
-import { StaticSectionHeader } from "@/components/landing";
-import { GridPattern } from "@/components/GridPattern";
+import { StaticSectionHeader } from '@/components/landing'
+import { GridPattern } from '@/components/GridPattern'
 import {
   HiOfficeBuilding,
   HiMail,
   HiUser,
   HiPhone,
   HiChat,
-} from "react-icons/hi";
-import Link from "next/link";
-import { MdKeyboardArrowLeft } from "react-icons/md";
-import { Logo } from "@/components/Logo";
-import { FaMapPin } from "react-icons/fa";
-import { motion } from "framer-motion";
+} from 'react-icons/hi'
+import Link from 'next/link'
+import { MdKeyboardArrowLeft } from 'react-icons/md'
+import { Logo } from '@/components/Logo'
+import { FaMapPin } from 'react-icons/fa'
+import { motion } from 'framer-motion'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -24,17 +24,16 @@ const containerVariants = {
       delayChildren: 0.1,
     },
   },
-};
+}
 
 const cardVariants = {
   hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: "easeOut" as const },
+    transition: { duration: 0.5, ease: 'easeOut' as const },
   },
-};
-
+}
 
 export default function ContactUs() {
   return (
@@ -45,9 +44,9 @@ export default function ContactUs() {
           className="absolute inset-0 h-full w-full fill-accent-100/20 stroke-neutral-300/50"
           style={{
             maskImage:
-              "linear-gradient(to bottom left, white 40%, transparent 50%)",
+              'linear-gradient(to bottom left, white 40%, transparent 50%)',
             WebkitMaskImage:
-              "linear-gradient(to bottom left, white 40%, transparent 50%)",
+              'linear-gradient(to bottom left, white 40%, transparent 50%)',
           }}
           yOffset={-330}
         />
@@ -59,7 +58,7 @@ export default function ContactUs() {
         <div
           style={{
             clipPath:
-              "polygon(73.6% 51.7%, 91.7% 11.8%, 100% 46.4%, 97.4% 82.2%, 92.5% 84.9%, 75.7% 64%, 55.3% 47.5%, 46.5% 49.4%, 45% 62.9%, 50.3% 87.2%, 21.3% 64.1%, 0.1% 100%, 5.4% 51.1%, 21.4% 63.9%, 58.9% 0.2%, 73.6% 51.7%)",
+              'polygon(73.6% 51.7%, 91.7% 11.8%, 100% 46.4%, 97.4% 82.2%, 92.5% 84.9%, 75.7% 64%, 55.3% 47.5%, 46.5% 49.4%, 45% 62.9%, 50.3% 87.2%, 21.3% 64.1%, 0.1% 100%, 5.4% 51.1%, 21.4% 63.9%, 58.9% 0.2%, 73.6% 51.7%)',
           }}
           className="aspect-1108/632 w-290 bg-linear-to-r from-[#e3fcfe] via-[#fcfcdd] to-[#f0e9ff] to-20% opacity-50"
         />
@@ -104,14 +103,15 @@ export default function ContactUs() {
                       className="h-6 w-6 text-gray-600"
                     />
                   </dt>
-                  <dd>
-                    India
-                  </dd>
+                  <dd>India</dd>
                 </div>
                 <div className="flex gap-x-4">
                   <dt className="flex-none">
                     <span className="sr-only">Email</span>
-                    <HiMail aria-hidden="true" className="h-6 w-6 text-gray-600" />
+                    <HiMail
+                      aria-hidden="true"
+                      className="h-6 w-6 text-gray-600"
+                    />
                   </dt>
                   <dd>
                     <a
@@ -203,7 +203,7 @@ export default function ContactUs() {
                         rows={4}
                         placeholder="Your message"
                         className="block w-full rounded-lg bg-white/75 pl-10 pr-3 py-2.5 text-base text-gray-900 border border-foreground/15 placeholder:text-neutral-600 shadow-sm shadow-accent-200 focus:outline-2 focus:-outline-offset-2 focus:outline-accent-foreground/80 sm:text-sm/6"
-                        defaultValue={""}
+                        defaultValue={''}
                       />
                     </div>
                   </div>
@@ -222,5 +222,5 @@ export default function ContactUs() {
         </div>
       </div>
     </div>
-  );
+  )
 }

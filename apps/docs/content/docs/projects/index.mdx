@@ -5,13 +5,14 @@ description: The core tenant entity in Docento, managing courses, users, and set
 
 # Understanding Projects
 
-In Docento, a **Project** represents a single tenant or "learning portal." It acts as the absolute boundary for your data. 
+In Docento, a **Project** represents a single tenant or "learning portal." It acts as the absolute boundary for your data.
 
 Everything you create—Courses, API Keys, End Users, Roles, Events, and Webhooks—is scoped entirely to a single Project. You can create multiple projects under one account (for example, if you run multiple academies or white-label platforms for different clients).
 
 ## Core Project Relationships
 
 When you create a project, it acts as the foundation for the following entities:
+
 - **API Keys:** Server-side secrets used to communicate with the LMS.
 - **End Users:** The students/learners belonging to the project.
 - **Courses & Content:** The learning material.
@@ -46,6 +47,7 @@ To interact with the backend APIs (creating enrollments, fetching stats, making 
 Projects support teamwork! By default, the user who creates a project is the `OWNER`. However, you can invite additional team members via email.
 
 There are two roles available for Project Members:
+
 1. `OWNER`: Can manage team members, access API keys, delete the project, and configure dangerous settings.
 2. `EDITOR`: Can create and edit courses, lessons, and manage user enrollments, but cannot edit high-level project settings or access billing details.
 

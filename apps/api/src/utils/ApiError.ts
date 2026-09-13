@@ -9,7 +9,7 @@ class ApiError extends Error {
     statusCode: number,
     message: string,
     errors: string[] = [],
-    stack: string = ''
+    stack: string = '',
   ) {
     super(message)
     this.statusCode = statusCode

@@ -6,7 +6,7 @@ import { prisma } from '../lib/prisma'
 export const dispatchWebhook = async (
   projectId: string,
   eventType: string,
-  data: any
+  data: any,
 ) => {
   try {
     const project = await prisma.project.findUnique({
@@ -44,7 +44,7 @@ export const dispatchWebhook = async (
         timeout: 5000, // Don't hang forever
       })
       .catch((err) =>
-        console.error(`Webhook failed for ${projectId}:`, err.message)
+        console.error(`Webhook failed for ${projectId}:`, err.message),
       )
   } catch (error) {
     console.error('Dispatch error:', error)

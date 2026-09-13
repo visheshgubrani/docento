@@ -24,7 +24,7 @@ const parseDelimitedCorrectAnswers = (value: unknown): string[] => {
 
 const normalizeCorrectAnswersInput = (
   correctAnswer: unknown,
-  correctAnswers: unknown
+  correctAnswers: unknown,
 ): string[] => {
   const fromArray = toTrimmedStringArray(correctAnswers)
   if (fromArray.length > 0) {
@@ -41,7 +41,7 @@ const normalizeCorrectAnswersInput = (
 export const getQuiz = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -64,7 +64,7 @@ export const getQuiz = async (
     return res.status(200).json(
       new ApiResponse(200, 'Quiz fetched successfully', {
         quiz,
-      })
+      }),
     )
   } catch (error) {
     console.error('[GET_QUIZ_ERROR]', error)
@@ -76,7 +76,7 @@ export const getQuiz = async (
 export const createQuiz = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -106,8 +106,8 @@ export const createQuiz = async (
       return next(
         new ApiError(
           400,
-          'This lesson already has a quiz. Use PATCH to update it.'
-        )
+          'This lesson already has a quiz. Use PATCH to update it.',
+        ),
       )
     }
 
@@ -142,7 +142,7 @@ export const createQuiz = async (
     return res.status(201).json(
       new ApiResponse(201, 'Quiz created successfully', {
         quiz,
-      })
+      }),
     )
   } catch (error) {
     console.error('[CREATE_QUIZ_ERROR]', error)
@@ -154,7 +154,7 @@ export const createQuiz = async (
 export const updateQuiz = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -198,7 +198,7 @@ export const updateQuiz = async (
     if (passingScore !== undefined) {
       if (passingScore < 0 || passingScore > 100) {
         return next(
-          new ApiError(400, 'Passing score must be between 0 and 100')
+          new ApiError(400, 'Passing score must be between 0 and 100'),
         )
       }
       dataToUpdate.passingScore = passingScore
@@ -220,7 +220,7 @@ export const updateQuiz = async (
     return res.status(200).json(
       new ApiResponse(200, 'Quiz updated successfully', {
         quiz: updated,
-      })
+      }),
     )
   } catch (error) {
     console.error('[UPDATE_QUIZ_ERROR]', error)
@@ -232,7 +232,7 @@ export const updateQuiz = async (
 export const deleteQuiz = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -264,7 +264,7 @@ export const deleteQuiz = async (
 export const createQuestion = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -287,10 +287,7 @@ export const createQuestion = async (
 
     if (!questionText || !questionType) {
       return next(
-        new ApiError(
-          400,
-          'questionText and questionType are required'
-        )
+        new ApiError(400, 'questionText and questionType are required'),
       )
     }
 
@@ -301,13 +298,27 @@ export const createQuestion = async (
 
     if (!quiz) {
       return next(
-        new ApiError(404, 'No quiz found for this lesson. Create a quiz first.')
+        new ApiError(
+          404,
+          'No quiz found for this lesson. Create a quiz first.',
+        ),
       )
     }
 
-    const validTypes = ['MULTIPLE_CHOICE', 'MULTI_SELECT', 'TRUE_FALSE', 'SHORT_ANSWER', 'INTEGER']
+    const validTypes = [
+      'MULTIPLE_CHOICE',
+      'MULTI_SELECT',
+      'TRUE_FALSE',
+      'SHORT_ANSWER',
+      'INTEGER',
+    ]
     if (!validTypes.includes(questionType)) {
-      return next(new ApiError(400, `Invalid question type. Must be one of: ${validTypes.join(', ')}`))
+      return next(
+        new ApiError(
+          400,
+          `Invalid question type. Must be one of: ${validTypes.join(', ')}`,
+        ),
+      )
     }
 
     // === Type-specific validation ===
@@ -315,58 +326,83 @@ export const createQuestion = async (
     if (questionType === 'MULTI_SELECT') {
       normalizedMultiSelectCorrectAnswers = normalizeCorrectAnswersInput(
         correctAnswer,
-        correctAnswers
+        correctAnswers,
       )
 
       if (normalizedMultiSelectCorrectAnswers.length === 0) {
         return next(
-          new ApiError(400, 'correctAnswers array is required for MULTI_SELECT questions')
+          new ApiError(
+            400,
+            'correctAnswers array is required for MULTI_SELECT questions',
+          ),
         )
       }
       if (normalizedOptions.length === 0) {
         return next(
-          new ApiError(400, 'Options array is required for MULTI_SELECT questions')
+          new ApiError(
+            400,
+            'Options array is required for MULTI_SELECT questions',
+          ),
         )
       }
       const invalidAnswers = normalizedMultiSelectCorrectAnswers.filter(
-        (answer) => !normalizedOptions.includes(answer)
+        (answer) => !normalizedOptions.includes(answer),
       )
       if (invalidAnswers.length > 0) {
         return next(
-          new ApiError(400, `correctAnswers must all be in options. Invalid: ${invalidAnswers.join(', ')}`)
+          new ApiError(
+            400,
+            `correctAnswers must all be in options. Invalid: ${invalidAnswers.join(', ')}`,
+          ),
         )
       }
     } else if (questionType === 'MULTIPLE_CHOICE') {
       if (normalizedOptions.length === 0) {
         return next(
-          new ApiError(400, 'Options array is required for multiple choice questions')
+          new ApiError(
+            400,
+            'Options array is required for multiple choice questions',
+          ),
         )
       }
 
       normalizedMcqCorrectAnswers = normalizeCorrectAnswersInput(
         correctAnswer,
-        correctAnswers
+        correctAnswers,
       )
 
       if (normalizedMcqCorrectAnswers.length === 0) {
-        return next(new ApiError(400, 'correctAnswer is required for MULTIPLE_CHOICE questions'))
+        return next(
+          new ApiError(
+            400,
+            'correctAnswer is required for MULTIPLE_CHOICE questions',
+          ),
+        )
       }
 
       const invalidAnswers = normalizedMcqCorrectAnswers.filter(
-        (answer) => !normalizedOptions.includes(answer)
+        (answer) => !normalizedOptions.includes(answer),
       )
       if (invalidAnswers.length > 0) {
         return next(
-          new ApiError(400, `correctAnswer values must be in options. Invalid: ${invalidAnswers.join(', ')}`)
+          new ApiError(
+            400,
+            `correctAnswer values must be in options. Invalid: ${invalidAnswers.join(', ')}`,
+          ),
         )
       }
     } else if (questionType === 'INTEGER') {
       if (!correctAnswer) {
-        return next(new ApiError(400, 'correctAnswer is required for INTEGER questions'))
+        return next(
+          new ApiError(400, 'correctAnswer is required for INTEGER questions'),
+        )
       }
       if (isNaN(Number(correctAnswer))) {
         return next(
-          new ApiError(400, 'correctAnswer must be a valid number for INTEGER questions')
+          new ApiError(
+            400,
+            'correctAnswer must be a valid number for INTEGER questions',
+          ),
         )
       }
     } else {
@@ -382,9 +418,7 @@ export const createQuestion = async (
         where: { id: sectionId, quizId: quiz.id },
       })
       if (!section) {
-        return next(
-          new ApiError(404, 'Section not found in this quiz')
-        )
+        return next(new ApiError(404, 'Section not found in this quiz'))
       }
     }
 
@@ -425,7 +459,7 @@ export const createQuestion = async (
     return res.status(201).json(
       new ApiResponse(201, 'Question created successfully', {
         question,
-      })
+      }),
     )
   } catch (error) {
     console.error('[CREATE_QUESTION_ERROR]', error)
@@ -437,7 +471,7 @@ export const createQuestion = async (
 export const updateQuestion = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -482,9 +516,20 @@ export const updateQuestion = async (
     // Validate questionType if being updated
     const effectiveType = questionType || question.questionType
     if (questionType !== undefined) {
-      const validTypes = ['MULTIPLE_CHOICE', 'MULTI_SELECT', 'TRUE_FALSE', 'SHORT_ANSWER', 'INTEGER']
+      const validTypes = [
+        'MULTIPLE_CHOICE',
+        'MULTI_SELECT',
+        'TRUE_FALSE',
+        'SHORT_ANSWER',
+        'INTEGER',
+      ]
       if (!validTypes.includes(questionType)) {
-        return next(new ApiError(400, `Invalid question type. Must be one of: ${validTypes.join(', ')}`))
+        return next(
+          new ApiError(
+            400,
+            `Invalid question type. Must be one of: ${validTypes.join(', ')}`,
+          ),
+        )
       }
     }
 
@@ -493,26 +538,39 @@ export const updateQuestion = async (
     if (effectiveType === 'MULTI_SELECT') {
       normalizedMultiSelectCorrectAnswers = normalizeCorrectAnswersInput(
         correctAnswer !== undefined ? correctAnswer : question.correctAnswer,
-        correctAnswers !== undefined ? correctAnswers : question.correctAnswers
+        correctAnswers !== undefined ? correctAnswers : question.correctAnswers,
       )
 
       if (normalizedMultiSelectCorrectAnswers.length === 0) {
-        return next(new ApiError(400, 'correctAnswers array is required for MULTI_SELECT questions'))
+        return next(
+          new ApiError(
+            400,
+            'correctAnswers array is required for MULTI_SELECT questions',
+          ),
+        )
       }
 
       const effectiveOptions =
         normalizedOptionsInput ?? toTrimmedStringArray(question.options)
       if (effectiveOptions.length === 0) {
         return next(
-          new ApiError(400, 'Options array is required for MULTI_SELECT questions')
+          new ApiError(
+            400,
+            'Options array is required for MULTI_SELECT questions',
+          ),
         )
       }
 
       const invalidAnswers = normalizedMultiSelectCorrectAnswers.filter(
-        (answer) => !effectiveOptions.includes(answer)
+        (answer) => !effectiveOptions.includes(answer),
       )
       if (invalidAnswers.length > 0) {
-        return next(new ApiError(400, `correctAnswers must all be in options. Invalid: ${invalidAnswers.join(', ')}`))
+        return next(
+          new ApiError(
+            400,
+            `correctAnswers must all be in options. Invalid: ${invalidAnswers.join(', ')}`,
+          ),
+        )
       }
     }
 
@@ -523,33 +581,36 @@ export const updateQuestion = async (
         normalizedOptionsInput ?? toTrimmedStringArray(question.options)
       if (effectiveOptions.length === 0) {
         return next(
-          new ApiError(400, 'Options array is required for multiple choice questions')
+          new ApiError(
+            400,
+            'Options array is required for multiple choice questions',
+          ),
         )
       }
 
       normalizedMcqCorrectAnswers = normalizeCorrectAnswersInput(
         correctAnswer !== undefined ? correctAnswer : question.correctAnswer,
-        correctAnswers !== undefined ? correctAnswers : question.correctAnswers
+        correctAnswers !== undefined ? correctAnswers : question.correctAnswers,
       )
 
       if (normalizedMcqCorrectAnswers.length === 0) {
         return next(
           new ApiError(
             400,
-            'correctAnswer is required for MULTIPLE_CHOICE questions'
-          )
+            'correctAnswer is required for MULTIPLE_CHOICE questions',
+          ),
         )
       }
 
       const invalidAnswers = normalizedMcqCorrectAnswers.filter(
-        (answer) => !effectiveOptions.includes(answer)
+        (answer) => !effectiveOptions.includes(answer),
       )
       if (invalidAnswers.length > 0) {
         return next(
           new ApiError(
             400,
-            `correctAnswer values must be in options. Invalid: ${invalidAnswers.join(', ')}`
-          )
+            `correctAnswer values must be in options. Invalid: ${invalidAnswers.join(', ')}`,
+          ),
         )
       }
     }
@@ -557,7 +618,12 @@ export const updateQuestion = async (
     // Validate INTEGER correctAnswer
     if (effectiveType === 'INTEGER' && correctAnswer !== undefined) {
       if (isNaN(Number(correctAnswer))) {
-        return next(new ApiError(400, 'correctAnswer must be a valid number for INTEGER questions'))
+        return next(
+          new ApiError(
+            400,
+            'correctAnswer must be a valid number for INTEGER questions',
+          ),
+        )
       }
     }
 
@@ -582,18 +648,25 @@ export const updateQuestion = async (
       dataToUpdate.correctAnswer = normalizedMcqCorrectAnswers.join('||')
       dataToUpdate.correctAnswers = normalizedMcqCorrectAnswers
     } else {
-      if (correctAnswer !== undefined) dataToUpdate.correctAnswer = correctAnswer
-      if (correctAnswers !== undefined) dataToUpdate.correctAnswers = correctAnswers
+      if (correctAnswer !== undefined)
+        dataToUpdate.correctAnswer = correctAnswer
+      if (correctAnswers !== undefined)
+        dataToUpdate.correctAnswers = correctAnswers
     }
 
-    if (effectiveType === 'MULTI_SELECT' && normalizedMultiSelectCorrectAnswers) {
+    if (
+      effectiveType === 'MULTI_SELECT' &&
+      normalizedMultiSelectCorrectAnswers
+    ) {
       dataToUpdate.correctAnswers = normalizedMultiSelectCorrectAnswers
     }
 
     if (explanation !== undefined) dataToUpdate.explanation = explanation
     if (points !== undefined) dataToUpdate.points = points
-    if (negativePoints !== undefined) dataToUpdate.negativePoints = negativePoints
-    if (partialMarking !== undefined) dataToUpdate.partialMarking = partialMarking
+    if (negativePoints !== undefined)
+      dataToUpdate.negativePoints = negativePoints
+    if (partialMarking !== undefined)
+      dataToUpdate.partialMarking = partialMarking
     if (sectionId !== undefined) dataToUpdate.sectionId = sectionId
     if (order !== undefined) dataToUpdate.order = order
 
@@ -609,7 +682,7 @@ export const updateQuestion = async (
     return res.status(200).json(
       new ApiResponse(200, 'Question updated successfully', {
         question: updated,
-      })
+      }),
     )
   } catch (error) {
     console.error('[UPDATE_QUESTION_ERROR]', error)
@@ -621,7 +694,7 @@ export const updateQuestion = async (
 export const deleteQuestion = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -665,7 +738,7 @@ export const deleteQuestion = async (
 export const reorderQuestions = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -695,7 +768,7 @@ export const reorderQuestions = async (
 
     if (questions.length !== questionIds.length) {
       return next(
-        new ApiError(400, 'Some questions do not belong to this quiz')
+        new ApiError(400, 'Some questions do not belong to this quiz'),
       )
     }
 
@@ -705,8 +778,8 @@ export const reorderQuestions = async (
         prisma.question.update({
           where: { id },
           data: { order },
-        })
-      )
+        }),
+      ),
     )
 
     return res
@@ -722,7 +795,7 @@ export const reorderQuestions = async (
 export const getQuizStats = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -776,7 +849,7 @@ export const getQuizStats = async (
           averageTimeSpent: Math.round(averageScore._avg.timeSpent || 0),
           recentAttempts,
         },
-      })
+      }),
     )
   } catch (error) {
     console.error('[GET_QUIZ_STATS_ERROR]', error)
@@ -790,7 +863,7 @@ export const getQuizStats = async (
 export const listSections = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -816,7 +889,7 @@ export const listSections = async (
     return res.status(200).json(
       new ApiResponse(200, 'Sections fetched successfully', {
         sections,
-      })
+      }),
     )
   } catch (error) {
     console.error('[LIST_SECTIONS_ERROR]', error)
@@ -828,7 +901,7 @@ export const listSections = async (
 export const createSection = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -866,7 +939,7 @@ export const createSection = async (
     return res.status(201).json(
       new ApiResponse(201, 'Section created successfully', {
         section,
-      })
+      }),
     )
   } catch (error) {
     console.error('[CREATE_SECTION_ERROR]', error)
@@ -878,7 +951,7 @@ export const createSection = async (
 export const updateSection = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!
@@ -917,7 +990,7 @@ export const updateSection = async (
     return res.status(200).json(
       new ApiResponse(200, 'Section updated successfully', {
         section: updated,
-      })
+      }),
     )
   } catch (error) {
     console.error('[UPDATE_SECTION_ERROR]', error)
@@ -929,7 +1002,7 @@ export const updateSection = async (
 export const deleteSection = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const lesson = req.lesson!

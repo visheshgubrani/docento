@@ -62,7 +62,7 @@ export function useProjectAnalyticsStudents(projectId: string) {
 
 export function useProjectAnalyticsCourseInsights(
   projectId: string,
-  courseId: string
+  courseId: string,
 ) {
   return useQuery<CourseAnalyticsInsights, Error>({
     queryKey: analyticsKeys.courseInsights(projectId, courseId),

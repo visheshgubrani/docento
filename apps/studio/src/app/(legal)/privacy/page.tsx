@@ -1,20 +1,20 @@
-import React from "react";
-import { Metadata } from "next";
+import React from 'react'
+import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: "Privacy",
+  title: 'Privacy',
   description:
-    "Learn how Docento collects, uses, and protects your data. Read our Privacy Policy to understand your rights and how we keep your information secure.",
+    'Learn how Docento collects, uses, and protects your data. Read our Privacy Policy to understand your rights and how we keep your information secure.',
   openGraph: {
-    title: "Privacy Policy — Docento",
+    title: 'Privacy Policy — Docento',
     description:
-      "Understand how Docento handles and safeguards your data. Read our Privacy Policy for full details.",
-    url: "https://docento.dev/privacy",
+      'Understand how Docento handles and safeguards your data. Read our Privacy Policy for full details.',
+    url: 'https://docento.dev/privacy',
   },
   alternates: {
-    canonical: "https://docento.dev/privacy",
+    canonical: 'https://docento.dev/privacy',
   },
-};
+}
 
 export default function PrivacyPolicy() {
   return (
@@ -68,10 +68,10 @@ export default function PrivacyPolicy() {
                 <p className="text-foreground/85 font-noto">
                   This Privacy Policy outlines how Docento (“we”, “us”, “our”)
                   collects, uses, and protects information when you access our
-                  platform. Please review our{" "}
+                  platform. Please review our{' '}
                   <a href="/terms" className="text-primary underline">
                     Terms & Conditions
-                  </a>{" "}
+                  </a>{' '}
                   for additional legal details related to your use of Docento.
                 </p>
               </section>
@@ -183,7 +183,7 @@ export default function PrivacyPolicy() {
                   <li>Opt out of certain processing</li>
                 </ul>
                 <p className="text-sm text-foreground/70 font-noto mt-2">
-                  To exercise your rights, email{" "}
+                  To exercise your rights, email{' '}
                   <a
                     href="mailto:privacy@docento.dev"
                     className="text-primary underline"
@@ -212,8 +212,8 @@ export default function PrivacyPolicy() {
                   Children's Privacy
                 </h2>
                 <p className="text-foreground/80">
-                  Docento is not intended for individuals under 18, and we do not
-                  knowingly collect data from children.
+                  Docento is not intended for individuals under 18, and we do
+                  not knowingly collect data from children.
                 </p>
               </section>
 
@@ -240,7 +240,7 @@ export default function PrivacyPolicy() {
                 <div className="px-4">
                   <ul className="list-none text-foreground/70 font-noto">
                     <li>
-                      Email:{" "}
+                      Email:{' '}
                       <a
                         href="mailto:privacy@docento.dev"
                         className="text-primary underline"
@@ -262,5 +262,5 @@ export default function PrivacyPolicy() {
         </div>
       </div>
     </div>
-  );
+  )
 }

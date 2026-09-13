@@ -1,9 +1,9 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import Image from "next/image";
-import { useMemo, useState } from "react";
-import type { LucideIcon } from "lucide-react";
+import Link from 'next/link'
+import Image from 'next/image'
+import { useMemo, useState } from 'react'
+import type { LucideIcon } from 'lucide-react'
 import {
   ArrowUpRight,
   BarChart3,
@@ -13,18 +13,18 @@ import {
   Loader2,
   Plus,
   TrendingUp,
-} from "lucide-react";
-import { FaUserGraduate } from "react-icons/fa6";
-import { FaMoneyBillWave } from "react-icons/fa";
-import { ImBooks } from "react-icons/im";
-import { MdAdminPanelSettings, MdFilterAlt } from "react-icons/md";
-import { PiBookOpenUserFill, PiLadderSimpleBold } from "react-icons/pi";
-import { TbChartDonutFilled } from "react-icons/tb";
-import { AiOutlineTransaction } from "react-icons/ai";
-import type { IconType } from "react-icons";
-import { HiUsers } from "react-icons/hi2";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from 'lucide-react'
+import { FaUserGraduate } from 'react-icons/fa6'
+import { FaMoneyBillWave } from 'react-icons/fa'
+import { ImBooks } from 'react-icons/im'
+import { MdAdminPanelSettings, MdFilterAlt } from 'react-icons/md'
+import { PiBookOpenUserFill, PiLadderSimpleBold } from 'react-icons/pi'
+import { TbChartDonutFilled } from 'react-icons/tb'
+import { AiOutlineTransaction } from 'react-icons/ai'
+import type { IconType } from 'react-icons'
+import { HiUsers } from 'react-icons/hi2'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -32,7 +32,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -40,100 +40,100 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { DatePickerInput } from "@/components/ui/date-picker";
+} from '@/components/ui/table'
+import { DatePickerInput } from '@/components/ui/date-picker'
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "@/components/ui/chart";
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+} from '@/components/ui/chart'
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts'
 import {
   useProjectAnalyticsEngagement,
   useProjectAnalyticsOverview,
   useProjectAnalyticsRecentSales,
   useProjectAnalyticsStudents,
-} from "@/lib/hooks/use-analytics";
-import { useProjectCourses } from "@/lib/hooks/use-courses";
-import { useProjectRouteId } from "@/lib/hooks/use-project-route-id";
-import { useProject } from "@/lib/hooks/use-projects";
-import { useProtectedSession } from "@/components/auth/protected-route";
-import { useToast } from "@/components/ui/use-toast";
-import { cn } from "@/lib/utils";
+} from '@/lib/hooks/use-analytics'
+import { useProjectCourses } from '@/lib/hooks/use-courses'
+import { useProjectRouteId } from '@/lib/hooks/use-project-route-id'
+import { useProject } from '@/lib/hooks/use-projects'
+import { useProtectedSession } from '@/components/auth/protected-route'
+import { useToast } from '@/components/ui/use-toast'
+import { cn } from '@/lib/utils'
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api/v1";
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:4000/api/v1'
 
 const formatNumber = (value?: number | null) =>
-  new Intl.NumberFormat("en-IN").format(value ?? 0);
+  new Intl.NumberFormat('en-IN').format(value ?? 0)
 
-const formatCurrency = (amount?: number | null, currency = "INR") =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
+const formatCurrency = (amount?: number | null, currency = 'INR') =>
+  new Intl.NumberFormat('en-IN', {
+    style: 'currency',
     currency,
     maximumFractionDigits: 0,
-  }).format(amount ?? 0);
+  }).format(amount ?? 0)
 
-const formatPercent = (value?: number | null) => `${Math.round(value ?? 0)}%`;
+const formatPercent = (value?: number | null) => `${Math.round(value ?? 0)}%`
 
 const formatShortDate = (value?: string | null) => {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
+  if (!value) return '—'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '—'
 
-  return date.toLocaleDateString("en-IN", {
-    month: "short",
-    day: "numeric",
-  });
-};
+  return date.toLocaleDateString('en-IN', {
+    month: 'short',
+    day: 'numeric',
+  })
+}
 
 const formatCompactNumber = (value: number) =>
-  new Intl.NumberFormat("en-IN", {
-    notation: "compact",
+  new Intl.NumberFormat('en-IN', {
+    notation: 'compact',
     maximumFractionDigits: 1,
-  }).format(value);
+  }).format(value)
 
 const startOfDay = (date: Date) =>
-  new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  new Date(date.getFullYear(), date.getMonth(), date.getDate())
 
 const addDays = (date: Date, days: number) => {
-  const next = new Date(date);
-  next.setDate(next.getDate() + days);
-  return next;
-};
+  const next = new Date(date)
+  next.setDate(next.getDate() + days)
+  return next
+}
 
 const toDateKey = (date: Date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
 
 const formatChartDate = (dateKey: string) => {
-  const [year, month, day] = dateKey.split("-").map(Number);
+  const [year, month, day] = dateKey.split('-').map(Number)
   if (!year || !month || !day) {
-    return dateKey;
+    return dateKey
   }
 
-  return new Date(year, month - 1, day).toLocaleDateString("en-IN", {
-    month: "short",
-    day: "numeric",
-  });
-};
+  return new Date(year, month - 1, day).toLocaleDateString('en-IN', {
+    month: 'short',
+    day: 'numeric',
+  })
+}
 
 type SalesTrendPoint = {
-  dateKey: string;
-  label: string;
-  amount: number;
-};
+  dateKey: string
+  label: string
+  amount: number
+}
 
 const salesChartConfig = {
   revenue: {
-    label: "Revenue",
-    color: "#ad90fe",
+    label: 'Revenue',
+    color: '#ad90fe',
   },
-} satisfies ChartConfig;
+} satisfies ChartConfig
 
 // Copied state for copy buttons
 function CopyButton({
@@ -141,21 +141,21 @@ function CopyButton({
   label,
   toast,
 }: {
-  value: string;
-  label: string;
-  toast: ReturnType<typeof useToast>["toast"];
+  value: string
+  label: string
+  toast: ReturnType<typeof useToast>['toast']
 }) {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(value);
-    setCopied(true);
+    await navigator.clipboard.writeText(value)
+    setCopied(true)
     toast({
-      title: "Copied",
+      title: 'Copied',
       description: `${label} copied to clipboard.`,
-    });
-    setTimeout(() => setCopied(false), 2000);
-  };
+    })
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   return (
     <button
@@ -168,59 +168,59 @@ function CopyButton({
         <Copy className="h-3 w-3" />
       )}
     </button>
-  );
+  )
 }
 
 export default function ProjectOverviewPage() {
-  const projectId = useProjectRouteId();
-  const session = useProtectedSession();
-  const { toast } = useToast();
+  const projectId = useProjectRouteId()
+  const session = useProtectedSession()
+  const { toast } = useToast()
   const {
     data: project,
     isLoading: isProjectLoading,
     isError,
     error,
-  } = useProject(projectId);
+  } = useProject(projectId)
   const { data: courses, isLoading: isCoursesLoading } =
-    useProjectCourses(projectId);
+    useProjectCourses(projectId)
 
   const { data: overview, isLoading: isOverviewLoading } =
-    useProjectAnalyticsOverview(projectId);
+    useProjectAnalyticsOverview(projectId)
   const {
     data: engagement,
     isLoading: isEngagementLoading,
     isFetching: isEngagementFetching,
-  } = useProjectAnalyticsEngagement(projectId);
+  } = useProjectAnalyticsEngagement(projectId)
   const {
     data: transactions = [],
     isLoading: isSalesLoading,
     isFetching: isSalesFetching,
-  } = useProjectAnalyticsRecentSales(projectId);
+  } = useProjectAnalyticsRecentSales(projectId)
   const {
     data: students = [],
     isLoading: isStudentsLoading,
     isFetching: isStudentsFetching,
-  } = useProjectAnalyticsStudents(projectId);
+  } = useProjectAnalyticsStudents(projectId)
 
-  const revenueBreakdown = overview?.revenueByCurrency ?? [];
-  const primaryCurrency = revenueBreakdown[0]?.currency ?? "INR";
-  const [salesFilterDate, setSalesFilterDate] = useState("");
+  const revenueBreakdown = overview?.revenueByCurrency ?? []
+  const primaryCurrency = revenueBreakdown[0]?.currency ?? 'INR'
+  const [salesFilterDate, setSalesFilterDate] = useState('')
   const recentTransactions = useMemo(
     () => transactions.slice(0, 4),
-    [transactions]
-  );
+    [transactions],
+  )
 
   const courseLeaderboard = useMemo(() => {
     const map = new Map<
       string,
       {
-        courseId: string;
-        title: string;
-        enrollments: number;
-        progressSum: number;
-        completions: number;
+        courseId: string
+        title: string
+        enrollments: number
+        progressSum: number
+        completions: number
       }
-    >();
+    >()
 
     students.forEach((student) => {
       student.enrollments.forEach((enrollment) => {
@@ -230,15 +230,15 @@ export default function ProjectOverviewPage() {
           enrollments: 0,
           progressSum: 0,
           completions: 0,
-        };
-        existing.enrollments += 1;
-        existing.progressSum += enrollment.progress ?? 0;
-        if ((enrollment.progress ?? 0) >= 100) {
-          existing.completions += 1;
         }
-        map.set(enrollment.courseId, existing);
-      });
-    });
+        existing.enrollments += 1
+        existing.progressSum += enrollment.progress ?? 0
+        if ((enrollment.progress ?? 0) >= 100) {
+          existing.completions += 1
+        }
+        map.set(enrollment.courseId, existing)
+      })
+    })
 
     return Array.from(map.values())
       .map((course) => ({
@@ -253,229 +253,229 @@ export default function ProjectOverviewPage() {
             : 0,
       }))
       .sort((a, b) => b.enrollments - a.enrollments)
-      .slice(0, 10);
-  }, [students]);
+      .slice(0, 10)
+  }, [students])
 
   const firstTransactionDate = useMemo(() => {
     if (transactions.length === 0) {
-      return undefined;
+      return undefined
     }
 
-    let minTimestamp = Number.POSITIVE_INFINITY;
+    let minTimestamp = Number.POSITIVE_INFINITY
     transactions.forEach((tx) => {
-      const timestamp = new Date(tx.createdAt).getTime();
+      const timestamp = new Date(tx.createdAt).getTime()
       if (!Number.isNaN(timestamp) && timestamp < minTimestamp) {
-        minTimestamp = timestamp;
+        minTimestamp = timestamp
       }
-    });
+    })
 
     if (!Number.isFinite(minTimestamp)) {
-      return undefined;
+      return undefined
     }
 
-    return new Date(minTimestamp);
-  }, [transactions]);
+    return new Date(minTimestamp)
+  }, [transactions])
 
   const filteredTransactions = useMemo(() => {
     if (!salesFilterDate) {
-      return transactions;
+      return transactions
     }
 
-    const selectedEndDate = new Date(`${salesFilterDate}T23:59:59.999`);
+    const selectedEndDate = new Date(`${salesFilterDate}T23:59:59.999`)
     if (Number.isNaN(selectedEndDate.getTime())) {
-      return transactions;
+      return transactions
     }
 
     return transactions.filter(
-      (tx) => new Date(tx.createdAt).getTime() <= selectedEndDate.getTime()
-    );
-  }, [transactions, salesFilterDate]);
+      (tx) => new Date(tx.createdAt).getTime() <= selectedEndDate.getTime(),
+    )
+  }, [transactions, salesFilterDate])
 
   const courseRevenueById = useMemo(() => {
-    const map = new Map<string, { amount: number; currency: string }>();
+    const map = new Map<string, { amount: number; currency: string }>()
 
     transactions.forEach((tx) => {
-      if ((tx.status ?? "").toLowerCase() !== "completed" || !tx.course?.id) {
-        return;
+      if ((tx.status ?? '').toLowerCase() !== 'completed' || !tx.course?.id) {
+        return
       }
 
       const existing = map.get(tx.course.id) ?? {
         amount: 0,
         currency: tx.currency ?? primaryCurrency,
-      };
-      existing.amount += tx.amount ?? 0;
-      map.set(tx.course.id, existing);
-    });
+      }
+      existing.amount += tx.amount ?? 0
+      map.set(tx.course.id, existing)
+    })
 
-    return map;
-  }, [transactions, primaryCurrency]);
+    return map
+  }, [transactions, primaryCurrency])
 
   const leaderboardRows = useMemo(() => {
     const withEnrollments = courseLeaderboard.map((course) => {
-      const revenue = courseRevenueById.get(course.courseId);
+      const revenue = courseRevenueById.get(course.courseId)
       return {
         courseId: course.courseId,
         title: course.title,
         enrollments: course.enrollments,
         amount: revenue?.amount ?? 0,
         currency: revenue?.currency ?? primaryCurrency,
-      };
-    });
+      }
+    })
 
     if (withEnrollments.length > 0) {
       return withEnrollments
         .sort((a, b) => {
           if (b.amount !== a.amount) {
-            return b.amount - a.amount;
+            return b.amount - a.amount
           }
 
           if (b.enrollments !== a.enrollments) {
-            return b.enrollments - a.enrollments;
+            return b.enrollments - a.enrollments
           }
 
-          return a.title.localeCompare(b.title);
+          return a.title.localeCompare(b.title)
         })
-        .slice(0, 10);
+        .slice(0, 10)
     }
 
     return (courses ?? [])
       .map((course) => {
-        const revenue = courseRevenueById.get(course.id);
+        const revenue = courseRevenueById.get(course.id)
         return {
           courseId: course.id,
           title: course.title,
           enrollments: 0,
           amount: revenue?.amount ?? 0,
           currency: revenue?.currency ?? primaryCurrency,
-        };
+        }
       })
       .sort((a, b) => {
         if (b.amount !== a.amount) {
-          return b.amount - a.amount;
+          return b.amount - a.amount
         }
 
         if (b.enrollments !== a.enrollments) {
-          return b.enrollments - a.enrollments;
+          return b.enrollments - a.enrollments
         }
 
-        return a.title.localeCompare(b.title);
+        return a.title.localeCompare(b.title)
       })
-      .slice(0, 10);
-  }, [courseLeaderboard, courseRevenueById, courses, primaryCurrency]);
+      .slice(0, 10)
+  }, [courseLeaderboard, courseRevenueById, courses, primaryCurrency])
 
   const salesTrendPoints = useMemo<SalesTrendPoint[]>(() => {
-    const revenueByDay = new Map<string, number>();
+    const revenueByDay = new Map<string, number>()
     const completedTransactions = filteredTransactions
-      .filter((tx) => (tx.status ?? "").toLowerCase() === "completed")
+      .filter((tx) => (tx.status ?? '').toLowerCase() === 'completed')
       .map((tx) => ({
         ...tx,
         createdAtDate: new Date(tx.createdAt),
       }))
       .filter((tx) => !Number.isNaN(tx.createdAtDate.getTime()))
-      .sort((a, b) => a.createdAtDate.getTime() - b.createdAtDate.getTime());
+      .sort((a, b) => a.createdAtDate.getTime() - b.createdAtDate.getTime())
 
     if (completedTransactions.length === 0) {
-      return [];
+      return []
     }
 
     completedTransactions.forEach((tx) => {
-      const dateKey = toDateKey(tx.createdAtDate);
-      revenueByDay.set(dateKey, (revenueByDay.get(dateKey) ?? 0) + tx.amount);
-    });
+      const dateKey = toDateKey(tx.createdAtDate)
+      revenueByDay.set(dateKey, (revenueByDay.get(dateKey) ?? 0) + tx.amount)
+    })
 
     const lastCompletedDate = startOfDay(
-      completedTransactions[completedTransactions.length - 1].createdAtDate
-    );
+      completedTransactions[completedTransactions.length - 1].createdAtDate,
+    )
     const selectedEndDate = salesFilterDate
       ? startOfDay(new Date(`${salesFilterDate}T00:00:00`))
-      : lastCompletedDate;
+      : lastCompletedDate
     const rangeEnd =
       Number.isNaN(selectedEndDate.getTime()) ||
       selectedEndDate < lastCompletedDate
         ? lastCompletedDate
-        : selectedEndDate;
+        : selectedEndDate
     const firstCompletedDate = startOfDay(
-      completedTransactions[0].createdAtDate
-    );
-    const minimumRangeStart = addDays(rangeEnd, -6);
+      completedTransactions[0].createdAtDate,
+    )
+    const minimumRangeStart = addDays(rangeEnd, -6)
     const rangeStart =
       firstCompletedDate < minimumRangeStart
         ? firstCompletedDate
-        : minimumRangeStart;
+        : minimumRangeStart
 
-    const points: SalesTrendPoint[] = [];
+    const points: SalesTrendPoint[] = []
 
     for (
       let cursor = new Date(rangeStart);
       cursor <= rangeEnd;
       cursor = addDays(cursor, 1)
     ) {
-      const dateKey = toDateKey(cursor);
+      const dateKey = toDateKey(cursor)
       points.push({
         dateKey,
         label: formatChartDate(dateKey),
         amount: revenueByDay.get(dateKey) ?? 0,
-      });
+      })
     }
 
-    return points;
-  }, [filteredTransactions, salesFilterDate]);
+    return points
+  }, [filteredTransactions, salesFilterDate])
 
   const completedSalesCount = useMemo(
     () =>
       filteredTransactions.filter(
-        (tx) => (tx.status ?? "").toLowerCase() === "completed"
+        (tx) => (tx.status ?? '').toLowerCase() === 'completed',
       ).length,
-    [filteredTransactions]
-  );
+    [filteredTransactions],
+  )
 
   const completedSalesRevenue = useMemo(
     () =>
       filteredTransactions.reduce((total, tx) => {
-        if ((tx.status ?? "").toLowerCase() !== "completed") {
-          return total;
+        if ((tx.status ?? '').toLowerCase() !== 'completed') {
+          return total
         }
 
-        return total + (tx.amount ?? 0);
+        return total + (tx.amount ?? 0)
       }, 0),
-    [filteredTransactions]
-  );
+    [filteredTransactions],
+  )
 
   const salesTrendDelta = useMemo(() => {
     if (salesTrendPoints.length === 0) {
-      return 0;
+      return 0
     }
 
-    const first = salesTrendPoints[0]?.amount ?? 0;
-    const last = salesTrendPoints[salesTrendPoints.length - 1]?.amount ?? 0;
+    const first = salesTrendPoints[0]?.amount ?? 0
+    const last = salesTrendPoints[salesTrendPoints.length - 1]?.amount ?? 0
 
     if (first === 0) {
-      return last > 0 ? 100 : 0;
+      return last > 0 ? 100 : 0
     }
 
-    return ((last - first) / first) * 100;
-  }, [salesTrendPoints]);
+    return ((last - first) / first) * 100
+  }, [salesTrendPoints])
 
-  const isSalesTrendUp = salesTrendDelta >= 0;
+  const isSalesTrendUp = salesTrendDelta >= 0
 
   if (!projectId) {
-    return <div>Invalid project.</div>;
+    return <div>Invalid project.</div>
   }
 
   if (isProjectLoading) {
-    return <OverviewSkeleton />;
+    return <OverviewSkeleton />
   }
 
   if (isError || !project) {
-    return <div>Error: {error?.message ?? "Unable to load project."}</div>;
+    return <div>Error: {error?.message ?? 'Unable to load project.'}</div>
   }
 
   const userName =
-    session?.user?.name || session?.user?.email?.split("@")[0] || "there";
+    session?.user?.name || session?.user?.email?.split('@')[0] || 'there'
   const lessonCompletionValue = Math.max(
     0,
-    Math.min(100, Math.round(overview?.averageProgress ?? 0))
-  );
+    Math.min(100, Math.round(overview?.averageProgress ?? 0)),
+  )
 
   return (
     <div className="space-y-6 w-full">
@@ -563,7 +563,7 @@ export default function ProjectOverviewPage() {
           title="Revenue"
           value={
             isOverviewLoading
-              ? "—"
+              ? '—'
               : formatCurrency(overview?.totalRevenue, primaryCurrency)
           }
           icon={FaMoneyBillWave}
@@ -574,7 +574,7 @@ export default function ProjectOverviewPage() {
           title="Enrollments"
           value={
             isOverviewLoading
-              ? "—"
+              ? '—'
               : formatNumber(overview?.totalEnrollments ?? 0)
           }
           icon={FaUserGraduate}
@@ -583,7 +583,7 @@ export default function ProjectOverviewPage() {
 
         <MetricCard
           title="Total Courses"
-          value={isCoursesLoading ? "—" : formatNumber(courses?.length ?? 0)}
+          value={isCoursesLoading ? '—' : formatNumber(courses?.length ?? 0)}
           icon={ImBooks}
           color="blue"
         />
@@ -592,7 +592,7 @@ export default function ProjectOverviewPage() {
           title="Active"
           value={
             isEngagementLoading
-              ? "—"
+              ? '—'
               : formatNumber(engagement?.activeStudents7d ?? 0)
           }
           icon={PiBookOpenUserFill}
@@ -602,7 +602,7 @@ export default function ProjectOverviewPage() {
         <MetricCard
           title="Registered"
           value={
-            isOverviewLoading ? "—" : formatNumber(overview?.totalStudents ?? 0)
+            isOverviewLoading ? '—' : formatNumber(overview?.totalStudents ?? 0)
           }
           icon={HiUsers}
           color="violet"
@@ -628,7 +628,7 @@ export default function ProjectOverviewPage() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setSalesFilterDate("")}
+                  onClick={() => setSalesFilterDate('')}
                   className="h-9 shrink-0 gap-1.5 rounded-sm text-foreground/85"
                 >
                   <MdFilterAlt className="size-4 text-foreground/80" />
@@ -656,14 +656,14 @@ export default function ProjectOverviewPage() {
           </CardContent>
           <CardFooter className="flex-col items-start gap-1.5 pt-2 pb-3 text-sm">
             <div className="flex items-center gap-2 leading-none font-medium">
-              {isSalesTrendUp ? "Trending up" : "Trending down"} by{" "}
+              {isSalesTrendUp ? 'Trending up' : 'Trending down'} by{' '}
               {Math.round(Math.abs(salesTrendDelta))}%
               <TrendingUp
-                className={cn("h-4 w-4", isSalesTrendUp ? "" : "rotate-180")}
+                className={cn('h-4 w-4', isSalesTrendUp ? '' : 'rotate-180')}
               />
             </div>
             <div className="leading-normal text-foreground/70">
-              {formatCurrency(completedSalesRevenue, primaryCurrency)} from{" "}
+              {formatCurrency(completedSalesRevenue, primaryCurrency)} from{' '}
               {formatNumber(completedSalesCount)} completed transactions in the
               selected range
             </div>
@@ -697,7 +697,7 @@ export default function ProjectOverviewPage() {
                 <div className="relative flex flex-col items-center justify-center text-center">
                   <span className="text-3xl font-bold text-foreground/80">
                     {isOverviewLoading
-                      ? "—"
+                      ? '—'
                       : formatPercent(lessonCompletionValue)}
                   </span>
                   <span className="mt-1 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
@@ -732,7 +732,7 @@ export default function ProjectOverviewPage() {
                   {formatPercent(
                     engagement?.averageProgress ??
                       overview?.averageProgress ??
-                      0
+                      0,
                   )}
                 </span>
               </div>
@@ -876,8 +876,8 @@ export default function ProjectOverviewPage() {
                           <TableCell className="px-4 py-3 align-middle">
                             <span
                               className={cn(
-                                "block truncate",
-                                index < 3 && "text-cyan-700"
+                                'block truncate',
+                                index < 3 && 'text-cyan-700',
                               )}
                             >
                               {course.title}
@@ -963,11 +963,11 @@ export default function ProjectOverviewPage() {
                             {tx.student?.name ??
                               tx.student?.externalId ??
                               tx.student?.email ??
-                              "Unknown student"}
+                              'Unknown student'}
                           </p>
                         </div>
                         <p className="mt-1 text-xs text-foreground/60 truncate">
-                          {tx.course?.title ?? "Unknown course"}
+                          {tx.course?.title ?? 'Unknown course'}
                         </p>
                       </div>
                       <div className="shrink-0 text-right">
@@ -987,26 +987,26 @@ export default function ProjectOverviewPage() {
         </Card>
       </section>
     </div>
-  );
+  )
 }
 
 function MetricCard({
   title,
   value,
   icon: Icon,
-  color = "violet",
+  color = 'violet',
 }: {
-  title: string;
-  value: string;
-  icon: LucideIcon | IconType;
-  color?: "emerald" | "violet" | "blue" | "amber";
+  title: string
+  value: string
+  icon: LucideIcon | IconType
+  color?: 'emerald' | 'violet' | 'blue' | 'amber'
 }) {
   const colorClasses = {
-    emerald: "bg-[#87d932]/25 text-[#87d932]",
-    violet: "bg-[#ad90fe]/25 text-[#ad90fe]",
-    blue: "bg-[#0bdbf0]/20 text-[#0bdbf0]",
-    amber: "bg-[#fe91c6]/25 text-[#fe91c6]",
-  };
+    emerald: 'bg-[#87d932]/25 text-[#87d932]',
+    violet: 'bg-[#ad90fe]/25 text-[#ad90fe]',
+    blue: 'bg-[#0bdbf0]/20 text-[#0bdbf0]',
+    amber: 'bg-[#fe91c6]/25 text-[#fe91c6]',
+  }
 
   return (
     <Card className="h-full min-h-[80px] rounded-sm border border-muted-foreground/35 shadow-md shadow-muted-foreground/15 overflow-hidden">
@@ -1015,8 +1015,8 @@ function MetricCard({
           {/* Icon Box */}
           <div
             className={cn(
-              "flex items-center justify-center p-3",
-              colorClasses[color]
+              'flex items-center justify-center p-3',
+              colorClasses[color],
             )}
           >
             <Icon className="size-6" />
@@ -1037,7 +1037,7 @@ function MetricCard({
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }
 
 function SalesOverviewChart({
@@ -1045,29 +1045,29 @@ function SalesOverviewChart({
   currency,
   isLoading,
 }: {
-  points: SalesTrendPoint[];
-  currency: string;
-  isLoading: boolean;
+  points: SalesTrendPoint[]
+  currency: string
+  isLoading: boolean
 }) {
-  const hasData = points.length > 0;
+  const hasData = points.length > 0
 
   const displayPoints = useMemo<SalesTrendPoint[]>(() => {
     if (hasData) {
-      return points;
+      return points
     }
 
-    const now = new Date();
+    const now = new Date()
     return Array.from({ length: 7 }).map((_, index) => {
-      const date = new Date(now);
-      date.setDate(now.getDate() - (6 - index));
-      const dateKey = toDateKey(date);
+      const date = new Date(now)
+      date.setDate(now.getDate() - (6 - index))
+      const dateKey = toDateKey(date)
       return {
         dateKey,
         label: formatChartDate(dateKey),
         amount: 0,
-      };
-    });
-  }, [hasData, points]);
+      }
+    })
+  }, [hasData, points])
 
   const chartData = useMemo(
     () =>
@@ -1075,8 +1075,8 @@ function SalesOverviewChart({
         date: point.label,
         revenue: Number(point.amount.toFixed(2)),
       })),
-    [displayPoints]
-  );
+    [displayPoints],
+  )
 
   if (isLoading) {
     return (
@@ -1086,7 +1086,7 @@ function SalesOverviewChart({
           Loading sales trend
         </span>
       </div>
-    );
+    )
   }
 
   return (
@@ -1114,7 +1114,7 @@ function SalesOverviewChart({
             minTickGap={24}
             tickMargin={8}
             tick={{
-              fill: "hsl(var(--foreground))",
+              fill: 'hsl(var(--foreground))',
               fontSize: 12,
               fontWeight: 600,
             }}
@@ -1123,7 +1123,7 @@ function SalesOverviewChart({
             tickLine={false}
             axisLine={false}
             tick={{
-              fill: "hsl(var(--foreground))",
+              fill: 'hsl(var(--foreground))',
               fontSize: 11,
               fontWeight: 600,
             }}
@@ -1145,7 +1145,7 @@ function SalesOverviewChart({
             stroke="var(--color-revenue)"
             strokeWidth={2.5}
             dot={{
-              fill: "var(--color-revenue)",
+              fill: 'var(--color-revenue)',
               r: hasData ? 4 : 3,
             }}
             activeDot={{
@@ -1156,7 +1156,7 @@ function SalesOverviewChart({
         </LineChart>
       </ChartContainer>
     </div>
-  );
+  )
 }
 
 function OverviewSkeleton() {
@@ -1347,5 +1347,5 @@ function OverviewSkeleton() {
         </div>
       </section>
     </div>
-  );
+  )
 }

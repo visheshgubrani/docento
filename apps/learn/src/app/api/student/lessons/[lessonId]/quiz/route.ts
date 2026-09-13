@@ -4,13 +4,13 @@ const LMS_API_URL = process.env.LMS_API_URL
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ lessonId: string }> }
+  context: { params: Promise<{ lessonId: string }> },
 ) {
   try {
     if (!LMS_API_URL) {
       return NextResponse.json(
         { message: 'LMS_API_URL is not configured' },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
@@ -18,7 +18,7 @@ export async function GET(
     if (!authToken) {
       return NextResponse.json(
         { message: 'Unauthorized: Please login first.' },
-        { status: 401 }
+        { status: 401 },
       )
     }
 
@@ -26,18 +26,21 @@ export async function GET(
     if (!lessonId?.trim()) {
       return NextResponse.json(
         { message: 'lessonId is required' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
-    const response = await fetch(`${LMS_API_URL}/student/lessons/${lessonId}/quiz`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${authToken}`,
+    const response = await fetch(
+      `${LMS_API_URL}/student/lessons/${lessonId}/quiz`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`,
+        },
+        cache: 'no-store',
       },
-      cache: 'no-store',
-    })
+    )
 
     const payload = await response.json().catch(() => ({
       message: 'Unexpected response from student quiz API',
@@ -48,7 +51,7 @@ export async function GET(
     console.error('[STUDENT_QUIZ_PROXY_ERROR]', error)
     return NextResponse.json(
       { message: 'Failed to fetch quiz' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

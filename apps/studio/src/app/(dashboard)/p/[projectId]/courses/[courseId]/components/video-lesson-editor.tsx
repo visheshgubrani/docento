@@ -1,6 +1,12 @@
 import { type DragEvent, useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, CheckCircle2, Loader2, Sparkles, UploadCloud } from 'lucide-react'
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Loader2,
+  Sparkles,
+  UploadCloud,
+} from 'lucide-react'
 import { CiCircleAlert } from 'react-icons/ci'
 
 import { Button } from '@/components/ui/button'
@@ -113,7 +119,7 @@ export function VideoLessonEditor({
         (nextProgress) => {
           setProgress(nextProgress)
           setStatusMessage(`${Math.round(nextProgress)}%`)
-        }
+        },
       )
 
       setProgress(100)
@@ -157,10 +163,10 @@ export function VideoLessonEditor({
   const canUpload = !!selectedFile && !isUploading
 
   return (
-    <Card className='border border-slate-200/80 shadow-sm dark:border-slate-800'>
+    <Card className="border border-slate-200/80 shadow-sm dark:border-slate-800">
       <CardHeader>
-        <CardTitle className='flex items-center gap-2 text-xl font-semibold'>
-          <UploadCloud className='h-5 w-5 text-muted-foreground' />
+        <CardTitle className="flex items-center gap-2 text-xl font-semibold">
+          <UploadCloud className="h-5 w-5 text-muted-foreground" />
           Video upload
         </CardTitle>
         <CardDescription>
@@ -168,11 +174,11 @@ export function VideoLessonEditor({
           {lesson.title}
         </CardDescription>
       </CardHeader>
-      <CardContent className='space-y-4'>
+      <CardContent className="space-y-4">
         <div
           className={cn(
             'rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center transition-colors dark:border-slate-800 dark:bg-slate-900/40',
-            isDragging && 'border-primary bg-primary/5 dark:border-primary/60'
+            isDragging && 'border-primary bg-primary/5 dark:border-primary/60',
           )}
           onDragOver={(event) => {
             event.preventDefault()
@@ -181,18 +187,18 @@ export function VideoLessonEditor({
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
         >
-          <UploadCloud className='mx-auto h-12 w-12 text-slate-400' />
-          <p className='mt-4 text-base font-semibold text-slate-900 dark:text-white'>
+          <UploadCloud className="mx-auto h-12 w-12 text-slate-400" />
+          <p className="mt-4 text-base font-semibold text-slate-900 dark:text-white">
             Drop your lesson video here
           </p>
-          <p className='text-sm text-muted-foreground'>
+          <p className="text-sm text-muted-foreground">
             MP4, MOV, or WebM up to 2GB. Students will stream this securely.
           </p>
-          <div className='mt-6 flex flex-wrap items-center justify-center gap-3'>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Button onClick={startUpload} disabled={!canUpload}>
               {isUploading ? (
                 <>
-                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Uploading...
                 </>
               ) : (
@@ -200,7 +206,7 @@ export function VideoLessonEditor({
               )}
             </Button>
             <Button
-              variant='outline'
+              variant="outline"
               onClick={handleBrowse}
               disabled={isUploading}
             >
@@ -209,35 +215,35 @@ export function VideoLessonEditor({
           </div>
           <input
             ref={fileInputRef}
-            type='file'
-            accept='video/*'
-            className='hidden'
+            type="file"
+            accept="video/*"
+            className="hidden"
             onChange={(event) => {
               handleFileSelection(event.target.files)
               event.target.value = ''
             }}
           />
           {isUploading || statusMessage ? (
-            <div className='mt-4 flex flex-col items-center gap-2 text-sm'>
-              <div className='flex items-center gap-2 text-muted-foreground'>
+            <div className="mt-4 flex flex-col items-center gap-2 text-sm">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 {uploadStep === 'uploading' ? (
-                  <Loader2 className='h-4 w-4 animate-spin' />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : uploadStep === 'success' ? (
-                  <CheckCircle2 className='h-4 w-4 text-emerald-500' />
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                 ) : uploadStep === 'error' ? (
-                  <AlertTriangle className='h-4 w-4 text-destructive' />
+                  <AlertTriangle className="h-4 w-4 text-destructive" />
                 ) : null}
                 <span>{statusMessage ?? 'Preparing upload...'}</span>
               </div>
               {isUploading ? (
-                <div className='flex w-full max-w-sm items-center gap-2'>
-                  <div className='h-2 flex-1 rounded-full bg-slate-200 dark:bg-slate-800'>
+                <div className="flex w-full max-w-sm items-center gap-2">
+                  <div className="h-2 flex-1 rounded-full bg-slate-200 dark:bg-slate-800">
                     <div
-                      className='h-2 rounded-full bg-primary transition-[width]'
+                      className="h-2 rounded-full bg-primary transition-[width]"
                       style={{ width: `${Math.min(progress, 100)}%` }}
                     />
                   </div>
-                  <span className='text-xs text-muted-foreground'>
+                  <span className="text-xs text-muted-foreground">
                     {Math.min(progress, 100)}%
                   </span>
                 </div>
@@ -246,17 +252,17 @@ export function VideoLessonEditor({
           ) : null}
         </div>
         {/* AI Processing Options */}
-        <div className='rounded-lg border border-slate-200 bg-white px-4 py-4 dark:border-slate-800 dark:bg-slate-900/50'>
-          <div className='mb-3 flex items-center gap-2'>
-            <Sparkles className='h-4 w-4 text-violet-500' />
-            <p className='text-sm font-semibold text-slate-900 dark:text-white'>
+        <div className="rounded-lg border border-slate-200 bg-white px-4 py-4 dark:border-slate-800 dark:bg-slate-900/50">
+          <div className="mb-3 flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-violet-500" />
+            <p className="text-sm font-semibold text-slate-900 dark:text-white">
               AI processing
             </p>
           </div>
-          <div className='space-y-3'>
-            <div className='flex items-start gap-3'>
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
               <Checkbox
-                id='generate-subtitle'
+                id="generate-subtitle"
                 checked={generateSubtitle}
                 onCheckedChange={(checked) => {
                   const next = checked === true
@@ -267,19 +273,19 @@ export function VideoLessonEditor({
               />
               <div>
                 <Label
-                  htmlFor='generate-subtitle'
-                  className='cursor-pointer text-sm font-medium text-slate-800 dark:text-slate-200'
+                  htmlFor="generate-subtitle"
+                  className="cursor-pointer text-sm font-medium text-slate-800 dark:text-slate-200"
                 >
                   AI-generated subtitles
                 </Label>
-                <p className='text-xs text-muted-foreground'>
+                <p className="text-xs text-muted-foreground">
                   Automatically transcribe and add captions to this video.
                 </p>
               </div>
             </div>
-            <div className='flex items-start gap-3'>
+            <div className="flex items-start gap-3">
               <Checkbox
-                id='generate-chapters'
+                id="generate-chapters"
                 checked={generateChapters}
                 onCheckedChange={(checked) =>
                   setGenerateChapters(checked === true)
@@ -288,22 +294,22 @@ export function VideoLessonEditor({
               />
               <div>
                 <Label
-                  htmlFor='generate-chapters'
+                  htmlFor="generate-chapters"
                   className={cn(
                     'cursor-pointer text-sm font-medium',
                     !generateSubtitle
                       ? 'text-muted-foreground'
-                      : 'text-slate-800 dark:text-slate-200'
+                      : 'text-slate-800 dark:text-slate-200',
                   )}
                 >
                   AI-generated chapters
                 </Label>
-                <p className='text-xs text-muted-foreground'>
+                <p className="text-xs text-muted-foreground">
                   {generateSubtitle
                     ? 'Break the video into titled chapters automatically.'
                     : 'Requires AI subtitles to be enabled.'}
                   {!generateSubtitle && (
-                    <CiCircleAlert className='ml-1 inline-block size-3.5 align-[-1px] text-foreground/60' />
+                    <CiCircleAlert className="ml-1 inline-block size-3.5 align-[-1px] text-foreground/60" />
                   )}
                 </p>
               </div>
@@ -312,25 +318,25 @@ export function VideoLessonEditor({
         </div>
 
         {/* Current video info */}
-        <div className='rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-800 dark:bg-slate-900/50'>
+        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm dark:border-slate-800 dark:bg-slate-900/50">
           {lesson.videoUrl ? (
             <>
-              <p className='font-semibold text-slate-900 dark:text-white'>
+              <p className="font-semibold text-slate-900 dark:text-white">
                 Current upload
               </p>
-              <p className='text-muted-foreground break-all'>
+              <p className="text-muted-foreground break-all">
                 {lesson.videoUrl}
               </p>
-              <p className='mt-1 text-xs text-muted-foreground'>
+              <p className="mt-1 text-xs text-muted-foreground">
                 Uploading a new video will replace this link.
               </p>
             </>
           ) : (
             <>
-              <p className='font-semibold text-slate-900 dark:text-white'>
+              <p className="font-semibold text-slate-900 dark:text-white">
                 No video uploaded yet
               </p>
-              <p className='text-xs text-muted-foreground'>
+              <p className="text-xs text-muted-foreground">
                 Add your lesson footage so students can watch this module.
               </p>
             </>

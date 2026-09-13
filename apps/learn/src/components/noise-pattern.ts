@@ -14,10 +14,10 @@ export const noisePattern = `url("data:image/svg+xml;charset=utf-8,${encodeURICo
         </filter>
         <rect width="100%" height="100%" filter="url(#n)" />
       </svg>
-      `.replace(/\s+/g, " ")
-)}")`;
+      `.replace(/\s+/g, ' '),
+)}")`
 
 export const noiseOverlayStyles = {
-  backgroundPosition: "center",
+  backgroundPosition: 'center',
   backgroundImage: noisePattern,
-};
+}

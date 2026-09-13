@@ -11,7 +11,7 @@ interface EndUserJwtPayload {
 export const optionalStudent = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     // extract the token
@@ -27,7 +27,7 @@ export const optionalStudent = async (
     // verify signature
     const payload = jwt.verify(
       token,
-      process.env.JWT_SECRET!
+      process.env.JWT_SECRET!,
     ) as EndUserJwtPayload
 
     // find the user

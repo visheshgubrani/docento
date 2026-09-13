@@ -1,14 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: "My Courses",
-  description: "View and continue your enrolled courses.",
-};
+  title: 'My Courses',
+  description: 'View and continue your enrolled courses.',
+}
 
 export default function DashboardCoursesLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
-  return children;
+  return children
 }

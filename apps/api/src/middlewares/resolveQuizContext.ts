@@ -5,7 +5,7 @@ import ApiError from '../utils/ApiError'
 export const resolveQuizContext = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { quizId } = req.params
@@ -15,8 +15,8 @@ export const resolveQuizContext = async (
       return next(
         new ApiError(
           500,
-          'Lesson context missing. Ensure resolveLessonContext runs first.'
-        )
+          'Lesson context missing. Ensure resolveLessonContext runs first.',
+        ),
       )
     }
 
@@ -38,7 +38,7 @@ export const resolveQuizContext = async (
 
     if (!quiz) {
       return next(
-        new ApiError(404, 'Quiz not found or does not belong to this lesson.')
+        new ApiError(404, 'Quiz not found or does not belong to this lesson.'),
       )
     }
 

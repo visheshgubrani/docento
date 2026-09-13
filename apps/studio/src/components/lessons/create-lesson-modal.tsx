@@ -21,7 +21,14 @@ import type { CourseModuleLesson } from '@/lib/api'
 import { useCreateLesson } from '@/lib/hooks/use-lessons'
 import { captureClientException, captureEvent } from '@/lib/posthog'
 
-const contentTypes = ['VIDEO', 'TEXT', 'QUIZ', 'MOCK_TEST', 'ASSIGNMENT', 'YOUTUBE'] as const
+const contentTypes = [
+  'VIDEO',
+  'TEXT',
+  'QUIZ',
+  'MOCK_TEST',
+  'ASSIGNMENT',
+  'YOUTUBE',
+] as const
 
 const formatContentTypeLabel = (type: string) =>
   type
@@ -41,17 +48,13 @@ const createLessonSchema = z.object({
     .optional(),
   contentType: z.enum(contentTypes),
   textContent: z.string().optional(),
-  videoUrl: z
-    .string()
-    .url('Provide a valid URL')
-    .optional()
-    .or(z.literal('')),
+  videoUrl: z.string().url('Provide a valid URL').optional().or(z.literal('')),
   duration: z
     .string()
     .optional()
     .refine(
       (value) => !value || (!Number.isNaN(Number(value)) && Number(value) >= 0),
-      'Duration must be a positive number'
+      'Duration must be a positive number',
     ),
   isFree: z.boolean().optional(),
 })
@@ -76,10 +79,11 @@ export function CreateLessonModal({
   onLessonCreated,
 }: CreateLessonModalProps) {
   const { toast } = useToast()
-  const {
-    mutateAsync: createLessonMutation,
-    isPending,
-  } = useCreateLesson(projectId, courseId, moduleId)
+  const { mutateAsync: createLessonMutation, isPending } = useCreateLesson(
+    projectId,
+    courseId,
+    moduleId,
+  )
 
   const {
     register,
@@ -194,7 +198,9 @@ export function CreateLessonModal({
             className={errors.videoUrl ? 'border-destructive' : undefined}
           />
           {errors.videoUrl ? (
-            <p className="text-sm text-destructive">{errors.videoUrl.message}</p>
+            <p className="text-sm text-destructive">
+              {errors.videoUrl.message}
+            </p>
           ) : null}
         </div>
       )
@@ -212,7 +218,9 @@ export function CreateLessonModal({
             className={errors.videoUrl ? 'border-destructive' : undefined}
           />
           {errors.videoUrl ? (
-            <p className="text-sm text-destructive">{errors.videoUrl.message}</p>
+            <p className="text-sm text-destructive">
+              {errors.videoUrl.message}
+            </p>
           ) : (
             <p className="text-xs text-muted-foreground">
               Embed a public or unlisted video
@@ -248,7 +256,9 @@ export function CreateLessonModal({
                 className={errors.title ? 'border-destructive' : undefined}
               />
               {errors.title ? (
-                <p className="text-sm text-destructive">{errors.title.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.title.message}
+                </p>
               ) : null}
             </div>
 

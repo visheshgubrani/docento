@@ -202,10 +202,7 @@ export type LessonPlayback = {
 }
 
 export type StudentQuizQuestionType =
-  | 'MULTIPLE_CHOICE'
-  | 'TRUE_FALSE'
-  | 'SHORT_ANSWER'
-  | string
+  'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'SHORT_ANSWER' | string
 
 export type StudentQuizQuestion = {
   id: string
@@ -342,12 +339,14 @@ export class ApiRequestError extends Error {
 
 async function apiGet<T>(url: string): Promise<T> {
   const response = await fetch(url, { cache: 'no-store' })
-  const payload = (await response.json().catch(() => null)) as ApiEnvelope<T> | null
+  const payload = (await response
+    .json()
+    .catch(() => null)) as ApiEnvelope<T> | null
 
   if (!response.ok) {
     throw new ApiRequestError(
       payload?.message || `Request failed with status ${response.status}`,
-      response.status
+      response.status,
     )
   }
 
@@ -358,7 +357,10 @@ async function apiGet<T>(url: string): Promise<T> {
   return payload.data
 }
 
-async function apiPost<T>(url: string, body: Record<string, unknown>): Promise<T> {
+async function apiPost<T>(
+  url: string,
+  body: Record<string, unknown>,
+): Promise<T> {
   const response = await fetch(url, {
     method: 'POST',
     cache: 'no-store',
@@ -368,12 +370,14 @@ async function apiPost<T>(url: string, body: Record<string, unknown>): Promise<T
     body: JSON.stringify(body),
   })
 
-  const payload = (await response.json().catch(() => null)) as ApiEnvelope<T> | null
+  const payload = (await response
+    .json()
+    .catch(() => null)) as ApiEnvelope<T> | null
 
   if (!response.ok) {
     throw new ApiRequestError(
       payload?.message || `Request failed with status ${response.status}`,
-      response.status
+      response.status,
     )
   }
 
@@ -385,24 +389,30 @@ async function apiPost<T>(url: string, body: Record<string, unknown>): Promise<T
 }
 
 export async function fetchStorefrontCourses() {
-  const data = await apiGet<{ courses?: StorefrontCourse[] }>('/api/storefront/courses')
+  const data = await apiGet<{ courses?: StorefrontCourse[] }>(
+    '/api/storefront/courses',
+  )
   return data.courses ?? []
 }
 
 export async function fetchStorefrontCourse(courseId: string) {
-  return apiGet<{ course: StorefrontCourseDetail; viewer?: StorefrontCourseViewer }>(
-    `/api/storefront/courses/${courseId}`
-  )
+  return apiGet<{
+    course: StorefrontCourseDetail
+    viewer?: StorefrontCourseViewer
+  }>(`/api/storefront/courses/${courseId}`)
 }
 
 export async function fetchStorefrontLesson(lessonId: string) {
-  return apiGet<{ lesson: StorefrontLessonDetail; viewer?: StorefrontLessonViewer }>(
-    `/api/storefront/lessons/${lessonId}`
-  )
+  return apiGet<{
+    lesson: StorefrontLessonDetail
+    viewer?: StorefrontLessonViewer
+  }>(`/api/storefront/lessons/${lessonId}`)
 }
 
 export async function fetchStudentCourses() {
-  const data = await apiGet<{ courses?: StudentCourse[] }>('/api/student/courses')
+  const data = await apiGet<{ courses?: StudentCourse[] }>(
+    '/api/student/courses',
+  )
   return data.courses ?? []
 }
 
@@ -413,7 +423,7 @@ export async function fetchStudentCourseContent(courseId: string) {
 export async function issueStudentCourseCertificate(courseId: string) {
   const data = await apiPost<{ certificate?: StudentCourseCertificate }>(
     `/api/student/courses/${courseId}/certificate`,
-    {}
+    {},
   )
 
   if (!data.certificate) {
@@ -459,11 +469,11 @@ export async function updateStudentLessonProgress(
   payload: {
     watchedDuration: number
     isCompleted?: boolean
-  }
+  },
 ) {
   return apiPost<{ progress: StudentCourseContent['progressMap'][string] }>(
     `/api/student/lessons/${lessonId}/progress`,
-    payload
+    payload,
   )
 }
 
@@ -488,21 +498,23 @@ export async function submitStudentQuizAttempt(
       userAnswer: string
     }>
     timeSpent?: number
-  }
+  },
 ) {
   return apiPost<StudentQuizSubmitResult>(
     `/api/student/lessons/${lessonId}/quiz/attempts/${attemptId}/submit`,
-    payload
+    payload,
   )
 }
 
 export async function fetchStudentLessonAssignment(lessonId: string) {
-  return apiGet<StudentLessonAssignment>(`/api/student/lessons/${lessonId}/assignment`)
+  return apiGet<StudentLessonAssignment>(
+    `/api/student/lessons/${lessonId}/assignment`,
+  )
 }
 
 export async function fetchStudentAssignmentSubmission(lessonId: string) {
   const data = await apiGet<{ submission: StudentAssignmentSubmission | null }>(
-    `/api/student/lessons/${lessonId}/assignment/submission`
+    `/api/student/lessons/${lessonId}/assignment/submission`,
   )
   return data.submission ?? null
 }
@@ -512,11 +524,11 @@ export async function createStudentAssignmentUploadPresign(
   payload: {
     contentType: string
     fileName?: string
-  }
+  },
 ) {
   return apiPost<StudentAssignmentUploadPresign>(
     `/api/student/lessons/${lessonId}/assignment/upload/presign`,
-    payload
+    payload,
   )
 }
 
@@ -525,10 +537,10 @@ export async function submitStudentAssignment(
   payload: {
     content?: string
     fileUrl?: string
-  }
+  },
 ) {
   return apiPost<{ submission: StudentAssignmentSubmission }>(
     `/api/student/lessons/${lessonId}/assignment/submit`,
-    payload
+    payload,
   )
 }

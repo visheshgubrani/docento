@@ -310,7 +310,7 @@ router.get('/submissions', assignmentController.listSubmissions)
  */
 router.post(
   '/submissions/:submissionId/grade',
-  assignmentController.gradeSubmission
+  assignmentController.gradeSubmission,
 )
 
 export default router

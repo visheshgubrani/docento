@@ -14,7 +14,7 @@ interface EndUserJwtPayload {
 export const verifyStudent = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     // 1. Extract Token
@@ -29,7 +29,7 @@ export const verifyStudent = async (
     // 2. Verify Signature
     const payload = jwt.verify(
       token,
-      process.env.JWT_SECRET!
+      process.env.JWT_SECRET!,
     ) as EndUserJwtPayload
 
     // 3. Find Generic EndUser (Don't care about Managed vs Delegated here)

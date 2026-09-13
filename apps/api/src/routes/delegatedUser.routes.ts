@@ -76,7 +76,7 @@ router.post(
   delegatedLoginRateLimiter,
   requireSecretApiKey,
   authorizeProjectAccess,
-  delegatedLogin
+  delegatedLogin,
 )
 
 export default router

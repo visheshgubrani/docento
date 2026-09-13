@@ -79,7 +79,12 @@ const lessonMiddleware = [
  *       400:
  *         description: Validation error
  */
-router.post('/generate-outline', extendTimeout(120000), authorizeProjectAccess, generateCourseOutline)
+router.post(
+  '/generate-outline',
+  extendTimeout(120000),
+  authorizeProjectAccess,
+  generateCourseOutline,
+)
 
 // ===== TRANSCRIPTION (Lesson-level) =====
 
@@ -276,7 +281,12 @@ router.get('/transcription', ...lessonMiddleware, getTranscription)
  *       422:
  *         description: Transcription not available
  */
-router.post('/summary', extendTimeout(60000), ...lessonMiddleware, generateSummary)
+router.post(
+  '/summary',
+  extendTimeout(60000),
+  ...lessonMiddleware,
+  generateSummary,
+)
 
 // POST /api/v1/projects/:projectId/courses/:courseId/modules/:moduleId/lessons/:lessonId/ai/generate-quiz
 // Generate quiz from video content (60s timeout for GPT-5)
@@ -337,7 +347,12 @@ router.post('/summary', extendTimeout(60000), ...lessonMiddleware, generateSumma
  *       422:
  *         description: Transcription not available
  */
-router.post('/generate-quiz', extendTimeout(60000), ...lessonMiddleware, generateQuiz)
+router.post(
+  '/generate-quiz',
+  extendTimeout(60000),
+  ...lessonMiddleware,
+  generateQuiz,
+)
 
 // POST /api/v1/projects/:projectId/courses/:courseId/modules/:moduleId/lessons/:lessonId/ai/chat
 // Chat with video content (60s timeout for GPT-5)

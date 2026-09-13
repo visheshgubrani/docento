@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     if (!LMS_API_URL) {
       return NextResponse.json(
         { message: 'LMS_API_URL is not configured' },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
@@ -20,20 +20,20 @@ export async function POST(request: NextRequest) {
     if (!authToken) {
       return NextResponse.json(
         { message: 'Unauthorized: Please login first.' },
-        { status: 401 }
+        { status: 401 },
       )
     }
 
-    const body = (await request.json().catch(() => null)) as
-      | ValidateCouponRequest
-      | null
+    const body = (await request
+      .json()
+      .catch(() => null)) as ValidateCouponRequest | null
     const courseId = body?.courseId?.trim()
     const couponCode = body?.couponCode?.trim()
 
     if (!courseId || !couponCode) {
       return NextResponse.json(
         { message: 'courseId and couponCode are required' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     console.error('[COMMERCE_COUPON_VALIDATE_PROXY_ERROR]', error)
     return NextResponse.json(
       { message: 'Failed to validate coupon' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

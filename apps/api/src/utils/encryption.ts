@@ -9,7 +9,7 @@ const keyBuffer = Buffer.from(ENCRYPTION_KEY_HEX, 'hex')
 // 3. Validation: Check if the BUFFER is 32 bytes (not the string length)
 if (keyBuffer.length !== 32) {
   throw new Error(
-    `Invalid ENCRYPTION_KEY. Expected 32 bytes (64 hex chars), got ${keyBuffer.length} bytes.`
+    `Invalid ENCRYPTION_KEY. Expected 32 bytes (64 hex chars), got ${keyBuffer.length} bytes.`,
   )
 }
 

@@ -6,8 +6,9 @@
 
 Report privately through GitHub's [private vulnerability
 reporting](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability)
-on this repository. If you cannot use that channel, email the maintainers
-listed in [GOVERNANCE.md](./GOVERNANCE.md).
+on this repository. That channel reaches the maintainers listed in
+[.github/CODEOWNERS](./.github/CODEOWNERS) and keeps the report private without
+requiring an address anybody has to publish.
 
 Please include:
 
@@ -33,14 +34,14 @@ Docento is a multi-tenant system, so the highest-severity class of bug here is
 learner, or service key read or modify another's data. Reports in these areas
 are especially valuable:
 
-| Area | What we care about |
-| --- | --- |
-| Tenant isolation | Cross-academy or cross-workspace reads and writes, including through bulk operations, exports, jobs, and file access |
-| Authentication realms | Crossing between the staff and learner realms, or between two academies' learner accounts |
-| Authorization | Privilege escalation between roles, or a service key reaching something it should not |
-| Payment integrity | Granting access without a verified provider confirmation, replaying a callback, or manipulating an amount |
-| Content protection | Reaching paid or unenrolled media, or extracting quiz answer keys |
-| Credential handling | Provider credentials, session tokens, or encryption material leaking through logs, errors, or APIs |
+| Area                  | What we care about                                                                                                   |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Tenant isolation      | Cross-academy or cross-workspace reads and writes, including through bulk operations, exports, jobs, and file access |
+| Authentication realms | Crossing between the staff and learner realms, or between two academies' learner accounts                            |
+| Authorization         | Privilege escalation between roles, or a service key reaching something it should not                                |
+| Payment integrity     | Granting access without a verified provider confirmation, replaying a callback, or manipulating an amount            |
+| Content protection    | Reaching paid or unenrolled media, or extracting quiz answer keys                                                    |
+| Credential handling   | Provider credentials, session tokens, or encryption material leaking through logs, errors, or APIs                   |
 
 ## Known design decisions that are not vulnerabilities
 

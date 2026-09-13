@@ -109,7 +109,10 @@ export type PaginationQuery = z.infer<typeof paginationQuerySchema>
 export const moneySchema = z.object({
   amountMinor: z.number().int(),
   /** ISO 4217, uppercase. */
-  currency: z.string().length(3).regex(/^[A-Z]{3}$/),
+  currency: z
+    .string()
+    .length(3)
+    .regex(/^[A-Z]{3}$/),
 })
 
 export type Money = z.infer<typeof moneySchema>

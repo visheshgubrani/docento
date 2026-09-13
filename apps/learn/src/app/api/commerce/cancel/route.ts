@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     if (!LMS_API_URL) {
       return NextResponse.json(
         { message: 'LMS_API_URL is not configured' },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
@@ -15,19 +15,19 @@ export async function POST(request: NextRequest) {
     if (!authToken) {
       return NextResponse.json(
         { message: 'Unauthorized: Please login first.' },
-        { status: 401 }
+        { status: 401 },
       )
     }
 
-    const body = (await request.json().catch(() => null)) as
-      | { orderId?: string }
-      | null
+    const body = (await request.json().catch(() => null)) as {
+      orderId?: string
+    } | null
     const orderId = body?.orderId?.trim()
 
     if (!orderId) {
       return NextResponse.json(
         { message: 'orderId is required' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     console.error('[COMMERCE_CANCEL_PROXY_ERROR]', error)
     return NextResponse.json(
       { message: 'Failed to cancel order' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

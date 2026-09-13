@@ -1,13 +1,13 @@
-"use client";
+'use client'
 
-import { useMemo, useState } from "react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { Eye, Loader2, Search } from "lucide-react";
-import { MdAssignment } from "react-icons/md";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useMemo, useState } from 'react'
+import Link from 'next/link'
+import { useParams } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
+import { Eye, Loader2, Search } from 'lucide-react'
+import { MdAssignment } from 'react-icons/md'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -15,39 +15,39 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table'
 import {
   fetchCourseEnrollments,
   getAssignment,
   listAssignmentSubmissions,
   type CourseDetail,
-} from "@/lib/api";
-import { useCourse } from "@/lib/hooks/use-courses";
-import { useProjectRouteId } from "@/lib/hooks/use-project-route-id";
+} from '@/lib/api'
+import { useCourse } from '@/lib/hooks/use-courses'
+import { useProjectRouteId } from '@/lib/hooks/use-project-route-id'
 
 type AssignmentLessonContext = {
-  moduleId: string;
-  moduleOrder: number;
-  moduleTitle: string;
-  lessonId: string;
-  lessonOrder: number;
-  lessonTitle: string;
-};
+  moduleId: string
+  moduleOrder: number
+  moduleTitle: string
+  lessonId: string
+  lessonOrder: number
+  lessonTitle: string
+}
 
 type AssignmentDirectoryRow = AssignmentLessonContext & {
-  assignmentId: string;
-  assignmentTitle: string;
-  submissionsCount: number;
-  pendingReviewCount: number;
-};
+  assignmentId: string
+  assignmentTitle: string
+  submissionsCount: number
+  pendingReviewCount: number
+}
 
 type AssignmentDirectoryData = {
-  rows: AssignmentDirectoryRow[];
-  enrolledTotal: number;
-};
+  rows: AssignmentDirectoryRow[]
+  enrolledTotal: number
+}
 
 function getAssignmentLessonContexts(
-  course: CourseDetail
+  course: CourseDetail,
 ): AssignmentLessonContext[] {
   return course.modules
     .slice()
@@ -56,7 +56,7 @@ function getAssignmentLessonContexts(
       module.lessons
         .slice()
         .sort((a, b) => a.order - b.order)
-        .filter((lesson) => lesson.contentType === "ASSIGNMENT")
+        .filter((lesson) => lesson.contentType === 'ASSIGNMENT')
         .map((lesson) => ({
           moduleId: module.id,
           moduleOrder: module.order,
@@ -64,8 +64,8 @@ function getAssignmentLessonContexts(
           lessonId: lesson.id,
           lessonOrder: lesson.order,
           lessonTitle: lesson.title,
-        }))
-    );
+        })),
+    )
 }
 
 function DirectoryTableSkeleton() {
@@ -94,39 +94,39 @@ function DirectoryTableSkeleton() {
         </TableRow>
       ))}
     </>
-  );
+  )
 }
 
 function getModuleLabel(moduleOrder: number, moduleTitle: string) {
   if (moduleTitle?.trim()) {
-    return moduleTitle;
+    return moduleTitle
   }
-  return `Module ${moduleOrder + 1}`;
+  return `Module ${moduleOrder + 1}`
 }
 
 function truncateWords(value: string, maxWords: number) {
-  const normalized = value.trim().replace(/\s+/g, " ");
-  if (!normalized) return "";
+  const normalized = value.trim().replace(/\s+/g, ' ')
+  if (!normalized) return ''
 
-  const words = normalized.split(" ");
-  if (words.length <= maxWords) return normalized;
-  return `${words.slice(0, maxWords).join(" ")}...`;
+  const words = normalized.split(' ')
+  if (words.length <= maxWords) return normalized
+  return `${words.slice(0, maxWords).join(' ')}...`
 }
 
 function getAssignmentTitleLabel(title: string) {
-  const withoutSuffix = title.trim().replace(/\s+assignment$/i, "");
-  return truncateWords(withoutSuffix || title, 3);
+  const withoutSuffix = title.trim().replace(/\s+assignment$/i, '')
+  return truncateWords(withoutSuffix || title, 3)
 }
 
 export default function CourseAssignmentsDirectoryPage() {
-  const params = useParams();
-  const projectId = useProjectRouteId();
-  const [searchQuery, setSearchQuery] = useState("");
-  const courseId = typeof params?.courseId === "string" ? params.courseId : "";
+  const params = useParams()
+  const projectId = useProjectRouteId()
+  const [searchQuery, setSearchQuery] = useState('')
+  const courseId = typeof params?.courseId === 'string' ? params.courseId : ''
   const { data: course, isLoading: isCourseLoading } = useCourse(
     projectId,
-    courseId
-  );
+    courseId,
+  )
 
   const {
     data: directoryData,
@@ -137,7 +137,7 @@ export default function CourseAssignmentsDirectoryPage() {
     refetch,
   } = useQuery<AssignmentDirectoryData, Error>({
     queryKey: [
-      "course-assignments-directory",
+      'course-assignments-directory',
       projectId,
       courseId,
       course?.updatedAt,
@@ -145,21 +145,21 @@ export default function CourseAssignmentsDirectoryPage() {
     enabled: Boolean(projectId && courseId && course),
     queryFn: async () => {
       if (!course) {
-        return { rows: [], enrolledTotal: 0 };
+        return { rows: [], enrolledTotal: 0 }
       }
 
-      const contexts = getAssignmentLessonContexts(course);
+      const contexts = getAssignmentLessonContexts(course)
       if (contexts.length === 0) {
-        return { rows: [], enrolledTotal: 0 };
+        return { rows: [], enrolledTotal: 0 }
       }
 
       const enrollmentList = await fetchCourseEnrollments(projectId, courseId, {
         page: 1,
         limit: 1,
-        status: "active",
-      });
+        status: 'active',
+      })
       const enrolledTotal =
-        enrollmentList.pagination?.total ?? enrollmentList.enrollments.length;
+        enrollmentList.pagination?.total ?? enrollmentList.enrollments.length
 
       const rows = (
         await Promise.all(
@@ -168,15 +168,15 @@ export default function CourseAssignmentsDirectoryPage() {
               projectId,
               courseId,
               context.moduleId,
-              context.lessonId
-            );
+              context.lessonId,
+            )
 
             if (!assignment) {
-              return null;
+              return null
             }
 
-            const submissionsCount = assignment._count?.submissions ?? 0;
-            let pendingReviewCount = 0;
+            const submissionsCount = assignment._count?.submissions ?? 0
+            let pendingReviewCount = 0
 
             if (submissionsCount > 0) {
               const ungraded = await listAssignmentSubmissions(
@@ -184,9 +184,9 @@ export default function CourseAssignmentsDirectoryPage() {
                 courseId,
                 context.moduleId,
                 context.lessonId,
-                "ungraded"
-              );
-              pendingReviewCount = ungraded.total;
+                'ungraded',
+              )
+              pendingReviewCount = ungraded.total
             }
 
             return {
@@ -195,44 +195,44 @@ export default function CourseAssignmentsDirectoryPage() {
               assignmentTitle: assignment.title,
               submissionsCount,
               pendingReviewCount,
-            } satisfies AssignmentDirectoryRow;
-          })
+            } satisfies AssignmentDirectoryRow
+          }),
         )
       )
         .filter((row): row is AssignmentDirectoryRow => Boolean(row))
         .sort((a, b) => {
           if (a.moduleOrder !== b.moduleOrder) {
-            return a.moduleOrder - b.moduleOrder;
+            return a.moduleOrder - b.moduleOrder
           }
-          return a.lessonOrder - b.lessonOrder;
-        });
+          return a.lessonOrder - b.lessonOrder
+        })
 
       return {
         rows,
         enrolledTotal,
-      };
+      }
     },
-  });
+  })
 
-  const rows = useMemo(() => directoryData?.rows ?? [], [directoryData?.rows]);
-  const enrolledTotal = directoryData?.enrolledTotal ?? 0;
-  const isLoading = isCourseLoading || isDirectoryLoading;
-  const normalizedSearch = searchQuery.trim().toLowerCase();
+  const rows = useMemo(() => directoryData?.rows ?? [], [directoryData?.rows])
+  const enrolledTotal = directoryData?.enrolledTotal ?? 0
+  const isLoading = isCourseLoading || isDirectoryLoading
+  const normalizedSearch = searchQuery.trim().toLowerCase()
   const filteredRows = useMemo(() => {
     if (!normalizedSearch) {
-      return rows;
+      return rows
     }
 
     return rows.filter((row) => {
-      const moduleLabel = getModuleLabel(row.moduleOrder, row.moduleTitle);
+      const moduleLabel = getModuleLabel(row.moduleOrder, row.moduleTitle)
       return [row.assignmentTitle, row.lessonTitle, moduleLabel].some((value) =>
-        value.toLowerCase().includes(normalizedSearch)
-      );
-    });
-  }, [rows, normalizedSearch]);
-  const hasNoData = rows.length === 0;
+        value.toLowerCase().includes(normalizedSearch),
+      )
+    })
+  }, [rows, normalizedSearch])
+  const hasNoData = rows.length === 0
   const hasNoMatches =
-    !isLoading && rows.length > 0 && filteredRows.length === 0;
+    !isLoading && rows.length > 0 && filteredRows.length === 0
 
   return (
     <div className="space-y-8">
@@ -249,12 +249,12 @@ export default function CourseAssignmentsDirectoryPage() {
         <div className="flex gap-3 items-start justify-end place-self-end">
           <p className="text-sm font-medium place-self-end text-foreground/80">
             {isLoading
-              ? "Loading assignments..."
+              ? 'Loading assignments...'
               : normalizedSearch
-              ? `Showing ${filteredRows.length} of ${rows.length} assignments`
-              : rows.length === 1
-              ? "Showing 1 assignment"
-              : `Showing ${rows.length} assignments`}
+                ? `Showing ${filteredRows.length} of ${rows.length} assignments`
+                : rows.length === 1
+                  ? 'Showing 1 assignment'
+                  : `Showing ${rows.length} assignments`}
           </p>
           {isDirectoryFetching && !isLoading ? (
             <span className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -333,7 +333,7 @@ export default function CourseAssignmentsDirectoryPage() {
                 Unable to load assignments
               </p>
               <p className="text-sm text-muted-foreground">
-                {directoryError?.message ?? "Please try again in a moment."}
+                {directoryError?.message ?? 'Please try again in a moment.'}
               </p>
             </div>
             <Button variant="outline" onClick={() => refetch()}>
@@ -382,10 +382,10 @@ export default function CourseAssignmentsDirectoryPage() {
                   Lesson: {truncateWords(row.lessonTitle, 3)}
                 </p>
                 <p className="text-sm text-foreground/75">
-                  Module:{" "}
+                  Module:{' '}
                   {truncateWords(
                     getModuleLabel(row.moduleOrder, row.moduleTitle),
-                    3
+                    3,
                   )}
                 </p>
                 <div className="grid grid-cols-2 gap-2">
@@ -460,7 +460,7 @@ export default function CourseAssignmentsDirectoryPage() {
                     <TableCell className="text-foreground/80">
                       {truncateWords(
                         getModuleLabel(row.moduleOrder, row.moduleTitle),
-                        3
+                        3,
                       )}
                     </TableCell>
                     <TableCell className="text-center text-foreground/90">
@@ -494,5 +494,5 @@ export default function CourseAssignmentsDirectoryPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

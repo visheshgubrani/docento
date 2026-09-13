@@ -28,7 +28,11 @@ const log = (message: string, fields: Record<string, unknown> = {}) => {
   )
 }
 
-const logError = (message: string, error: unknown, fields: Record<string, unknown> = {}) => {
+const logError = (
+  message: string,
+  error: unknown,
+  fields: Record<string, unknown> = {},
+) => {
   console.error(
     JSON.stringify({
       level: 'error',

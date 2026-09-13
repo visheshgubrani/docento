@@ -1,11 +1,11 @@
-import { redirect } from "next/navigation";
+import { redirect } from 'next/navigation'
 
 type Props = {
-  params: Promise<{ projectId: string; courseId: string }>;
-};
+  params: Promise<{ projectId: string; courseId: string }>
+}
 
 export default async function CourseRootPage({ params }: Props) {
-  const { projectId, courseId } = await params;
+  const { projectId, courseId } = await params
 
-  redirect(`/p/${projectId}/courses/${courseId}/information`);
+  redirect(`/p/${projectId}/courses/${courseId}/information`)
 }

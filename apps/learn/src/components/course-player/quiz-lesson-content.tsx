@@ -1,6 +1,6 @@
-"use client";
+'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   HiArrowPath,
   HiChartBar,
@@ -9,7 +9,7 @@ import {
   HiClock,
   HiXCircle,
   HiXMark,
-} from "react-icons/hi2";
+} from 'react-icons/hi2'
 import {
   ApiRequestError,
   fetchStudentLessonQuiz,
@@ -18,237 +18,252 @@ import {
   type StudentLessonQuiz,
   type StudentQuizQuestion,
   type StudentQuizSubmitResult,
-} from "@/lib/lms-api-client";
+} from '@/lib/lms-api-client'
 
 function getQuestionOptions(question: StudentQuizQuestion) {
   if (Array.isArray(question.options)) {
-    return question.options.filter((option): option is string => typeof option === "string");
+    return question.options.filter(
+      (option): option is string => typeof option === 'string',
+    )
   }
 
-  if (question.questionType === "TRUE_FALSE") {
-    return ["TRUE", "FALSE"];
+  if (question.questionType === 'TRUE_FALSE') {
+    return ['TRUE', 'FALSE']
   }
 
-  return [];
+  return []
 }
 
 function formatTimeSpent(timeSpent: number | null | undefined) {
-  if (!timeSpent || timeSpent < 1) return "0s";
-  if (timeSpent < 60) return `${timeSpent}s`;
+  if (!timeSpent || timeSpent < 1) return '0s'
+  if (timeSpent < 60) return `${timeSpent}s`
 
-  const minutes = Math.floor(timeSpent / 60);
-  const seconds = timeSpent % 60;
-  return `${minutes}m ${seconds}s`;
+  const minutes = Math.floor(timeSpent / 60)
+  const seconds = timeSpent % 60
+  return `${minutes}m ${seconds}s`
 }
 
 function formatRemainingTime(totalSeconds: number) {
   const minutes = Math.floor(totalSeconds / 60)
     .toString()
-    .padStart(2, "0");
+    .padStart(2, '0')
   const seconds = Math.max(0, totalSeconds % 60)
     .toString()
-    .padStart(2, "0");
+    .padStart(2, '0')
 
-  return `${minutes}:${seconds}`;
+  return `${minutes}:${seconds}`
 }
 
 function formatTimeLimitMinutes(minutes: number | null | undefined) {
-  if (!minutes || minutes < 1) return "0m";
-  if (minutes < 60) return `${minutes}m`;
+  if (!minutes || minutes < 1) return '0m'
+  if (minutes < 60) return `${minutes}m`
 
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-  return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
+  const hours = Math.floor(minutes / 60)
+  const remainingMinutes = minutes % 60
+  return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`
 }
 
 function toTimeLimitSeconds(value: number | null | undefined) {
-  if (typeof value !== "number" || value <= 0) return null;
-  return Math.max(1, Math.round(value * 60));
+  if (typeof value !== 'number' || value <= 0) return null
+  return Math.max(1, Math.round(value * 60))
 }
 
 function getElapsedSeconds(startedAtMs: number | null) {
-  if (!startedAtMs || !Number.isFinite(startedAtMs)) return 0;
-  return Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000));
+  if (!startedAtMs || !Number.isFinite(startedAtMs)) return 0
+  return Math.max(0, Math.floor((Date.now() - startedAtMs) / 1000))
 }
 
 function getOptionPrefix(index: number) {
-  let value = index;
-  let prefix = "";
+  let value = index
+  let prefix = ''
 
   do {
-    prefix = String.fromCharCode(65 + (value % 26)) + prefix;
-    value = Math.floor(value / 26) - 1;
-  } while (value >= 0);
+    prefix = String.fromCharCode(65 + (value % 26)) + prefix
+    value = Math.floor(value / 26) - 1
+  } while (value >= 0)
 
-  return `${prefix})`;
+  return `${prefix})`
 }
 
 type QuizLessonContentProps = {
-  lessonId: string;
-};
+  lessonId: string
+}
 
 export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
-  const [quizData, setQuizData] = useState<StudentLessonQuiz | null>(null);
-  const [quizResult, setQuizResult] = useState<StudentQuizSubmitResult | null>(null);
-  const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({});
-  const [quizAttemptId, setQuizAttemptId] = useState<string | null>(null);
-  const [quizStartedAt, setQuizStartedAt] = useState<number | null>(null);
-  const [timeLimitSeconds, setTimeLimitSeconds] = useState<number | null>(null);
-  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
-  const [quizLoading, setQuizLoading] = useState(true);
-  const [quizSubmitting, setQuizSubmitting] = useState(false);
-  const [quizError, setQuizError] = useState<string | null>(null);
-  const [isTimeoutDialogOpen, setIsTimeoutDialogOpen] = useState(false);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [showQuizResults, setShowQuizResults] = useState(false);
-  const autoSubmitTriggered = useRef(false);
+  const [quizData, setQuizData] = useState<StudentLessonQuiz | null>(null)
+  const [quizResult, setQuizResult] = useState<StudentQuizSubmitResult | null>(
+    null,
+  )
+  const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>({})
+  const [quizAttemptId, setQuizAttemptId] = useState<string | null>(null)
+  const [quizStartedAt, setQuizStartedAt] = useState<number | null>(null)
+  const [timeLimitSeconds, setTimeLimitSeconds] = useState<number | null>(null)
+  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null)
+  const [quizLoading, setQuizLoading] = useState(true)
+  const [quizSubmitting, setQuizSubmitting] = useState(false)
+  const [quizError, setQuizError] = useState<string | null>(null)
+  const [isTimeoutDialogOpen, setIsTimeoutDialogOpen] = useState(false)
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [showQuizResults, setShowQuizResults] = useState(false)
+  const autoSubmitTriggered = useRef(false)
 
   const loadQuizData = useCallback(async () => {
-    setQuizLoading(true);
-    setQuizError(null);
+    setQuizLoading(true)
+    setQuizError(null)
 
     try {
-      const data = await fetchStudentLessonQuiz(lessonId);
-      setQuizData(data);
+      const data = await fetchStudentLessonQuiz(lessonId)
+      setQuizData(data)
     } catch (error) {
       if (error instanceof ApiRequestError && error.status === 401) {
-        setQuizError("Please log in to attempt this quiz.");
+        setQuizError('Please log in to attempt this quiz.')
       } else if (error instanceof ApiRequestError && error.status === 403) {
-        setQuizError("You need an active enrollment to attempt this quiz.");
+        setQuizError('You need an active enrollment to attempt this quiz.')
       } else {
-        setQuizError(error instanceof Error ? error.message : "Failed to load quiz.");
+        setQuizError(
+          error instanceof Error ? error.message : 'Failed to load quiz.',
+        )
       }
-      setQuizData(null);
+      setQuizData(null)
     } finally {
-      setQuizLoading(false);
+      setQuizLoading(false)
     }
-  }, [lessonId]);
+  }, [lessonId])
 
   const startAttempt = useCallback(
     async (quizSnapshot: StudentLessonQuiz) => {
-      const response = await startStudentQuizAttempt(lessonId);
+      const response = await startStudentQuizAttempt(lessonId)
 
-      const startedAt = new Date(response.attempt.startedAt).getTime();
+      const startedAt = new Date(response.attempt.startedAt).getTime()
       const resolvedTimeLimitSeconds =
-        toTimeLimitSeconds(response.timeLimit) ?? toTimeLimitSeconds(quizSnapshot.quiz.timeLimit);
+        toTimeLimitSeconds(response.timeLimit) ??
+        toTimeLimitSeconds(quizSnapshot.quiz.timeLimit)
       const backendRemainingSeconds =
-        typeof response.remainingSeconds === "number" && Number.isFinite(response.remainingSeconds)
+        typeof response.remainingSeconds === 'number' &&
+        Number.isFinite(response.remainingSeconds)
           ? Math.max(0, Math.floor(response.remainingSeconds))
-          : null;
-      const elapsedSeconds = getElapsedSeconds(startedAt);
+          : null
+      const elapsedSeconds = getElapsedSeconds(startedAt)
       const initialRemainingSeconds =
         resolvedTimeLimitSeconds === null
           ? null
           : backendRemainingSeconds !== null
-          ? Math.min(backendRemainingSeconds, resolvedTimeLimitSeconds)
-          : Math.max(0, resolvedTimeLimitSeconds - elapsedSeconds);
+            ? Math.min(backendRemainingSeconds, resolvedTimeLimitSeconds)
+            : Math.max(0, resolvedTimeLimitSeconds - elapsedSeconds)
 
-      setQuizAttemptId(response.attempt.id);
-      setQuizStartedAt(startedAt);
-      setTimeLimitSeconds(resolvedTimeLimitSeconds);
-      setRemainingSeconds(initialRemainingSeconds);
-      setQuizAnswers({});
-      setQuizResult(null);
-      setCurrentQuestionIndex(0);
-      setShowQuizResults(false);
-      setIsTimeoutDialogOpen(false);
-      autoSubmitTriggered.current = false;
+      setQuizAttemptId(response.attempt.id)
+      setQuizStartedAt(startedAt)
+      setTimeLimitSeconds(resolvedTimeLimitSeconds)
+      setRemainingSeconds(initialRemainingSeconds)
+      setQuizAnswers({})
+      setQuizResult(null)
+      setCurrentQuestionIndex(0)
+      setShowQuizResults(false)
+      setIsTimeoutDialogOpen(false)
+      autoSubmitTriggered.current = false
     },
-    [lessonId]
-  );
+    [lessonId],
+  )
 
   useEffect(() => {
-    setQuizData(null);
-    setQuizResult(null);
-    setQuizAnswers({});
-    setQuizAttemptId(null);
-    setQuizStartedAt(null);
-    setTimeLimitSeconds(null);
-    setRemainingSeconds(null);
-    setQuizError(null);
-    setIsTimeoutDialogOpen(false);
-    setCurrentQuestionIndex(0);
-    setShowQuizResults(false);
-    autoSubmitTriggered.current = false;
+    setQuizData(null)
+    setQuizResult(null)
+    setQuizAnswers({})
+    setQuizAttemptId(null)
+    setQuizStartedAt(null)
+    setTimeLimitSeconds(null)
+    setRemainingSeconds(null)
+    setQuizError(null)
+    setIsTimeoutDialogOpen(false)
+    setCurrentQuestionIndex(0)
+    setShowQuizResults(false)
+    autoSubmitTriggered.current = false
 
-    void loadQuizData();
-  }, [lessonId, loadQuizData]);
+    void loadQuizData()
+  }, [lessonId, loadQuizData])
 
   const handleSubmitQuizAttempt = useCallback(
     async (options?: { force?: boolean; dueToTimeout?: boolean }) => {
-      if (!quizData || !quizAttemptId || quizSubmitting) return;
+      if (!quizData || !quizAttemptId || quizSubmitting) return
 
-      const forceSubmit = Boolean(options?.force);
-      const dueToTimeout = Boolean(options?.dueToTimeout);
+      const forceSubmit = Boolean(options?.force)
+      const dueToTimeout = Boolean(options?.dueToTimeout)
 
       if (!forceSubmit) {
         const unansweredQuestion = quizData.questions.find((question) => {
-          const answer = quizAnswers[question.id];
-          return !answer || !answer.trim();
-        });
+          const answer = quizAnswers[question.id]
+          return !answer || !answer.trim()
+        })
 
         if (unansweredQuestion) {
-          setQuizError("Answer every question before submitting.");
-          return;
+          setQuizError('Answer every question before submitting.')
+          return
         }
       }
 
       try {
-        setQuizSubmitting(true);
-        setQuizError(null);
+        setQuizSubmitting(true)
+        setQuizError(null)
 
-        const elapsedSeconds = Math.max(1, getElapsedSeconds(quizStartedAt));
+        const elapsedSeconds = Math.max(1, getElapsedSeconds(quizStartedAt))
         const clampedTimeSpent =
-          timeLimitSeconds === null ? elapsedSeconds : Math.min(elapsedSeconds, timeLimitSeconds);
+          timeLimitSeconds === null
+            ? elapsedSeconds
+            : Math.min(elapsedSeconds, timeLimitSeconds)
 
-        const response = await submitStudentQuizAttempt(lessonId, quizAttemptId, {
-          answers: quizData.questions.map((question) => ({
-            questionId: question.id,
-            userAnswer: (quizAnswers[question.id] ?? "").trim(),
-          })),
-          timeSpent: clampedTimeSpent,
-        });
+        const response = await submitStudentQuizAttempt(
+          lessonId,
+          quizAttemptId,
+          {
+            answers: quizData.questions.map((question) => ({
+              questionId: question.id,
+              userAnswer: (quizAnswers[question.id] ?? '').trim(),
+            })),
+            timeSpent: clampedTimeSpent,
+          },
+        )
 
-        setQuizResult(response);
-        setQuizAttemptId(null);
-        setQuizStartedAt(null);
-        setTimeLimitSeconds(null);
-        setRemainingSeconds(null);
-        setCurrentQuestionIndex(0);
-        setShowQuizResults(!dueToTimeout);
-        autoSubmitTriggered.current = false;
+        setQuizResult(response)
+        setQuizAttemptId(null)
+        setQuizStartedAt(null)
+        setTimeLimitSeconds(null)
+        setRemainingSeconds(null)
+        setCurrentQuestionIndex(0)
+        setShowQuizResults(!dueToTimeout)
+        autoSubmitTriggered.current = false
 
-        const refreshedQuiz = await fetchStudentLessonQuiz(lessonId);
-        setQuizData(refreshedQuiz);
+        const refreshedQuiz = await fetchStudentLessonQuiz(lessonId)
+        setQuizData(refreshedQuiz)
 
         if (dueToTimeout) {
-          setIsTimeoutDialogOpen(true);
+          setIsTimeoutDialogOpen(true)
         }
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to submit quiz.";
+        const message =
+          error instanceof Error ? error.message : 'Failed to submit quiz.'
 
-        if (message.toLowerCase().includes("time limit exceeded")) {
-          setQuizError(null);
-          setQuizAttemptId(null);
-          setQuizStartedAt(null);
-          setTimeLimitSeconds(null);
-          setRemainingSeconds(null);
-          setCurrentQuestionIndex(0);
-          setShowQuizResults(false);
-          setIsTimeoutDialogOpen(true);
-          autoSubmitTriggered.current = false;
+        if (message.toLowerCase().includes('time limit exceeded')) {
+          setQuizError(null)
+          setQuizAttemptId(null)
+          setQuizStartedAt(null)
+          setTimeLimitSeconds(null)
+          setRemainingSeconds(null)
+          setCurrentQuestionIndex(0)
+          setShowQuizResults(false)
+          setIsTimeoutDialogOpen(true)
+          autoSubmitTriggered.current = false
 
           try {
-            const refreshedQuiz = await fetchStudentLessonQuiz(lessonId);
-            setQuizData(refreshedQuiz);
+            const refreshedQuiz = await fetchStudentLessonQuiz(lessonId)
+            setQuizData(refreshedQuiz)
           } catch {
             // Ignore refresh failures and keep the existing quiz snapshot.
           }
         } else {
-          setQuizError(message);
+          setQuizError(message)
         }
       } finally {
-        setQuizSubmitting(false);
+        setQuizSubmitting(false)
       }
     },
     [
@@ -259,129 +274,144 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
       quizStartedAt,
       quizSubmitting,
       timeLimitSeconds,
-    ]
-  );
+    ],
+  )
 
   useEffect(() => {
-    if (!quizAttemptId || remainingSeconds === null || quizSubmitting) return;
+    if (!quizAttemptId || remainingSeconds === null || quizSubmitting) return
 
     if (remainingSeconds <= 0) {
       if (!autoSubmitTriggered.current) {
-        autoSubmitTriggered.current = true;
-        void handleSubmitQuizAttempt({ force: true, dueToTimeout: true });
+        autoSubmitTriggered.current = true
+        void handleSubmitQuizAttempt({ force: true, dueToTimeout: true })
       }
-      return;
+      return
     }
 
     const timerId = window.setInterval(() => {
       setRemainingSeconds((previous) => {
-        if (previous === null) return null;
-        if (previous <= 1) return 0;
-        return previous - 1;
-      });
-    }, 1000);
+        if (previous === null) return null
+        if (previous <= 1) return 0
+        return previous - 1
+      })
+    }, 1000)
 
     return () => {
-      window.clearInterval(timerId);
-    };
-  }, [handleSubmitQuizAttempt, quizAttemptId, quizSubmitting, remainingSeconds]);
+      window.clearInterval(timerId)
+    }
+  }, [handleSubmitQuizAttempt, quizAttemptId, quizSubmitting, remainingSeconds])
 
   const handleStartQuizAttempt = async () => {
-    if (!quizData || quizSubmitting) return;
+    if (!quizData || quizSubmitting) return
 
     try {
-      setQuizError(null);
-      setIsTimeoutDialogOpen(false);
-      await startAttempt(quizData);
+      setQuizError(null)
+      setIsTimeoutDialogOpen(false)
+      await startAttempt(quizData)
     } catch (error) {
-      setQuizError(error instanceof Error ? error.message : "Failed to start quiz attempt.");
+      setQuizError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to start quiz attempt.',
+      )
     }
-  };
+  }
 
   const handleQuizAnswerChange = (questionId: string, userAnswer: string) => {
     setQuizAnswers((previous) => ({
       ...previous,
       [questionId]: userAnswer,
-    }));
-  };
+    }))
+  }
 
   const handleViewResultsAfterTimeout = () => {
     if (!quizResult) {
-      setQuizError("Unable to load results. Check your previous attempts below.");
-      setIsTimeoutDialogOpen(false);
-      return;
+      setQuizError(
+        'Unable to load results. Check your previous attempts below.',
+      )
+      setIsTimeoutDialogOpen(false)
+      return
     }
 
-    setShowQuizResults(true);
-    setIsTimeoutDialogOpen(false);
-  };
+    setShowQuizResults(true)
+    setIsTimeoutDialogOpen(false)
+  }
 
   const attemptsValue = useMemo(() => {
-    if (!quizData) return "";
-    if (!quizData.quiz.maxAttempts) return "Unlimited";
+    if (!quizData) return ''
+    if (!quizData.quiz.maxAttempts) return 'Unlimited'
 
-    const remaining = quizData.attemptsRemaining ?? 0;
-    return `${remaining}/${quizData.quiz.maxAttempts} left`;
-  }, [quizData]);
+    const remaining = quizData.attemptsRemaining ?? 0
+    return `${remaining}/${quizData.quiz.maxAttempts} left`
+  }, [quizData])
 
   const answeredCount = useMemo(() => {
-    if (!quizData) return 0;
+    if (!quizData) return 0
 
     return quizData.questions.reduce((count, question) => {
-      const answer = quizAnswers[question.id];
-      return answer && answer.trim() ? count + 1 : count;
-    }, 0);
-  }, [quizAnswers, quizData]);
+      const answer = quizAnswers[question.id]
+      return answer && answer.trim() ? count + 1 : count
+    }, 0)
+  }, [quizAnswers, quizData])
 
   const activeQuestion = useMemo(() => {
-    if (!quizData) return null;
-    return quizData.questions[currentQuestionIndex] ?? null;
-  }, [currentQuestionIndex, quizData]);
+    if (!quizData) return null
+    return quizData.questions[currentQuestionIndex] ?? null
+  }, [currentQuestionIndex, quizData])
   const activeQuestionOptions = useMemo(
     () => (activeQuestion ? getQuestionOptions(activeQuestion) : []),
-    [activeQuestion]
-  );
+    [activeQuestion],
+  )
 
-  const activeQuestionPoints = activeQuestion?.points ?? 1;
+  const activeQuestionPoints = activeQuestion?.points ?? 1
   const isLastQuestion = Boolean(
-    quizData && currentQuestionIndex === Math.max(quizData.questions.length - 1, 0)
-  );
+    quizData &&
+    currentQuestionIndex === Math.max(quizData.questions.length - 1, 0),
+  )
   const remainingProgressPercent = useMemo(() => {
-    if (!quizAttemptId || remainingSeconds === null || timeLimitSeconds === null) return null;
-    if (timeLimitSeconds <= 0) return 0;
+    if (
+      !quizAttemptId ||
+      remainingSeconds === null ||
+      timeLimitSeconds === null
+    )
+      return null
+    if (timeLimitSeconds <= 0) return 0
 
-    return Math.max(0, Math.min(100, (remainingSeconds / timeLimitSeconds) * 100));
-  }, [quizAttemptId, remainingSeconds, timeLimitSeconds]);
+    return Math.max(
+      0,
+      Math.min(100, (remainingSeconds / timeLimitSeconds) * 100),
+    )
+  }, [quizAttemptId, remainingSeconds, timeLimitSeconds])
   const elapsedProgressPercent = useMemo(() => {
-    if (remainingProgressPercent === null) return null;
-    return Math.max(0, Math.min(100, 100 - remainingProgressPercent));
-  }, [remainingProgressPercent]);
+    if (remainingProgressPercent === null) return null
+    return Math.max(0, Math.min(100, 100 - remainingProgressPercent))
+  }, [remainingProgressPercent])
   const infoItems = quizData
     ? [
         {
-          label: "Questions",
+          label: 'Questions',
           value: `${quizData.quiz.totalQuestions}`,
           icon: HiClipboardDocumentList,
         },
         {
-          label: "Pass Score",
+          label: 'Pass Score',
           value: `${quizData.quiz.passingScore}%`,
           icon: HiChartBar,
         },
         {
-          label: "Attempts",
+          label: 'Attempts',
           value: attemptsValue,
           icon: HiArrowPath,
         },
         {
-          label: "Time Limit",
+          label: 'Time Limit',
           value: quizData.quiz.timeLimit
             ? formatTimeLimitMinutes(quizData.quiz.timeLimit)
-            : "No limit",
+            : 'No limit',
           icon: HiClock,
         },
       ]
-    : [];
+    : []
 
   if (quizLoading) {
     return (
@@ -389,7 +419,7 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
         <div className="h-7 w-1/3 animate-pulse rounded bg-muted" />
         <div className="h-48 animate-pulse rounded-xl border border-border bg-muted/30" />
       </div>
-    );
+    )
   }
 
   if (quizError && !quizData) {
@@ -401,14 +431,14 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
         <button
           type="button"
           onClick={() => {
-            void loadQuizData();
+            void loadQuizData()
           }}
           className="rounded-md border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
         >
           Retry
         </button>
       </div>
-    );
+    )
   }
 
   if (!quizData) {
@@ -416,24 +446,28 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
       <div className="rounded-xl border border-border bg-muted/20 p-4 text-sm text-foreground/75">
         Quiz details are unavailable for this lesson.
       </div>
-    );
+    )
   }
 
   return (
     <>
       <div className="space-y-6">
         <div className="rounded-2xl border border-border bg-gradient-to-b from-muted/35 to-background p-4 sm:p-6">
-          <p className="text-xs font-semibold uppercase tracking-wide text-foreground/60">Quiz</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
+            Quiz
+          </p>
           <h3 className="mt-2 text-2xl font-semibold text-foreground sm:text-3xl">
             {quizData.quiz.title}
           </h3>
           {quizData.quiz.description ? (
-            <p className="mt-2 text-sm text-foreground/80">{quizData.quiz.description}</p>
+            <p className="mt-2 text-sm text-foreground/80">
+              {quizData.quiz.description}
+            </p>
           ) : null}
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {infoItems.map((item) => {
-              const Icon = item.icon;
+              const Icon = item.icon
               return (
                 <div
                   key={item.label}
@@ -449,11 +483,13 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
                     </span>
                   </div>
                 </div>
-              );
+              )
             })}
           </div>
 
-          {quizAttemptId && remainingSeconds !== null && elapsedProgressPercent !== null ? (
+          {quizAttemptId &&
+          remainingSeconds !== null &&
+          elapsedProgressPercent !== null ? (
             <div className="mt-5 rounded-lg border border-border bg-background px-3.5 py-3">
               <div className="flex items-center gap-3">
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted-foreground/20">
@@ -480,12 +516,14 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
           {quizResult && showQuizResults ? (
             <div className="space-y-5">
               <div className="flex items-center justify-between gap-3">
-                <h4 className="text-xl font-semibold text-foreground">Results</h4>
+                <h4 className="text-xl font-semibold text-foreground">
+                  Results
+                </h4>
                 {quizData.canTakeQuiz ? (
                   <button
                     type="button"
                     onClick={() => {
-                      void handleStartQuizAttempt();
+                      void handleStartQuizAttempt()
                     }}
                     className="rounded-md border cursor-pointer border-border bg-background px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
                   >
@@ -508,11 +546,11 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
                     <span
                       className={`text-sm mt-1.5 font-semibold ${
                         quizResult.summary.passed
-                          ? "text-primary"
-                          : "text-red-500 dark:text-red-400"
+                          ? 'text-primary'
+                          : 'text-red-500 dark:text-red-400'
                       }`}
                     >
-                      {quizResult.summary.passed ? "Passed" : "Failed"}
+                      {quizResult.summary.passed ? 'Passed' : 'Failed'}
                     </span>
                   </div>
                 </div>
@@ -536,7 +574,8 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
                       Total Points
                     </span>
                     <span className="text-sm mt-1.5 font-semibold text-foreground">
-                      {quizResult.summary.pointsEarned}/{quizResult.summary.totalPoints}
+                      {quizResult.summary.pointsEarned}/
+                      {quizResult.summary.totalPoints}
                     </span>
                   </div>
                 </div>
@@ -574,45 +613,49 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
 
                     {(() => {
                       const question = quizData.questions.find(
-                        (item) => item.id === answer.questionId
-                      );
-                      const options = question ? getQuestionOptions(question) : [];
+                        (item) => item.id === answer.questionId,
+                      )
+                      const options = question
+                        ? getQuestionOptions(question)
+                        : []
 
                       if (!options.length) {
                         return (
                           <p className="mt-3 text-sm text-foreground/65">
                             No predefined options for this question.
                           </p>
-                        );
+                        )
                       }
 
                       return (
                         <div className="mt-3 grid gap-2">
                           {options.map((option, optionIndex) => {
-                            const isCorrectOption = option === answer.correctAnswer;
+                            const isCorrectOption =
+                              option === answer.correctAnswer
                             const isIncorrectSelected =
-                              option === answer.userAnswer && option !== answer.correctAnswer;
+                              option === answer.userAnswer &&
+                              option !== answer.correctAnswer
 
                             return (
                               <div
                                 key={option}
                                 className={`rounded-md border px-3 py-2 text-sm ${
                                   isCorrectOption
-                                    ? "border-primary bg-primary/15 text-foreground"
+                                    ? 'border-primary bg-primary/15 text-foreground'
                                     : isIncorrectSelected
-                                    ? "border-red-500/35 bg-red-500/10 text-foreground"
-                                    : "border-muted-foreground/20 dark:border-border bg-muted dark:bg-muted/70 text-foreground/80"
+                                      ? 'border-red-500/35 bg-red-500/10 text-foreground'
+                                      : 'border-muted-foreground/20 dark:border-border bg-muted dark:bg-muted/70 text-foreground/80'
                                 }`}
                               >
                                 <span className="font-medium text-foreground/75">
                                   {getOptionPrefix(optionIndex)}
-                                </span>{" "}
+                                </span>{' '}
                                 <span>{option}</span>
                               </div>
-                            );
+                            )
                           })}
                         </div>
-                      );
+                      )
                     })()}
 
                     <div className="mt-6 rounded-md border border-muted-foreground/20 dark:border-border bg-accent dark:bg-background px-3 py-2">
@@ -620,7 +663,8 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
                         Explanation
                       </p>
                       <p className="mt-1 text-sm text-foreground/80">
-                        {answer.explanation || "No explanation available for this question."}
+                        {answer.explanation ||
+                          'No explanation available for this question.'}
                       </p>
                     </div>
                   </div>
@@ -631,34 +675,42 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
                 <button
                   type="button"
                   onClick={() => {
-                    void handleStartQuizAttempt();
+                    void handleStartQuizAttempt()
                   }}
                   className="rounded-md border cursor-pointer border-border bg-background px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
                 >
                   Try again
                 </button>
               ) : (
-                <p className="text-xs text-foreground/60">No attempts remaining.</p>
+                <p className="text-xs text-foreground/60">
+                  No attempts remaining.
+                </p>
               )}
             </div>
           ) : quizAttemptId && activeQuestion ? (
             <div className="space-y-5 rounded-lg border border-border bg-background dark:bg-muted/20 p-4">
               <div className="flex items-center justify-between text-sm font-semibold text-foreground/75">
                 <span>
-                  Question {currentQuestionIndex + 1} of {quizData.questions.length}
+                  Question {currentQuestionIndex + 1} of{' '}
+                  {quizData.questions.length}
                 </span>
                 <span className="rounded-full border border-primary/20 dark:border-primary/60 bg-primary/[0.07] dark:bg-primary/50 px-2.5 py-1 text-[11px] font-semibold text-foreground/75 dark:text-primary-foreground">
                   {activeQuestionPoints} pts
                 </span>
               </div>
 
-              <p className="text-lg font-medium text-foreground">{activeQuestion.questionText}</p>
+              <p className="text-lg font-medium text-foreground">
+                {activeQuestion.questionText}
+              </p>
 
-              {activeQuestion.questionType === "SHORT_ANSWER" ? (
+              {activeQuestion.questionType === 'SHORT_ANSWER' ? (
                 <input
-                  value={quizAnswers[activeQuestion.id] ?? ""}
+                  value={quizAnswers[activeQuestion.id] ?? ''}
                   onChange={(event) =>
-                    handleQuizAnswerChange(activeQuestion.id, event.target.value)
+                    handleQuizAnswerChange(
+                      activeQuestion.id,
+                      event.target.value,
+                    )
                   }
                   className="w-full rounded-lg border border-border bg-muted/25 px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:border-primary focus:bg-background"
                   placeholder="Type your answer"
@@ -666,24 +718,26 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
               ) : activeQuestionOptions.length > 0 ? (
                 <div className="grid gap-2">
                   {activeQuestionOptions.map((option, optionIndex) => {
-                    const selected = quizAnswers[activeQuestion.id] === option;
+                    const selected = quizAnswers[activeQuestion.id] === option
                     return (
                       <button
                         key={option}
                         type="button"
-                        onClick={() => handleQuizAnswerChange(activeQuestion.id, option)}
+                        onClick={() =>
+                          handleQuizAnswerChange(activeQuestion.id, option)
+                        }
                         className={`rounded-lg cursor-pointer border px-3.5 py-2.5 text-left text-sm transition-colors ${
                           selected
-                            ? "border-primary bg-primary/15 text-foreground"
-                            : "border-muted-foreground/20 dark:border-border bg-muted dark:bg-muted/20 text-foreground/85 hover:bg-muted"
+                            ? 'border-primary bg-primary/15 text-foreground'
+                            : 'border-muted-foreground/20 dark:border-border bg-muted dark:bg-muted/20 text-foreground/85 hover:bg-muted'
                         }`}
                       >
                         <span className="font-medium text-foreground/75">
                           {getOptionPrefix(optionIndex)}
-                        </span>{" "}
+                        </span>{' '}
                         <span>{option}</span>
                       </button>
-                    );
+                    )
                   })}
                 </div>
               ) : (
@@ -695,7 +749,11 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
               <div className="flex items-center justify-between gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => setCurrentQuestionIndex((previous) => Math.max(previous - 1, 0))}
+                  onClick={() =>
+                    setCurrentQuestionIndex((previous) =>
+                      Math.max(previous - 1, 0),
+                    )
+                  }
                   disabled={quizSubmitting || currentQuestionIndex === 0}
                   className="rounded-md cursor-pointer border border-border bg-muted dark:bg-background px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -710,19 +768,19 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
                   <button
                     type="button"
                     onClick={() => {
-                      void handleSubmitQuizAttempt();
+                      void handleSubmitQuizAttempt()
                     }}
                     disabled={quizSubmitting}
                     className="rounded-md bg-primary px-3 cursor-pointer py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {quizSubmitting ? "Submitting..." : "Submit Quiz"}
+                    {quizSubmitting ? 'Submitting...' : 'Submit Quiz'}
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={() =>
                       setCurrentQuestionIndex((previous) =>
-                        Math.min(previous + 1, quizData.questions.length - 1)
+                        Math.min(previous + 1, quizData.questions.length - 1),
                       )
                     }
                     className="rounded-md cursor-pointer bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
@@ -751,7 +809,8 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
           ) : quizData.canTakeQuiz ? (
             <div className="gap-4 flex flex-col text-center items-center">
               <h4 className="text-2xl font-light text-foreground">
-                Ready to test your knowledge on &quot;{quizData.quiz.title}&quot;?
+                Ready to test your knowledge on &quot;{quizData.quiz.title}
+                &quot;?
               </h4>
               <p className="text-base text-foreground/70">
                 Start when you are ready. Questions will appear one at a time.
@@ -759,7 +818,7 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
               <button
                 type="button"
                 onClick={() => {
-                  void handleStartQuizAttempt();
+                  void handleStartQuizAttempt()
                 }}
                 className="mt-4 rounded-md cursor-pointer bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
@@ -784,18 +843,24 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
                   key={attempt.id}
                   className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs"
                 >
-                  <span className="text-foreground/80">Attempt #{attempt.attemptNumber}</span>
-                  <span className="text-foreground/75">Score {attempt.score}%</span>
+                  <span className="text-foreground/80">
+                    Attempt #{attempt.attemptNumber}
+                  </span>
+                  <span className="text-foreground/75">
+                    Score {attempt.score}%
+                  </span>
                   <span
                     className={
                       attempt.passed
-                        ? "text-emerald-600 dark:text-emerald-300"
-                        : "text-red-600 dark:text-red-300"
+                        ? 'text-emerald-600 dark:text-emerald-300'
+                        : 'text-red-600 dark:text-red-300'
                     }
                   >
-                    {attempt.passed ? "Passed" : "Failed"}
+                    {attempt.passed ? 'Passed' : 'Failed'}
                   </span>
-                  <span className="text-foreground/60">{formatTimeSpent(attempt.timeSpent)}</span>
+                  <span className="text-foreground/60">
+                    {formatTimeSpent(attempt.timeSpent)}
+                  </span>
                 </div>
               ))}
             </div>
@@ -808,10 +873,12 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
           <div className="w-full max-w-sm rounded-xl border border-border bg-background p-4 shadow-xl">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h4 className="text-base font-semibold text-foreground">Time&apos;s Up!</h4>
+                <h4 className="text-base font-semibold text-foreground">
+                  Time&apos;s Up!
+                </h4>
                 <p className="mt-1 text-sm text-foreground/75">
-                  The time limit for this quiz has been reached. Your answers will be submitted
-                  automatically.
+                  The time limit for this quiz has been reached. Your answers
+                  will be submitted automatically.
                 </p>
               </div>
               <button
@@ -844,5 +911,5 @@ export function QuizLessonContent({ lessonId }: QuizLessonContentProps) {
         </div>
       ) : null}
     </>
-  );
+  )
 }

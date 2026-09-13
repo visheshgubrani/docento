@@ -4,7 +4,7 @@ import { prisma } from '../lib/prisma'
 import ApiError from '../utils/ApiError'
 
 const MODULE_CONTEXT_CACHE_TTL_MS = Number(
-  process.env.MODULE_CONTEXT_CACHE_TTL_MS ?? '30000'
+  process.env.MODULE_CONTEXT_CACHE_TTL_MS ?? '30000',
 )
 
 type ModuleContextCacheEntry = {
@@ -18,7 +18,7 @@ const moduleContextCache = new Map<string, ModuleContextCacheEntry>()
 const moduleContextCacheKey = (
   projectId: string | undefined,
   courseId: string,
-  moduleId: string
+  moduleId: string,
 ) => `${projectId ?? 'none'}:${courseId}:${moduleId}`
 
 const getCachedModuleContext = (key: string) => {
@@ -35,7 +35,11 @@ const getCachedModuleContext = (key: string) => {
   return cached
 }
 
-const setCachedModuleContext = (key: string, module: Module, course: Course) => {
+const setCachedModuleContext = (
+  key: string,
+  module: Module,
+  course: Course,
+) => {
   if (MODULE_CONTEXT_CACHE_TTL_MS <= 0) return
 
   moduleContextCache.set(key, {
@@ -48,13 +52,13 @@ const setCachedModuleContext = (key: string, module: Module, course: Course) => 
 export const resolveModuleContext = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const mwStart = process.hrtime.bigint()
   const recordTiming = () => {
     if ((req as any).__mwTimings) {
       const ms = Number(process.hrtime.bigint() - mwStart) / 1_000_000
-        ; (req as any).__mwTimings.push({ name: 'resolveModule', ms })
+      ;(req as any).__mwTimings.push({ name: 'resolveModule', ms })
     }
   }
   try {
@@ -94,7 +98,10 @@ export const resolveModuleContext = async (
     if (!module) {
       recordTiming()
       return next(
-        new ApiError(404, 'Module not found or does not belong to this course.')
+        new ApiError(
+          404,
+          'Module not found or does not belong to this course.',
+        ),
       )
     }
 

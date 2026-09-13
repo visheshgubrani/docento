@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react"
+import { useRef, useEffect } from 'react'
 
 /**
  * Hook that executes a callback when the component unmounts.
@@ -14,7 +14,7 @@ export const useUnmount = (callback: (...args: Array<any>) => any) => {
     () => () => {
       ref.current()
     },
-    []
+    [],
   )
 }
 

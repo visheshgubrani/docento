@@ -10,7 +10,8 @@ import { sanitizeLessonHtml } from '../sanitize-html'
  */
 describe('sanitizeLessonHtml', () => {
   it('keeps ordinary lesson markup intact', () => {
-    const input = '<h2>Title</h2><p>Body with <strong>bold</strong>.</p><ul><li>One</li></ul>'
+    const input =
+      '<h2>Title</h2><p>Body with <strong>bold</strong>.</p><ul><li>One</li></ul>'
     const output = sanitizeLessonHtml(input)
 
     expect(output).toContain('<h2>Title</h2>')
@@ -50,10 +51,19 @@ describe('sanitizeLessonHtml', () => {
       ['<a href="javascript:alert(1)">x</a>', /javascript:/i],
       ['<a href="JaVaScRiPt:alert(1)">x</a>', /javascript:/i],
       ['<img src="data:text/html;base64,PHNjcmlwdD4=">', /data:text\/html/i],
-      ['<div style="background:url(javascript:alert(1))">x</div>', /javascript:/i],
-      ['<meta http-equiv="refresh" content="0;url=https://evil.example">', /<meta/i],
+      [
+        '<div style="background:url(javascript:alert(1))">x</div>',
+        /javascript:/i,
+      ],
+      [
+        '<meta http-equiv="refresh" content="0;url=https://evil.example">',
+        /<meta/i,
+      ],
       ['<base href="https://evil.example/">', /<base/i],
-      ['<math><mtext><table><mglyph><style><img src=x onerror=alert(1)>', /onerror/i],
+      [
+        '<math><mtext><table><mglyph><style><img src=x onerror=alert(1)>',
+        /onerror/i,
+      ],
     ])('neutralizes %s', (payload, forbidden) => {
       expect(sanitizeLessonHtml(payload)).not.toMatch(forbidden)
     })
@@ -68,6 +78,8 @@ describe('sanitizeLessonHtml', () => {
   })
 
   it('does not allow inline style, which is a CSS-based vector', () => {
-    expect(sanitizeLessonHtml('<p style="color:red">x</p>')).not.toMatch(/style=/i)
+    expect(sanitizeLessonHtml('<p style="color:red">x</p>')).not.toMatch(
+      /style=/i,
+    )
   })
 })

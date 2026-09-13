@@ -13,20 +13,22 @@ proprietary edition: everything in this repository is the whole product.
 Be aware of what you are cloning. **The foundation is complete and verified; the
 product is being built on top of it.**
 
-| | State |
-|---|---|
-| Monorepo, licensing, governance, CI | Done |
-| Database schema, authentication, authorization, jobs, rate limiting | Done, with tests |
-| The application itself (courses, lessons, quizzes, commerce) | **Not yet ported** |
+|                                                                      | State            |
+| -------------------------------------------------------------------- | ---------------- |
+| Monorepo, licensing, governance, CI                                  | Done             |
+| Database schema, authentication, authorization, jobs, rate limiting  | Done, with tests |
+| The application itself (authoring, publishing, learning, assessment) | **In progress**  |
 
-`apps/api` is the previous closed-source Express application. It still runs on its
-own Prisma schema and has not yet been migrated onto the packages below. The new
-foundation and the old application currently coexist, which means **you cannot
-run a complete academy end-to-end today.**
+Milestone A — the foundation — is complete and verified. Milestone B is the
+product: authoring a course, publishing it as an immutable release, and a learner
+enrolling, learning, being assessed and earning a verifiable certificate. While
+that work is in flight, `apps/api` is still the previous closed-source Express
+application on its own Prisma schema, and both it and its replacement are
+temporary residents.
 
-What you *can* do right now is real and useful: install, migrate the database, run
-the worker, and run the test suite. That is what Milestone A was for. See
-[ROADMAP.md](./ROADMAP.md) for what is next and how far along it is.
+What you _can_ do right now is real: install, migrate the database, **seed a
+working workspace, academy and owner account**, run the worker, and run the test
+suite. See [ROADMAP.md](./ROADMAP.md) for what is next and how far along it is.
 
 If you want a working LMS today, this is not it yet. If you want to help build
 one, the foundation is a good place to start.
@@ -52,7 +54,8 @@ openssl rand -base64 48   # LEARNER_AUTH_SECRET
 openssl rand -hex 32      # ENCRYPTION_KEY
 
 pnpm db:migrate   # apply the schema
-pnpm test         # 75 tests against a real Postgres
+pnpm db:seed      # workspace, academy and owner account
+pnpm test         # against a real Postgres
 pnpm boundaries   # architecture rules
 pnpm dev          # start the API, worker, and frontends
 ```
@@ -72,7 +75,7 @@ Three audiences, all first-class:
 2. **API consumers** who want their own frontend and only the backend.
 3. **Learners**, who interact with an academy and never see the platform.
 
-Four decisions shape everything else, and each has a written record of *why* in
+Four decisions shape everything else, and each has a written record of _why_ in
 [`docs/adr/`](./docs/adr/):
 
 - **A workspace contains academies.** One business, several brands, without
@@ -98,7 +101,7 @@ Four decisions shape everything else, and each has a written record of *why* in
 
 ```
 apps/
-  api/           HTTP surface (legacy, being ported)
+  api/           HTTP surface (being rebuilt on packages/domain)
   worker/        durable jobs, outbox delivery, scheduled maintenance
   studio/        staff and creator application
   learn/         multi-tenant learner application
@@ -126,10 +129,10 @@ docs/adr/        architecture decision records
 
 Docento is not uniformly licensed, and that is deliberate.
 
-| Path | License |
-| --- | --- |
+| Path                                                                    | License       |
+| ----------------------------------------------------------------------- | ------------- |
 | `apps/*`, `packages/domain`, `packages/integrations`, `packages/config` | AGPL-3.0-only |
-| `packages/contracts`, `packages/sdk` | Apache-2.0 |
+| `packages/contracts`, `packages/sdk`                                    | Apache-2.0    |
 
 The application is AGPL so that anyone offering Docento as a network service
 must publish their modifications. The SDK and its contracts are Apache-2.0 so
@@ -151,7 +154,7 @@ Read [CONTRIBUTING.md](./CONTRIBUTING.md) first. The short version:
 - Open an issue before writing code for anything that changes the data model,
   the public API, or the authorization model.
 - Add tests with your change. Authorization and tenancy changes need a test that
-  proves the *denial* case, not only the permitted one.
+  proves the _denial_ case, not only the permitted one.
 
 Security issues: please follow [SECURITY.md](./SECURITY.md) and report privately.
 
@@ -159,11 +162,11 @@ Security issues: please follow [SECURITY.md](./SECURITY.md) and report privately
 
 ## Documentation
 
-| To understand | Read |
-| --- | --- |
+| To understand                  | Read                                 |
+| ------------------------------ | ------------------------------------ |
 | How the system is put together | [ARCHITECTURE.md](./ARCHITECTURE.md) |
-| Why a decision was made | [`docs/adr/`](./docs/adr/) |
-| What is being built and when | [ROADMAP.md](./ROADMAP.md) |
-| How decisions get made | [GOVERNANCE.md](./GOVERNANCE.md) |
-| Contributing | [CONTRIBUTING.md](./CONTRIBUTING.md) |
-| Reporting a vulnerability | [SECURITY.md](./SECURITY.md) |
+| Why a decision was made        | [`docs/adr/`](./docs/adr/)           |
+| What is being built and when   | [ROADMAP.md](./ROADMAP.md)           |
+| How decisions get made         | [GOVERNANCE.md](./GOVERNANCE.md)     |
+| Contributing                   | [CONTRIBUTING.md](./CONTRIBUTING.md) |
+| Reporting a vulnerability      | [SECURITY.md](./SECURITY.md)         |

@@ -106,7 +106,10 @@ function buildLearnerAuth(academyId: string) {
     rateLimit: { enabled: false },
 
     hooks: {
-      before: createAuthRateLimitHook({ realm: 'learner', scope: `learner:${academyId}` }),
+      before: createAuthRateLimitHook({
+        realm: 'learner',
+        scope: `learner:${academyId}`,
+      }),
     },
   })
 }

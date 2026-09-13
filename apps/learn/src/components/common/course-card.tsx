@@ -1,31 +1,31 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { HiArrowRight, HiEye, HiPlayCircle } from "react-icons/hi2";
-import { FaBookOpen, FaUserTie } from "react-icons/fa6";
+import Link from 'next/link'
+import { HiArrowRight, HiEye, HiPlayCircle } from 'react-icons/hi2'
+import { FaBookOpen, FaUserTie } from 'react-icons/fa6'
 
-import { noisePattern } from "@/components/noise-pattern";
-import { type StorefrontCourse } from "@/lib/lms-api-client";
-import { cn } from "@/lib/utils";
+import { noisePattern } from '@/components/noise-pattern'
+import { type StorefrontCourse } from '@/lib/lms-api-client'
+import { cn } from '@/lib/utils'
 
 type CourseCardProps = {
-  course: StorefrontCourse;
-  index?: number;
-  className?: string;
-  ctaLabel?: string;
-  isEnrolled?: boolean;
-  href?: string;
-  resumeHref?: string;
-  viewHref?: string;
-  progressPercent?: number | null;
-  metaLabel?: string | null;
-};
+  course: StorefrontCourse
+  index?: number
+  className?: string
+  ctaLabel?: string
+  isEnrolled?: boolean
+  href?: string
+  resumeHref?: string
+  viewHref?: string
+  progressPercent?: number | null
+  metaLabel?: string | null
+}
 
 export function CourseCard({
   course,
   index = 0,
   className,
-  ctaLabel = "View Course",
+  ctaLabel = 'View Course',
   isEnrolled = false,
   href,
   resumeHref,
@@ -33,44 +33,45 @@ export function CourseCard({
   progressPercent = null,
   metaLabel = null,
 }: CourseCardProps) {
-  const isEven = index % 2 === 0;
+  const isEven = index % 2 === 0
   const description =
     course.description?.trim() ||
-    "Course details coming soon. A complete overview will be available shortly.";
+    'Course details coming soon. A complete overview will be available shortly.'
   const categories = (course.category ?? [])
     .map((category) => category.trim())
     .filter(Boolean)
-    .slice(0, 4);
+    .slice(0, 4)
   const primaryInstructor = course.instructors?.find(
-    (instructor) => instructor?.name?.trim() || instructor?.avatar?.trim()
-  );
-  const instructorName = primaryInstructor?.name?.trim() ?? "";
-  const instructorAvatar = primaryInstructor?.avatar?.trim() ?? "";
-  const shouldShowInstructor = Boolean(instructorName) || Boolean(metaLabel);
+    (instructor) => instructor?.name?.trim() || instructor?.avatar?.trim(),
+  )
+  const instructorName = primaryInstructor?.name?.trim() ?? ''
+  const instructorAvatar = primaryInstructor?.avatar?.trim() ?? ''
+  const shouldShowInstructor = Boolean(instructorName) || Boolean(metaLabel)
   const normalizedProgress =
-    typeof progressPercent === "number"
+    typeof progressPercent === 'number'
       ? Math.max(0, Math.min(100, Math.round(progressPercent)))
-      : null;
-  const finalResumeHref = resumeHref ?? href ?? `/dashboard/courses/${course.id}`;
-  const finalViewHref = viewHref ?? `/courses/${course.id}`;
+      : null
+  const finalResumeHref =
+    resumeHref ?? href ?? `/dashboard/courses/${course.id}`
+  const finalViewHref = viewHref ?? `/courses/${course.id}`
   const cardClassName = cn(
-    "group h-full flex flex-col justify-between rounded-lg border border-muted-foreground/20 dark:border-border/70 bg-muted-foreground/10 dark:bg-muted/60 p-2 transition-colors duration-300 hover:bg-muted",
-    className
-  );
+    'group h-full flex flex-col justify-between rounded-lg border border-muted-foreground/20 dark:border-border/70 bg-muted-foreground/10 dark:bg-muted/60 p-2 transition-colors duration-300 hover:bg-muted',
+    className,
+  )
   const priceLabel = isEnrolled
-    ? "Enrolled"
+    ? 'Enrolled'
     : !course.price || course.price <= 0
-    ? "Free"
-    : `₹${course.price.toLocaleString()}`;
+      ? 'Free'
+      : `₹${course.price.toLocaleString()}`
 
   const cardContent = (
     <>
       <div
         className={cn(
-          "relative overflow-hidden rounded-sm",
+          'relative overflow-hidden rounded-sm',
           isEven
-            ? "bg-gradient-to-b from-[#7b627d] to-[#8f6976] dark:from-[#412c42] dark:to-[#3c1a26]"
-            : "bg-gradient-to-b from-[#9ca88f] to-[#596352] dark:from-[#333a2b] dark:to-[#26361b]"
+            ? 'bg-gradient-to-b from-[#7b627d] to-[#8f6976] dark:from-[#412c42] dark:to-[#3c1a26]'
+            : 'bg-gradient-to-b from-[#9ca88f] to-[#596352] dark:from-[#333a2b] dark:to-[#26361b]',
         )}
       >
         <div
@@ -151,7 +152,7 @@ export function CourseCard({
                     </div>
                   )}
                   <span className="truncate text-sm font-medium text-foreground">
-                    By {instructorName || "Instructor"}
+                    By {instructorName || 'Instructor'}
                   </span>
                 </div>
               ) : null}
@@ -200,7 +201,7 @@ export function CourseCard({
         </div>
       </div>
     </>
-  );
+  )
 
   return isEnrolled ? (
     <article className={cardClassName}>{cardContent}</article>
@@ -208,5 +209,5 @@ export function CourseCard({
     <Link href={href ?? `/courses/${course.id}`} className={cardClassName}>
       {cardContent}
     </Link>
-  );
+  )
 }

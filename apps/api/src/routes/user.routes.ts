@@ -240,7 +240,7 @@ router
   .post(
     passwordResetRequestRateLimiter,
     requireSecretApiKey,
-    requestPasswordReset
+    requestPasswordReset,
   )
 /**
  * @openapi

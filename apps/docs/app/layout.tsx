@@ -1,13 +1,13 @@
-import { RootProvider } from 'fumadocs-ui/provider/next';
-import './global.css';
-import { Inter } from 'next/font/google';
-import { source } from '@/lib/source';
-import { DocsLayout } from 'fumadocs-ui/layouts/docs';
-import { baseOptions } from '@/lib/layout.shared';
+import { RootProvider } from 'fumadocs-ui/provider/next'
+import './global.css'
+import { Inter } from 'next/font/google'
+import { source } from '@/lib/source'
+import { DocsLayout } from 'fumadocs-ui/layouts/docs'
+import { baseOptions } from '@/lib/layout.shared'
 
 const inter = Inter({
   subsets: ['latin'],
-});
+})
 
 export default function Layout({ children }: LayoutProps<'/'>) {
   return (
@@ -20,5 +20,5 @@ export default function Layout({ children }: LayoutProps<'/'>) {
         </RootProvider>
       </body>
     </html>
-  );
+  )
 }

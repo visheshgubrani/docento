@@ -16,11 +16,11 @@ type ResponsePayload = {
 
 function InvitationRespondFallback() {
   return (
-    <main className='min-h-screen bg-background text-foreground px-4 py-16'>
-      <section className='mx-auto w-full max-w-xl rounded-sm border border-neutral-200 bg-background p-8 text-center space-y-4'>
-        <Loader2 className='mx-auto h-8 w-8 animate-spin text-muted-foreground' />
-        <h1 className='text-2xl font-semibold'>Processing invitation...</h1>
-        <p className='text-sm text-muted-foreground'>
+    <main className="min-h-screen bg-background text-foreground px-4 py-16">
+      <section className="mx-auto w-full max-w-xl rounded-sm border border-neutral-200 bg-background p-8 text-center space-y-4">
+        <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
+        <h1 className="text-2xl font-semibold">Processing invitation...</h1>
+        <p className="text-sm text-muted-foreground">
           Please wait while we load your invitation details.
         </p>
       </section>
@@ -83,33 +83,40 @@ function InvitationRespondContent() {
   }, [action, token])
 
   return (
-    <main className='min-h-screen bg-background text-foreground px-4 py-16'>
-      <section className='mx-auto w-full max-w-xl rounded-sm border border-neutral-200 bg-background p-8 text-center space-y-4'>
+    <main className="min-h-screen bg-background text-foreground px-4 py-16">
+      <section className="mx-auto w-full max-w-xl rounded-sm border border-neutral-200 bg-background p-8 text-center space-y-4">
         {state === 'processing' || state === 'idle' ? (
           <>
-            <Loader2 className='mx-auto h-8 w-8 animate-spin text-muted-foreground' />
-            <h1 className='text-2xl font-semibold'>Processing invitation...</h1>
-            <p className='text-sm text-muted-foreground'>Please wait while we confirm your response.</p>
+            <Loader2 className="mx-auto h-8 w-8 animate-spin text-muted-foreground" />
+            <h1 className="text-2xl font-semibold">Processing invitation...</h1>
+            <p className="text-sm text-muted-foreground">
+              Please wait while we confirm your response.
+            </p>
           </>
         ) : null}
 
         {state === 'success' ? (
           <>
             {action === 'accept' ? (
-              <CheckCircle2 className='mx-auto h-9 w-9 text-emerald-600' />
+              <CheckCircle2 className="mx-auto h-9 w-9 text-emerald-600" />
             ) : (
-              <XCircle className='mx-auto h-9 w-9 text-amber-600' />
+              <XCircle className="mx-auto h-9 w-9 text-amber-600" />
             )}
-            <h1 className='text-2xl font-semibold'>
-              {action === 'accept' ? 'Invitation accepted' : 'Invitation rejected'}
+            <h1 className="text-2xl font-semibold">
+              {action === 'accept'
+                ? 'Invitation accepted'
+                : 'Invitation rejected'}
             </h1>
-            <p className='text-sm text-muted-foreground'>
+            <p className="text-sm text-muted-foreground">
               {payload.projectName
                 ? `Project: ${payload.projectName}`
                 : 'Your response has been recorded.'}
             </p>
-            <div className='pt-2'>
-              <Link href='/projects' className='text-sm font-medium underline underline-offset-4'>
+            <div className="pt-2">
+              <Link
+                href="/projects"
+                className="text-sm font-medium underline underline-offset-4"
+              >
                 Go to projects
               </Link>
             </div>
@@ -118,11 +125,16 @@ function InvitationRespondContent() {
 
         {state === 'error' ? (
           <>
-            <XCircle className='mx-auto h-9 w-9 text-destructive' />
-            <h1 className='text-2xl font-semibold'>Could not process invitation</h1>
-            <p className='text-sm text-muted-foreground'>{errorMessage}</p>
-            <div className='pt-2'>
-              <Link href='/login' className='text-sm font-medium underline underline-offset-4'>
+            <XCircle className="mx-auto h-9 w-9 text-destructive" />
+            <h1 className="text-2xl font-semibold">
+              Could not process invitation
+            </h1>
+            <p className="text-sm text-muted-foreground">{errorMessage}</p>
+            <div className="pt-2">
+              <Link
+                href="/login"
+                className="text-sm font-medium underline underline-offset-4"
+              >
                 Sign in and try again
               </Link>
             </div>

@@ -8,7 +8,7 @@ export async function GET() {
     if (!LMS_API_URL || !LMS_SECRET_API_KEY) {
       return NextResponse.json(
         { message: 'LMS_API_URL or LMS_SECRET_API_KEY is not configured' },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
@@ -30,7 +30,7 @@ export async function GET() {
     console.error('[STOREFRONT_COURSES_PROXY_ERROR]', error)
     return NextResponse.json(
       { message: 'Failed to fetch storefront courses' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

@@ -140,7 +140,9 @@ export const coreEnvSchema = z.object({
    * without it Better Auth derives the origin from each request, which breaks
    * callbacks and redirects.
    */
-  API_URL: httpUrl('the public origin of the API').default('http://localhost:4000'),
+  API_URL: httpUrl('the public origin of the API').default(
+    'http://localhost:4000',
+  ),
 
   API_PORT: port(4000),
 
@@ -338,7 +340,9 @@ export type IntegrationName = keyof typeof integrationSchemas
 export type EnvSource = Record<string, string | undefined>
 
 const formatIssues = (error: z.ZodError, prefix: string) =>
-  error.issues.map((issue) => `${prefix}${issue.path.join('.')}: ${issue.message}`)
+  error.issues.map(
+    (issue) => `${prefix}${issue.path.join('.')}: ${issue.message}`,
+  )
 
 function parseOrThrow<T extends z.ZodTypeAny>(
   schema: T,

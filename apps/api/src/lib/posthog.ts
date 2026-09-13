@@ -33,7 +33,7 @@ const compactProperties = (properties: AnalyticsProperties) =>
       }
 
       return true
-    })
+    }),
   ) as AnalyticsProperties
 
 const getPostHogClient = () => {
@@ -59,7 +59,7 @@ const getActorKind = (req: Request) => {
 
 export const getAnalyticsDistinctId = (req: Request) => {
   const headerDistinctId = asHeaderString(
-    req.headers[POSTHOG_DISTINCT_ID_HEADER]
+    req.headers[POSTHOG_DISTINCT_ID_HEADER],
   )?.trim()
 
   if (headerDistinctId) {
@@ -101,7 +101,7 @@ const getBaseProperties = (req: Request): AnalyticsProperties =>
 export const captureServerEvent = (
   req: Request,
   event: string,
-  properties: AnalyticsProperties = {}
+  properties: AnalyticsProperties = {},
 ) => {
   const client = getPostHogClient()
 
@@ -131,7 +131,7 @@ export const captureServerEvent = (
 export const captureServerException = (
   error: unknown,
   req: Request,
-  properties: AnalyticsProperties = {}
+  properties: AnalyticsProperties = {},
 ) => {
   const client = getPostHogClient()
 

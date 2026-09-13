@@ -64,7 +64,10 @@ const PUBLIC_ACTIONS: readonly Action[] = ['catalog:read']
  *
  * `catalog:read` is deliberately empty: public data has no tenant.
  */
-export const REQUIRED_RESOURCE_FIELDS: Record<Action, readonly (keyof Resource)[]> = {
+export const REQUIRED_RESOURCE_FIELDS: Record<
+  Action,
+  readonly (keyof Resource)[]
+> = {
   // Workspace and team: the workspace is the whole scope.
   'workspace:read': ['workspaceId'],
   'workspace:update': ['workspaceId'],

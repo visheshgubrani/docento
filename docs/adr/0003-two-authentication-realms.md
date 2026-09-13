@@ -21,7 +21,7 @@ implementations: Better Auth for staff, and a hand-rolled JWT stack for learners
 with a `ManagedUser` row holding a bcrypt password, a hashed refresh token, and
 a shared `JWT_SECRET`. That worked, but it meant two session-revocation stories,
 two sets of auth bugs to reason about, and a learner sign-up endpoint that
-required a *secret* API key — which forced the student-facing application to hold
+required a _secret_ API key — which forced the student-facing application to hold
 full tenant-admin credentials.
 
 Three specific problems had to be solved:
@@ -39,13 +39,13 @@ Three specific problems had to be solved:
 Run **two `betterAuth()` instances**, one per realm, with entirely separate
 tables and cookie namespaces.
 
-| | Staff realm | Learner realm |
-| --- | --- | --- |
-| Base path | `/api/auth/staff` | `/api/auth/learners` |
-| Tables | `staff_user`, `staff_account`, `staff_session`, `staff_verification` | `learner_user`, `learner_account`, `learner_session`, `learner_verification` |
-| Scope | Spans workspaces | Carries `academyId` on every row, in every unique key |
-| Cookie prefix | `docento-staff` | `docento-learner` |
-| Organization plugin | Yes | No |
+|                     | Staff realm                                                          | Learner realm                                                                |
+| ------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Base path           | `/api/auth/staff`                                                    | `/api/auth/learners`                                                         |
+| Tables              | `staff_user`, `staff_account`, `staff_session`, `staff_verification` | `learner_user`, `learner_account`, `learner_session`, `learner_verification` |
+| Scope               | Spans workspaces                                                     | Carries `academyId` on every row, in every unique key                        |
+| Cookie prefix       | `docento-staff`                                                      | `docento-learner`                                                            |
+| Organization plugin | Yes                                                                  | No                                                                           |
 
 The staff instance uses Better Auth's organization plugin, mapped onto the
 workspace and membership tables, for membership and invitations.
@@ -123,7 +123,7 @@ on are supported by the installed version rather than assumed.
 in `packages/domain/src/auth/__tests__/learner-isolation.test.ts`.
 
 **Where enforcement lives.** The spike disproved the obvious approach. Wrapping
-Better Auth's *adapter* is not reliable: on request paths Better Auth resolves
+Better Auth's _adapter_ is not reliable: on request paths Better Auth resolves
 its adapter through async-local storage, and the instance it resolves is not the
 one a wrapper replaces. Reads issued during sign-up therefore searched every
 academy, and the email-uniqueness check rejected a legitimate second academy.

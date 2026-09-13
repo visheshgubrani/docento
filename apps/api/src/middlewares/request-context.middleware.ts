@@ -1,7 +1,11 @@
 import { randomUUID } from 'node:crypto'
 import type { NextFunction, Request, Response } from 'express'
 
-import { logger, getRequestIdFromHeaders, runWithLogContext } from '../utils/logger'
+import {
+  logger,
+  getRequestIdFromHeaders,
+  runWithLogContext,
+} from '../utils/logger'
 
 const REQUEST_ID_HEADER = 'x-request-id'
 
@@ -23,7 +27,7 @@ const getClientIp = (req: Request) => {
 export const requestContextMiddleware = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const requestId = getRequestIdFromHeaders(req.headers) || randomUUID()
   const userAgent = Array.isArray(req.headers['user-agent'])

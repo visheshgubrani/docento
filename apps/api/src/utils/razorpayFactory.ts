@@ -4,12 +4,12 @@ import ApiError from '../utils/ApiError'
 
 export const getRazorpayForProject = (
   keyId: string | null,
-  encryptedSecret: string | null
+  encryptedSecret: string | null,
 ) => {
   if (!keyId || !encryptedSecret) {
     throw new ApiError(
       400,
-      'Payment gateway not configured. Please contact the course creator.'
+      'Payment gateway not configured. Please contact the course creator.',
     )
   }
 

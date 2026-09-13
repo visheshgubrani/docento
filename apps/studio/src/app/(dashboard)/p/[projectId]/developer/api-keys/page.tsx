@@ -1,10 +1,10 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { Check, Copy, Key, Loader2, Plus, Trash } from "lucide-react";
-import { MdAdminPanelSettings } from "react-icons/md";
+import { useState } from 'react'
+import { Check, Copy, Key, Loader2, Plus, Trash } from 'lucide-react'
+import { MdAdminPanelSettings } from 'react-icons/md'
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -12,9 +12,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Table,
   TableBody,
@@ -22,36 +22,36 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { useToast } from "@/components/ui/use-toast";
-import { useProjectRouteId } from "@/lib/hooks/use-project-route-id";
-import { useProject } from "@/lib/hooks/use-projects";
+} from '@/components/ui/table'
+import { useToast } from '@/components/ui/use-toast'
+import { useProjectRouteId } from '@/lib/hooks/use-project-route-id'
+import { useProject } from '@/lib/hooks/use-projects'
 import {
   useCreateProjectApiKey,
   useDeleteProjectApiKey,
   useProjectApiKeys,
-} from "@/lib/hooks/use-api-keys";
+} from '@/lib/hooks/use-api-keys'
 
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
 
 function formatDate(value?: string | null) {
-  if (!value) return "—";
+  if (!value) return '—'
   try {
-    return dateFormatter.format(new Date(value));
+    return dateFormatter.format(new Date(value))
   } catch {
-    return "—";
+    return '—'
   }
 }
 
 function maskSecretKey(key: string) {
-  if (!key || key.length < 8) return "sk_••••••••••••";
+  if (!key || key.length < 8) return 'sk_••••••••••••'
   // Show first 7 chars (e.g., sk_live_) + asterisks + last 4 chars
-  const prefix = key.slice(0, 7);
-  const suffix = key.slice(-4);
-  return `${prefix}******${suffix}`;
+  const prefix = key.slice(0, 7)
+  const suffix = key.slice(-4)
+  return `${prefix}******${suffix}`
 }
 
 function CopyButton({
@@ -59,26 +59,26 @@ function CopyButton({
   label,
   onError,
 }: {
-  value: string;
-  label: string;
-  onError: () => void;
+  value: string
+  label: string
+  onError: () => void
 }) {
-  const { toast } = useToast();
-  const [copied, setCopied] = useState(false);
+  const { toast } = useToast()
+  const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(value);
-      setCopied(true);
+      await navigator.clipboard.writeText(value)
+      setCopied(true)
       toast({
-        title: "Copied",
+        title: 'Copied',
         description: `${label} copied to clipboard.`,
-      });
-      setTimeout(() => setCopied(false), 2000);
+      })
+      setTimeout(() => setCopied(false), 2000)
     } catch {
-      onError();
+      onError()
     }
-  };
+  }
 
   return (
     <button
@@ -93,7 +93,7 @@ function CopyButton({
         <Copy className="size-3.5" />
       )}
     </button>
-  );
+  )
 }
 
 function SecretKeysTableSkeleton() {
@@ -116,16 +116,16 @@ function SecretKeysTableSkeleton() {
         </TableRow>
       ))}
     </>
-  );
+  )
 }
 
 type CreateKeyDialogProps = {
-  projectName?: string;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onCreate: (name: string) => Promise<void>;
-  isSubmitting: boolean;
-};
+  projectName?: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onCreate: (name: string) => Promise<void>
+  isSubmitting: boolean
+}
 
 function CreateKeyDialog({
   projectName,
@@ -134,32 +134,32 @@ function CreateKeyDialog({
   onCreate,
   isSubmitting,
 }: CreateKeyDialogProps) {
-  const [name, setName] = useState("");
-  const [error, setError] = useState("");
+  const [name, setName] = useState('')
+  const [error, setError] = useState('')
 
   const resetState = () => {
-    setName("");
-    setError("");
-  };
+    setName('')
+    setError('')
+  }
 
   const handleClose = (nextOpen: boolean) => {
     if (!nextOpen) {
-      resetState();
+      resetState()
     }
-    onOpenChange(nextOpen);
-  };
+    onOpenChange(nextOpen)
+  }
 
   const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    const trimmed = name.trim();
+    event.preventDefault()
+    const trimmed = name.trim()
     if (!trimmed) {
-      setError("Name is required");
-      return;
+      setError('Name is required')
+      return
     }
-    setError("");
-    await onCreate(trimmed);
-    resetState();
-  };
+    setError('')
+    await onCreate(trimmed)
+    resetState()
+  }
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -176,9 +176,9 @@ function CreateKeyDialog({
         <form onSubmit={handleSubmit} className="space-y-10">
           <div className="grid gap-2">
             <div className="rounded-sm border border-muted-foreground/70 bg-muted px-3 py-2 text-sm text-foreground/80">
-              Project:{" "}
+              Project:{' '}
               <span className="font-medium text-foreground ml-1">
-                {projectName ?? "Current project"}
+                {projectName ?? 'Current project'}
               </span>
             </div>
             <Label
@@ -219,34 +219,34 @@ function CreateKeyDialog({
         </form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 type SaveKeyDialogProps = {
-  open: boolean;
-  apiKey?: string;
-  onClose: () => void;
-};
+  open: boolean
+  apiKey?: string
+  onClose: () => void
+}
 
 function SaveKeyDialog({ open, apiKey, onClose }: SaveKeyDialogProps) {
-  const { toast } = useToast();
+  const { toast } = useToast()
 
   const copyKey = async () => {
-    if (!apiKey) return;
+    if (!apiKey) return
     try {
-      await navigator.clipboard.writeText(apiKey);
+      await navigator.clipboard.writeText(apiKey)
       toast({
-        title: "Key copied",
-        description: "API key copied to clipboard.",
-      });
+        title: 'Key copied',
+        description: 'API key copied to clipboard.',
+      })
     } catch (error) {
       toast({
-        title: "Unable to copy",
-        description: "Please try again.",
-        variant: "destructive",
-      });
+        title: 'Unable to copy',
+        description: 'Please try again.',
+        variant: 'destructive',
+      })
     }
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={(openState) => !openState && onClose()}>
@@ -267,7 +267,7 @@ function SaveKeyDialog({ open, apiKey, onClose }: SaveKeyDialogProps) {
           <div className="flex flex-col gap-3">
             <div className="rounded-xs bg-background border border-neutral-300 font-medium px-3 py-3 overflow-hidden">
               <code className="text-sm font-mono text-foreground break-all whitespace-pre-wrap block">
-                {apiKey ?? "••••••••••"}
+                {apiKey ?? '••••••••••'}
               </code>
             </div>
             <Button
@@ -290,16 +290,16 @@ function SaveKeyDialog({ open, apiKey, onClose }: SaveKeyDialogProps) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 type RevokeKeyDialogProps = {
-  open: boolean;
-  keyName?: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-  isRevoking: boolean;
-};
+  open: boolean
+  keyName?: string
+  onConfirm: () => void
+  onCancel: () => void
+  isRevoking: boolean
+}
 
 function RevokeKeyDialog({
   open,
@@ -316,9 +316,9 @@ function RevokeKeyDialog({
             Revoke API Key
           </DialogTitle>
           <DialogDescription className="mt-1 text-foreground/65">
-            Are you sure you want to revoke{" "}
+            Are you sure you want to revoke{' '}
             <span className="font-semibold text-foreground">
-              {keyName || "this key"}
+              {keyName || 'this key'}
             </span>
             ? This action cannot be undone and any integrations using this key
             will stop working immediately.
@@ -346,122 +346,122 @@ function RevokeKeyDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 export default function ProjectApiKeysPage() {
-  const projectId = useProjectRouteId();
-  const { data: project, isLoading: isProjectLoading } = useProject(projectId);
+  const projectId = useProjectRouteId()
+  const { data: project, isLoading: isProjectLoading } = useProject(projectId)
   const {
     data: apiKeysData,
     isLoading: isKeysLoading,
     isError: isKeysError,
     error: keysError,
     refetch,
-  } = useProjectApiKeys(projectId);
-  const { toast } = useToast();
+  } = useProjectApiKeys(projectId)
+  const { toast } = useToast()
 
   const { mutateAsync: createKey, isPending: isCreating } =
-    useCreateProjectApiKey(projectId);
-  const { mutateAsync: deleteKey } = useDeleteProjectApiKey(projectId);
+    useCreateProjectApiKey(projectId)
+  const { mutateAsync: deleteKey } = useDeleteProjectApiKey(projectId)
 
-  const [isCreateOpen, setCreateOpen] = useState(false);
-  const [isSaveOpen, setSaveOpen] = useState(false);
-  const [newKeySecret, setNewKeySecret] = useState<string | null>(null);
+  const [isCreateOpen, setCreateOpen] = useState(false)
+  const [isSaveOpen, setSaveOpen] = useState(false)
+  const [newKeySecret, setNewKeySecret] = useState<string | null>(null)
   const [revokeDialogState, setRevokeDialogState] = useState<{
-    open: boolean;
-    keyId: string | null;
-    keyName: string | null;
-  }>({ open: false, keyId: null, keyName: null });
-  const [isRevoking, setIsRevoking] = useState(false);
+    open: boolean
+    keyId: string | null
+    keyName: string | null
+  }>({ open: false, keyId: null, keyName: null })
+  const [isRevoking, setIsRevoking] = useState(false)
 
-  const publishableKey = apiKeysData?.publishableKey ?? "";
-  const secretKeys = apiKeysData?.secretKeys ?? [];
+  const publishableKey = apiKeysData?.publishableKey ?? ''
+  const secretKeys = apiKeysData?.secretKeys ?? []
 
   const handleCreateKey = async (name: string) => {
     try {
-      const payload = await createKey({ name });
-      setNewKeySecret(payload.apiKey);
-      setSaveOpen(true);
+      const payload = await createKey({ name })
+      setNewKeySecret(payload.apiKey)
+      setSaveOpen(true)
       toast({
-        title: "Key created",
-        description: "Copy and store your key securely.",
-      });
-      setCreateOpen(false);
+        title: 'Key created',
+        description: 'Copy and store your key securely.',
+      })
+      setCreateOpen(false)
     } catch (error) {
       toast({
-        title: "Unable to create key",
+        title: 'Unable to create key',
         description:
           error instanceof Error
             ? error.message
-            : "Please try again in a moment.",
-        variant: "destructive",
-      });
+            : 'Please try again in a moment.',
+        variant: 'destructive',
+      })
     }
-  };
+  }
 
   const openRevokeDialog = (keyId: string, keyName: string) => {
-    setRevokeDialogState({ open: true, keyId, keyName });
-  };
+    setRevokeDialogState({ open: true, keyId, keyName })
+  }
 
   const closeRevokeDialog = () => {
-    setRevokeDialogState({ open: false, keyId: null, keyName: null });
-  };
+    setRevokeDialogState({ open: false, keyId: null, keyName: null })
+  }
 
   const handleConfirmRevoke = async () => {
-    if (!revokeDialogState.keyId) return;
+    if (!revokeDialogState.keyId) return
 
-    setIsRevoking(true);
+    setIsRevoking(true)
     try {
-      await deleteKey({ keyId: revokeDialogState.keyId });
+      await deleteKey({ keyId: revokeDialogState.keyId })
       toast({
-        title: "Secret key revoked",
-        description: "The key is no longer active.",
-      });
-      closeRevokeDialog();
+        title: 'Secret key revoked',
+        description: 'The key is no longer active.',
+      })
+      closeRevokeDialog()
     } catch (error) {
       toast({
-        title: "Unable to delete key",
+        title: 'Unable to delete key',
         description:
           error instanceof Error
             ? error.message
-            : "Please try again in a moment.",
-        variant: "destructive",
-      });
+            : 'Please try again in a moment.',
+        variant: 'destructive',
+      })
     } finally {
-      setIsRevoking(false);
+      setIsRevoking(false)
     }
-  };
+  }
 
   const closeSaveDialog = () => {
-    setSaveOpen(false);
-    setNewKeySecret(null);
-  };
+    setSaveOpen(false)
+    setNewKeySecret(null)
+  }
 
   const handleCopyPublishableKey = async () => {
-    if (!publishableKey) return;
+    if (!publishableKey) return
     try {
-      await navigator.clipboard.writeText(publishableKey);
+      await navigator.clipboard.writeText(publishableKey)
       toast({
-        title: "Copied",
-        description: "Publishable key copied to clipboard.",
-      });
+        title: 'Copied',
+        description: 'Publishable key copied to clipboard.',
+      })
     } catch (error) {
       toast({
-        title: "Unable to copy",
-        description: "Please try again.",
-        variant: "destructive",
-      });
+        title: 'Unable to copy',
+        description: 'Please try again.',
+        variant: 'destructive',
+      })
     }
-  };
+  }
 
   const handleProjectIdCopyError = () => {
     toast({
-      title: "Unable to copy",
-      description: "Please try again.",
-      variant: "destructive",
-    });
-  };
+      title: 'Unable to copy',
+      description: 'Please try again.',
+      variant: 'destructive',
+    })
+  }
 
   return (
     <div className="space-y-10">
@@ -473,9 +473,9 @@ export default function ProjectApiKeysPage() {
           </h2>
           <p className="text-lg font-stix text-foreground/80 max-w-2xl tracking-wide">
             {isProjectLoading
-              ? "Loading project keys..."
+              ? 'Loading project keys...'
               : `Issue and rotate tokens for ${
-                  project?.name ?? "your project"
+                  project?.name ?? 'your project'
                 }.`}
             <br />
             Manage publishable and secret keys for API access.
@@ -524,8 +524,8 @@ export default function ProjectApiKeysPage() {
                 value={publishableKey}
                 placeholder={
                   isKeysLoading
-                    ? "Loading key..."
-                    : "No publishable key available"
+                    ? 'Loading key...'
+                    : 'No publishable key available'
                 }
                 className="bg-muted/40 font-mono text-sm text-foreground/80 sm:flex-1 h-11 shadow-none border-neutral-300 rounded-xs"
               />
@@ -558,10 +558,10 @@ export default function ProjectApiKeysPage() {
           </div>
           <p className="text-sm text-foreground/70">
             {isKeysLoading
-              ? "Loading keys..."
+              ? 'Loading keys...'
               : secretKeys.length === 1
-              ? "1 secret key"
-              : `${secretKeys.length} secret keys`}
+                ? '1 secret key'
+                : `${secretKeys.length} secret keys`}
           </p>
         </div>
 
@@ -598,7 +598,7 @@ export default function ProjectApiKeysPage() {
                   Unable to load keys
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {keysError?.message ?? "Please try again in a moment."}
+                  {keysError?.message ?? 'Please try again in a moment.'}
                 </p>
               </div>
               <Button variant="outline" onClick={() => refetch()}>
@@ -706,5 +706,5 @@ export default function ProjectApiKeysPage() {
         isRevoking={isRevoking}
       />
     </div>
-  );
+  )
 }

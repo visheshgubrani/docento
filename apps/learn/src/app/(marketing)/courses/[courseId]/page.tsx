@@ -1,8 +1,8 @@
-"use client";
+'use client'
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
 import {
   HiArrowDownTray,
   HiCheckBadge,
@@ -18,10 +18,10 @@ import {
   HiPlayCircle,
   HiShoppingCart,
   HiUsers,
-} from "react-icons/hi2";
-import { FaPlay } from "react-icons/fa";
-import { LiaCertificateSolid } from "react-icons/lia";
-import { noisePattern } from "@/components/noise-pattern";
+} from 'react-icons/hi2'
+import { FaPlay } from 'react-icons/fa'
+import { LiaCertificateSolid } from 'react-icons/lia'
+import { noisePattern } from '@/components/noise-pattern'
 import {
   fetchStudentCourseContent,
   fetchStorefrontCourse,
@@ -29,86 +29,91 @@ import {
   type StorefrontCourseDetail,
   type StorefrontCourseViewer,
   type StorefrontLesson,
-} from "@/lib/lms-api-client";
+} from '@/lib/lms-api-client'
 
 function formatDuration(duration?: number | null) {
-  if (!duration || duration <= 0) return "—";
-  const minutes = Math.max(1, Math.round(duration / 60));
-  return `${minutes} min`;
+  if (!duration || duration <= 0) return '—'
+  const minutes = Math.max(1, Math.round(duration / 60))
+  return `${minutes} min`
 }
 
 function formatPublishedDate(value?: string) {
-  if (!value) return null;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
+  if (!value) return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return null
 
-  return new Intl.DateTimeFormat("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  }).format(date);
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date)
 }
 
 function formatCourseVideoDuration(totalSeconds?: number | null) {
-  if (!totalSeconds || totalSeconds <= 0) return "0 min";
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  if (!totalSeconds || totalSeconds <= 0) return '0 min'
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
 
   if (hours <= 0) {
-    return `${Math.max(1, minutes)} min`;
+    return `${Math.max(1, minutes)} min`
   }
 
   if (minutes === 0) {
-    return `${hours}h`;
+    return `${hours}h`
   }
 
-  return `${hours}h ${minutes}m`;
+  return `${hours}h ${minutes}m`
 }
 
 function formatCount(value: number, singular: string, plural = `${singular}s`) {
-  return `${value.toLocaleString()} ${value === 1 ? singular : plural}`;
+  return `${value.toLocaleString()} ${value === 1 ? singular : plural}`
 }
 
 function formatAccessDuration(days?: number | null) {
-  if (!days || days <= 0) return "Lifetime Access";
-  if (days <= 30) return `${days} d`;
+  if (!days || days <= 0) return 'Lifetime Access'
+  if (days <= 30) return `${days} d`
 
-  const months = days / 30;
+  const months = days / 30
   const roundedMonths =
     Math.abs(months - Math.round(months)) < 0.25
       ? Math.round(months)
-      : Math.round(months * 10) / 10;
+      : Math.round(months * 10) / 10
 
-  return `${roundedMonths}-Month Access`;
+  return `${roundedMonths}-Month Access`
 }
 
-function resolveContinueLessonId(content: StudentCourseContent | null | undefined) {
-  const allLessons = content?.course.modules.flatMap((module) => module.lessons) ?? [];
+function resolveContinueLessonId(
+  content: StudentCourseContent | null | undefined,
+) {
+  const allLessons =
+    content?.course.modules.flatMap((module) => module.lessons) ?? []
 
   if (allLessons.length < 1) {
-    return null;
+    return null
   }
 
-  const progressMap = content?.progressMap ?? {};
+  const progressMap = content?.progressMap ?? {}
 
   const lastWatched = Object.entries(progressMap)
     .filter(([, progress]) => Boolean(progress?.lastWatchedAt))
     .sort((a, b) => {
-      const aTime = new Date(a[1]?.lastWatchedAt || 0).getTime();
-      const bTime = new Date(b[1]?.lastWatchedAt || 0).getTime();
-      return bTime - aTime;
-    })[0]?.[0];
+      const aTime = new Date(a[1]?.lastWatchedAt || 0).getTime()
+      const bTime = new Date(b[1]?.lastWatchedAt || 0).getTime()
+      return bTime - aTime
+    })[0]?.[0]
 
   if (lastWatched && allLessons.some((lesson) => lesson.id === lastWatched)) {
-    return lastWatched;
+    return lastWatched
   }
 
-  const firstIncomplete = allLessons.find((lesson) => !progressMap[lesson.id]?.isCompleted);
+  const firstIncomplete = allLessons.find(
+    (lesson) => !progressMap[lesson.id]?.isCompleted,
+  )
   if (firstIncomplete?.id) {
-    return firstIncomplete.id;
+    return firstIncomplete.id
   }
 
-  return allLessons[0]?.id ?? null;
+  return allLessons[0]?.id ?? null
 }
 
 function LessonRow({
@@ -116,11 +121,11 @@ function LessonRow({
   lesson,
   isEnrolled,
 }: {
-  courseId: string;
-  lesson: StorefrontLesson;
-  isEnrolled: boolean;
+  courseId: string
+  lesson: StorefrontLesson
+  isEnrolled: boolean
 }) {
-  const shouldShowPlayIcon = lesson.isFree || isEnrolled;
+  const shouldShowPlayIcon = lesson.isFree || isEnrolled
 
   return (
     <Link
@@ -133,7 +138,9 @@ function LessonRow({
         <HiLockClosed className="mt-0.5 size-4.5 shrink-0 text-muted-foreground/70 sm:mt-0" />
       )}
 
-      <span className="min-w-0 flex-1 text-sm font-medium text-foreground">{lesson.title}</span>
+      <span className="min-w-0 flex-1 text-sm font-medium text-foreground">
+        {lesson.title}
+      </span>
 
       <div className="flex w-full items-center gap-2 pl-7 sm:w-auto sm:pl-0">
         {lesson.isFree && (
@@ -147,77 +154,84 @@ function LessonRow({
         </span>
       </div>
     </Link>
-  );
+  )
 }
 
 export default function CourseDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const courseId = (params?.courseId as string) || "";
+  const params = useParams()
+  const router = useRouter()
+  const courseId = (params?.courseId as string) || ''
 
-  const [course, setCourse] = useState<StorefrontCourseDetail | null>(null);
-  const [viewer, setViewer] = useState<StorefrontCourseViewer | null>(null);
-  const [continueLessonHref, setContinueLessonHref] = useState<string | null>(null);
-  const [expandedModules, setExpandedModules] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [course, setCourse] = useState<StorefrontCourseDetail | null>(null)
+  const [viewer, setViewer] = useState<StorefrontCourseViewer | null>(null)
+  const [continueLessonHref, setContinueLessonHref] = useState<string | null>(
+    null,
+  )
+  const [expandedModules, setExpandedModules] = useState<string[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    let cancelled = false;
+    let cancelled = false
 
     const loadCourse = async () => {
       try {
-        const result = await fetchStorefrontCourse(courseId);
-        if (cancelled) return;
+        const result = await fetchStorefrontCourse(courseId)
+        if (cancelled) return
 
-        setCourse(result.course);
-        setViewer(result.viewer ?? null);
-        setContinueLessonHref(`/dashboard/courses/${result.course.id}`);
-        setExpandedModules(result.course.modules.slice(0, 1).map((module) => module.id));
+        setCourse(result.course)
+        setViewer(result.viewer ?? null)
+        setContinueLessonHref(`/dashboard/courses/${result.course.id}`)
+        setExpandedModules(
+          result.course.modules.slice(0, 1).map((module) => module.id),
+        )
 
         if (result.viewer?.isEnrolled) {
           try {
-            const studentContent = await fetchStudentCourseContent(courseId);
-            if (cancelled) return;
+            const studentContent = await fetchStudentCourseContent(courseId)
+            if (cancelled) return
 
-            const lessonId = resolveContinueLessonId(studentContent);
+            const lessonId = resolveContinueLessonId(studentContent)
             setContinueLessonHref(
-              lessonId ? `/courses/${result.course.id}/${lessonId}` : `/dashboard/courses/${result.course.id}`
-            );
+              lessonId
+                ? `/courses/${result.course.id}/${lessonId}`
+                : `/dashboard/courses/${result.course.id}`,
+            )
           } catch {
             if (!cancelled) {
-              setContinueLessonHref(`/dashboard/courses/${result.course.id}`);
+              setContinueLessonHref(`/dashboard/courses/${result.course.id}`)
             }
           }
         }
       } catch (err) {
-        if (cancelled) return;
-        setError(err instanceof Error ? err.message : "Failed to load course.");
+        if (cancelled) return
+        setError(err instanceof Error ? err.message : 'Failed to load course.')
       } finally {
-        if (!cancelled) setIsLoading(false);
+        if (!cancelled) setIsLoading(false)
       }
-    };
+    }
 
-    loadCourse();
+    loadCourse()
     return () => {
-      cancelled = true;
-    };
-  }, [courseId]);
+      cancelled = true
+    }
+  }, [courseId])
 
   const totalLessons = useMemo(
-    () => course?.modules.reduce((sum, mod) => sum + mod.lessons.length, 0) ?? 0,
-    [course]
-  );
+    () =>
+      course?.modules.reduce((sum, mod) => sum + mod.lessons.length, 0) ?? 0,
+    [course],
+  )
 
   const courseIncludes = useMemo(() => {
     if (!course) {
       return {
         videoDurationSeconds: 0,
-        videoDurationText: "0 min on-demand video",
+        videoDurationText: '0 min on-demand video',
         downloadableResourcesCount: 0,
         articlesCount: 0,
         assessmentsCount: 0,
-      };
+      }
     }
 
     const fallback = {
@@ -225,41 +239,47 @@ export default function CourseDetailPage() {
       downloadableResourcesCount: 0,
       articlesCount: 0,
       assessmentsCount: 0,
-    };
+    }
 
     course.modules.forEach((module) => {
       module.lessons.forEach((lesson) => {
-        const contentType = lesson.contentType?.toUpperCase();
+        const contentType = lesson.contentType?.toUpperCase()
 
-        if (contentType === "VIDEO") {
-          fallback.videoDurationSeconds += Math.max(0, lesson.duration ?? 0);
+        if (contentType === 'VIDEO') {
+          fallback.videoDurationSeconds += Math.max(0, lesson.duration ?? 0)
         }
 
-        if (contentType === "TEXT") {
-          fallback.articlesCount += 1;
+        if (contentType === 'TEXT') {
+          fallback.articlesCount += 1
         }
 
-        if (contentType === "FILE") {
-          fallback.downloadableResourcesCount += 1;
+        if (contentType === 'FILE') {
+          fallback.downloadableResourcesCount += 1
         }
 
-        if (contentType === "QUIZ" || contentType === "MOCK_TEST" || contentType === "ASSIGNMENT") {
-          fallback.assessmentsCount += 1;
+        if (
+          contentType === 'QUIZ' ||
+          contentType === 'MOCK_TEST' ||
+          contentType === 'ASSIGNMENT'
+        ) {
+          fallback.assessmentsCount += 1
         }
-      });
-    });
+      })
+    })
 
-    const includes = course.includes;
-    const videoDurationSeconds = includes?.videoDurationSeconds ?? fallback.videoDurationSeconds;
+    const includes = course.includes
+    const videoDurationSeconds =
+      includes?.videoDurationSeconds ?? fallback.videoDurationSeconds
 
-    let assessmentsCount = fallback.assessmentsCount;
-    if (typeof includes?.assessmentsCount === "number") {
-      assessmentsCount = includes.assessmentsCount;
+    let assessmentsCount = fallback.assessmentsCount
+    if (typeof includes?.assessmentsCount === 'number') {
+      assessmentsCount = includes.assessmentsCount
     } else if (
-      typeof includes?.quizzesCount === "number" ||
-      typeof includes?.assignmentsCount === "number"
+      typeof includes?.quizzesCount === 'number' ||
+      typeof includes?.assignmentsCount === 'number'
     ) {
-      assessmentsCount = (includes?.quizzesCount ?? 0) + (includes?.assignmentsCount ?? 0);
+      assessmentsCount =
+        (includes?.quizzesCount ?? 0) + (includes?.assignmentsCount ?? 0)
     }
 
     return {
@@ -268,45 +288,50 @@ export default function CourseDetailPage() {
         includes?.videoDurationText ??
         `${formatCourseVideoDuration(videoDurationSeconds)} on-demand video`,
       downloadableResourcesCount:
-        includes?.downloadableResourcesCount ?? fallback.downloadableResourcesCount,
+        includes?.downloadableResourcesCount ??
+        fallback.downloadableResourcesCount,
       articlesCount: includes?.articlesCount ?? fallback.articlesCount,
       assessmentsCount,
-    };
-  }, [course]);
+    }
+  }, [course])
 
   const learningOutcomes = useMemo(() => {
-    if (!course) return [];
+    if (!course) return []
     return course.modules
       .flatMap((module) => module.lessons)
       .slice(0, 8)
-      .map((lesson) => `Build confidence with ${lesson.title.toLowerCase()}.`);
-  }, [course]);
+      .map((lesson) => `Build confidence with ${lesson.title.toLowerCase()}.`)
+  }, [course])
 
   const courseCategories = useMemo(() => {
-    if (!course) return [];
-    const categories = course.category?.length ? course.category : course.categories ?? [];
-    return categories.filter(Boolean);
-  }, [course]);
+    if (!course) return []
+    const categories = course.category?.length
+      ? course.category
+      : (course.categories ?? [])
+    return categories.filter(Boolean)
+  }, [course])
 
-  const primaryInstructor = course?.instructors?.[0] ?? null;
-  const instructorName = primaryInstructor?.name?.trim() || "Instructor";
-  const boughtCount = course?.studentsEnrolled ?? 0;
+  const primaryInstructor = course?.instructors?.[0] ?? null
+  const instructorName = primaryInstructor?.name?.trim() || 'Instructor'
+  const boughtCount = course?.studentsEnrolled ?? 0
   const freePreviewLesson = useMemo(
     () =>
-      course?.modules.flatMap((module) => module.lessons).find((lesson) => lesson.isFree) ?? null,
-    [course]
-  );
+      course?.modules
+        .flatMap((module) => module.lessons)
+        .find((lesson) => lesson.isFree) ?? null,
+    [course],
+  )
 
-  const hasEnrollment = Boolean(viewer?.isEnrolled);
+  const hasEnrollment = Boolean(viewer?.isEnrolled)
   const enrollmentProgress =
-    typeof viewer?.enrollment?.progress === "number"
+    typeof viewer?.enrollment?.progress === 'number'
       ? Math.max(0, Math.min(100, Math.round(viewer.enrollment.progress)))
-      : 0;
-  const canRequestCertificate = hasEnrollment && enrollmentProgress >= 100;
+      : 0
+  const canRequestCertificate = hasEnrollment && enrollmentProgress >= 100
   const allModulesExpanded = useMemo(() => {
-    if (!course?.modules.length) return false;
-    return course.modules.every((module) => expandedModules.includes(module.id));
-  }, [course, expandedModules]);
+    if (!course?.modules.length) return false
+    return course.modules.every((module) => expandedModules.includes(module.id))
+  }, [course, expandedModules])
 
   if (isLoading) {
     return (
@@ -320,7 +345,10 @@ export default function CourseDetailPage() {
                 <div className="rounded-xl border border-border p-4 sm:p-6">
                   <div className="flex flex-wrap gap-2">
                     {[0, 1, 2, 3].map((item) => (
-                      <div key={item} className="h-7 w-20 animate-pulse rounded-full bg-muted" />
+                      <div
+                        key={item}
+                        className="h-7 w-20 animate-pulse rounded-full bg-muted"
+                      />
                     ))}
                   </div>
 
@@ -330,7 +358,10 @@ export default function CourseDetailPage() {
 
                   <div className="mt-5 flex flex-wrap gap-2">
                     {[0, 1, 2, 3, 4].map((item) => (
-                      <div key={item} className="h-7 w-24 animate-pulse rounded-full bg-muted/80" />
+                      <div
+                        key={item}
+                        className="h-7 w-24 animate-pulse rounded-full bg-muted/80"
+                      />
                     ))}
                   </div>
 
@@ -338,7 +369,10 @@ export default function CourseDetailPage() {
                     <div className="h-7 w-44 animate-pulse rounded bg-muted" />
                     <div className="mt-4 grid gap-3 md:grid-cols-2">
                       {[0, 1, 2, 3].map((item) => (
-                        <div key={item} className="h-4 w-full animate-pulse rounded bg-muted/75" />
+                        <div
+                          key={item}
+                          className="h-4 w-full animate-pulse rounded bg-muted/75"
+                        />
                       ))}
                     </div>
                   </div>
@@ -360,7 +394,10 @@ export default function CourseDetailPage() {
                   <div className="mt-4 h-5 w-full animate-pulse rounded bg-muted/80" />
                   <div className="mt-6 space-y-3">
                     {[0, 1, 2].map((item) => (
-                      <div key={item} className="h-16 animate-pulse rounded bg-muted/65" />
+                      <div
+                        key={item}
+                        className="h-16 animate-pulse rounded bg-muted/65"
+                      />
                     ))}
                   </div>
                 </div>
@@ -382,7 +419,10 @@ export default function CourseDetailPage() {
                 <div className="my-6 h-px bg-border" />
                 <div className="space-y-3">
                   {[0, 1, 2, 3, 4, 5].map((item) => (
-                    <div key={item} className="h-4 w-full animate-pulse rounded bg-muted/70" />
+                    <div
+                      key={item}
+                      className="h-4 w-full animate-pulse rounded bg-muted/70"
+                    />
                   ))}
                 </div>
                 <div className="mt-8 rounded-lg border border-border bg-muted/25 p-4">
@@ -395,7 +435,7 @@ export default function CourseDetailPage() {
           </div>
         </section>
       </div>
-    );
+    )
   }
 
   if (error || !course) {
@@ -406,7 +446,7 @@ export default function CourseDetailPage() {
             Course unavailable
           </h1>
           <p className="mt-3 text-sm text-foreground/70">
-            {error || "The requested course was not found."}
+            {error || 'The requested course was not found.'}
           </p>
           <Link
             href="/courses"
@@ -416,22 +456,25 @@ export default function CourseDetailPage() {
           </Link>
         </div>
       </div>
-    );
+    )
   }
 
   const priceText = hasEnrollment
-    ? "Enrolled"
+    ? 'Enrolled'
     : !course.price || course.price <= 0
-    ? "Free"
-    : `₹${course.price.toLocaleString()}`;
-  const accessDurationText = formatAccessDuration(course.enrollmentValidityDays);
-  const publishedOn = formatPublishedDate(course.createdAt);
+      ? 'Free'
+      : `₹${course.price.toLocaleString()}`
+  const accessDurationText = formatAccessDuration(course.enrollmentValidityDays)
+  const publishedOn = formatPublishedDate(course.createdAt)
 
   return (
     <div className="min-h-screen">
       <section className="py-10 md:py-12">
         <div className="mx-auto w-full max-w-7xl px-6 lg:px-10">
-          <nav className="mb-5 text-sm text-foreground/65" aria-label="Breadcrumb">
+          <nav
+            className="mb-5 text-sm text-foreground/65"
+            aria-label="Breadcrumb"
+          >
             <Link
               href="/courses"
               className="font-medium underline hover:text-foreground text-foreground/65 hover:text-foreground"
@@ -467,7 +510,8 @@ export default function CourseDetailPage() {
                     {course.title}
                   </h1>
                   <p className="text-pretty text-[1.128rem]/7 text-foreground/85">
-                    {course.description || "No description provided for this course yet."}
+                    {course.description ||
+                      'No description provided for this course yet.'}
                   </p>
                 </div>
 
@@ -505,9 +549,12 @@ export default function CourseDetailPage() {
                   <ul className="mt-5 grid gap-x-8 gap-y-3.5 text-sm/6 text-foreground/90 md:grid-cols-2">
                     {(learningOutcomes.length > 0
                       ? learningOutcomes
-                      : ["Start learning with practical, step-by-step lessons."]
+                      : ['Start learning with practical, step-by-step lessons.']
                     ).map((outcome, index) => (
-                      <li key={`${outcome}-${index}`} className="flex items-start gap-2">
+                      <li
+                        key={`${outcome}-${index}`}
+                        className="flex items-start gap-2"
+                      >
                         <span className="text-primary">•</span>
                         <span>{outcome}</span>
                       </li>
@@ -526,14 +573,16 @@ export default function CourseDetailPage() {
                       />
                     ) : (
                       <div className="flex size-12 items-center justify-center rounded-full bg-primary/12 text-sm font-semibold text-primary">
-                        {instructorName.trim().charAt(0).toUpperCase() || "I"}
+                        {instructorName.trim().charAt(0).toUpperCase() || 'I'}
                       </div>
                     )}
                     <div>
                       <p className="text-xs uppercase tracking-wide text-foreground/60">
                         Instructor
                       </p>
-                      <p className="text-sm mt-1 font-semibold text-foreground">{instructorName}</p>
+                      <p className="text-sm mt-1 font-semibold text-foreground">
+                        {instructorName}
+                      </p>
                     </div>
                   </div>
 
@@ -561,38 +610,46 @@ export default function CourseDetailPage() {
                     </span>
                     <span className="inline-flex items-center font-medium gap-1.5">
                       <HiClock className="h-4 w-4 text-primary/90" />
-                      {formatCourseVideoDuration(courseIncludes.videoDurationSeconds)}
+                      {formatCourseVideoDuration(
+                        courseIncludes.videoDurationSeconds,
+                      )}
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() =>
                       setExpandedModules((prev) =>
-                        course.modules.every((module) => prev.includes(module.id))
+                        course.modules.every((module) =>
+                          prev.includes(module.id),
+                        )
                           ? []
-                          : course.modules.map((module) => module.id)
+                          : course.modules.map((module) => module.id),
                       )
                     }
                     className="text-left text-sm font-semibold text-primary hover:underline sm:text-right"
                   >
-                    {allModulesExpanded ? "Collapse all modules" : "Expand all modules"}
+                    {allModulesExpanded
+                      ? 'Collapse all modules'
+                      : 'Expand all modules'}
                   </button>
                 </div>
 
                 <div className="mt-8 overflow-hidden rounded-lg border border-border">
                   {course.modules.map((module, moduleIndex) => {
-                    const isExpanded = expandedModules.includes(module.id);
+                    const isExpanded = expandedModules.includes(module.id)
                     return (
                       <div
                         key={module.id}
-                        className={moduleIndex > 0 ? "border-t border-border" : ""}
+                        className={
+                          moduleIndex > 0 ? 'border-t border-border' : ''
+                        }
                       >
                         <button
                           onClick={() =>
                             setExpandedModules((prev) =>
                               prev.includes(module.id)
                                 ? prev.filter((id) => id !== module.id)
-                                : [...prev, module.id]
+                                : [...prev, module.id],
                             )
                           }
                           className="flex w-full flex-col justify-between gap-1 bg-muted/40 px-3 py-4 text-left transition-colors hover:bg-muted/60 sm:flex-row sm:items-center sm:gap-4 sm:px-5"
@@ -600,7 +657,7 @@ export default function CourseDetailPage() {
                           <div className="flex items-center gap-3">
                             <HiChevronDown
                               className={`h-4.5 w-4.5 shrink-0 text-muted-foreground transition-transform duration-200 ${
-                                isExpanded ? "rotate-0" : "-rotate-90"
+                                isExpanded ? 'rotate-0' : '-rotate-90'
                               }`}
                             />
                             <span className="text-[0.95rem] font-bold text-foreground">
@@ -625,7 +682,7 @@ export default function CourseDetailPage() {
                           </div>
                         ) : null}
                       </div>
-                    );
+                    )
                   })}
                 </div>
               </div>
@@ -655,7 +712,9 @@ export default function CourseDetailPage() {
                         type="button"
                         onClick={() => {
                           if (freePreviewLesson) {
-                            router.push(`/courses/${course.id}/${freePreviewLesson.id}`);
+                            router.push(
+                              `/courses/${course.id}/${freePreviewLesson.id}`,
+                            )
                           }
                         }}
                         disabled={!freePreviewLesson}
@@ -694,7 +753,10 @@ export default function CourseDetailPage() {
                         </div>
                       </div>
                       <Link
-                        href={continueLessonHref ?? `/dashboard/courses/${course.id}`}
+                        href={
+                          continueLessonHref ??
+                          `/dashboard/courses/${course.id}`
+                        }
                         className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
                       >
                         <HiPlayCircle className="size-5" />
@@ -709,15 +771,15 @@ export default function CourseDetailPage() {
                       >
                         <HiShoppingCart className="h-4.5 w-4.5" />
                         {!course.price || course.price <= 0
-                          ? "Enroll Now — Free"
-                          : "Buy Course Now"}
+                          ? 'Enroll Now — Free'
+                          : 'Buy Course Now'}
                       </Link>
                     </>
                   )}
 
                   <Link
                     href={`/contact?courseTitle=${encodeURIComponent(
-                      course.title
+                      course.title,
                     )}&instructor=${encodeURIComponent(instructorName)}`}
                     className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-muted-foreground/20 px-4 py-3 text-sm font-semibold text-foreground/85 transition-colors bg-muted hover:bg-muted hover:text-foreground"
                   >
@@ -729,7 +791,7 @@ export default function CourseDetailPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          router.push(`/courses/${course.id}/certificate`);
+                          router.push(`/courses/${course.id}/certificate`)
                         }}
                         className="inline-flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-full border border-primary/25 bg-primary/10 px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-primary/15 disabled:cursor-not-allowed disabled:opacity-60"
                       >
@@ -740,7 +802,8 @@ export default function CourseDetailPage() {
                   ) : null}
                   {publishedOn ? (
                     <p className="text-center mt-2 text-xs text-foreground/65">
-                      Published on <span className="text-primary">{publishedOn}</span>
+                      Published on{' '}
+                      <span className="text-primary">{publishedOn}</span>
                     </p>
                   ) : null}
                 </div>
@@ -760,19 +823,19 @@ export default function CourseDetailPage() {
                       <HiArrowDownTray className="h-4.5 w-4.5 text-primary/90" />
                       {formatCount(
                         courseIncludes.downloadableResourcesCount,
-                        "downloadable resource"
+                        'downloadable resource',
                       )}
                     </li>
                     <li className="inline-flex items-center gap-2">
                       <HiDocumentText className="h-4.5 w-4.5 text-primary/90" />
-                      {formatCount(courseIncludes.articlesCount, "article")}
+                      {formatCount(courseIncludes.articlesCount, 'article')}
                     </li>
                     <li className="inline-flex items-center gap-2">
                       <HiClipboardDocumentList className="h-4.5 w-4.5 text-primary/90" />
                       {formatCount(
                         courseIncludes.assessmentsCount,
-                        "quiz/assignment",
-                        "quizzes/assignments"
+                        'quiz/assignment',
+                        'quizzes/assignments',
                       )}
                     </li>
                     <li className="inline-flex items-center gap-2">
@@ -788,12 +851,16 @@ export default function CourseDetailPage() {
 
                 <div className="mt-8 rounded-lg border border-border bg-primary/20 py-5 px-4">
                   <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-lg font-semibold text-foreground">10 min trial course</h3>
+                    <h3 className="text-lg font-semibold text-foreground">
+                      10 min trial course
+                    </h3>
                     <button
                       type="button"
                       onClick={() => {
                         if (freePreviewLesson) {
-                          router.push(`/courses/${course.id}/${freePreviewLesson.id}`);
+                          router.push(
+                            `/courses/${course.id}/${freePreviewLesson.id}`,
+                          )
                         }
                       }}
                       disabled={!freePreviewLesson}
@@ -804,7 +871,8 @@ export default function CourseDetailPage() {
                     </button>
                   </div>
                   <p className="mt-3 text-xs font-display leading-6 tracking-wider text-foreground/70">
-                    Watch a quick lesson preview to evaluate the teaching style and course depth.
+                    Watch a quick lesson preview to evaluate the teaching style
+                    and course depth.
                   </p>
                 </div>
               </div>
@@ -813,5 +881,5 @@ export default function CourseDetailPage() {
         </div>
       </section>
     </div>
-  );
+  )
 }

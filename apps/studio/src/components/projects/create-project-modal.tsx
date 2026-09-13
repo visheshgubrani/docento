@@ -107,7 +107,7 @@ export function CreateProjectModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[500px]'>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Create New Project</DialogTitle>
           <DialogDescription>
@@ -116,66 +116,73 @@ export function CreateProjectModal({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className='grid gap-4 py-4'>
-            <div className='grid gap-2'>
-              <Label htmlFor='name'>
-                Project Name <span className='text-destructive'>*</span>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">
+                Project Name <span className="text-destructive">*</span>
               </Label>
               <Input
-                id='name'
-                placeholder='My Learning Project'
+                id="name"
+                placeholder="My Learning Project"
                 {...register('name')}
                 className={errors.name ? 'border-destructive' : ''}
               />
               {errors.name && (
-                <p className='text-sm text-destructive'>{errors.name.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.name.message}
+                </p>
               )}
             </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='description'>Description</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="description">Description</Label>
               <Textarea
-                id='description'
-                placeholder='A brief description of your project...'
+                id="description"
+                placeholder="A brief description of your project..."
                 rows={4}
                 {...register('description')}
                 className={errors.description ? 'border-destructive' : ''}
               />
               {errors.description && (
-                <p className='text-sm text-destructive'>
+                <p className="text-sm text-destructive">
                   {errors.description.message}
                 </p>
               )}
             </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='authMode'>
-                Authentication Mode <span className='text-destructive'>*</span>
+            <div className="grid gap-2">
+              <Label htmlFor="authMode">
+                Authentication Mode <span className="text-destructive">*</span>
               </Label>
               <select
-                id='authMode'
+                id="authMode"
                 className={`rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${errors.authMode ? 'border-destructive' : ''}`}
                 {...register('authMode')}
               >
-                <option value='MANAGED'>Managed (Docento handles auth)</option>
-                <option value='DELEGATED'>Delegated (your system manages auth)</option>
+                <option value="MANAGED">Managed (Docento handles auth)</option>
+                <option value="DELEGATED">
+                  Delegated (your system manages auth)
+                </option>
               </select>
-              <p className='text-sm text-muted-foreground'>
-                Managed stores student credentials in Docento. Delegated expects you to send authenticated users from your system.
+              <p className="text-sm text-muted-foreground">
+                Managed stores student credentials in Docento. Delegated expects
+                you to send authenticated users from your system.
               </p>
               {errors.authMode && (
-                <p className='text-sm text-destructive'>{errors.authMode.message}</p>
+                <p className="text-sm text-destructive">
+                  {errors.authMode.message}
+                </p>
               )}
             </div>
           </div>
           <DialogFooter>
             <Button
-              type='button'
-              variant='outline'
+              type="button"
+              variant="outline"
               onClick={handleCancel}
               disabled={isPending}
             >
               Cancel
             </Button>
-            <Button type='submit' disabled={isPending}>
+            <Button type="submit" disabled={isPending}>
               {isPending ? 'Creating...' : 'Create Project'}
             </Button>
           </DialogFooter>

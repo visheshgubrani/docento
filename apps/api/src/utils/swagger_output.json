@@ -4073,9 +4073,7 @@
     "/projects/{projectId}/ai/transcription": {
       "get": {
         "description": "",
-        "produces": [
-          "text/vtt"
-        ],
+        "produces": ["text/vtt"],
         "parameters": [
           {
             "name": "projectId",
@@ -4316,9 +4314,7 @@
     "/projects/{projectId}/courses/{courseId}/modules/{moduleId}/lessons/{lessonId}/ai/transcription": {
       "get": {
         "description": "",
-        "produces": [
-          "text/vtt"
-        ],
+        "produces": ["text/vtt"],
         "parameters": [
           {
             "name": "projectId",

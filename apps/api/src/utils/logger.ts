@@ -3,12 +3,7 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonValue[]
-  | { [key: string]: JsonValue }
+  string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue }
 
 type LogMeta = Record<string, unknown>
 
@@ -66,7 +61,7 @@ const normalizeLevel = (value: string | undefined, fallback: LogLevel) => {
 const configuredLevel = normalizeLevel(process.env.LOG_LEVEL, 'info')
 const configuredProviderLevel = normalizeLevel(
   process.env.LOG_PROVIDER_LEVEL,
-  configuredLevel
+  configuredLevel,
 )
 const serviceName = process.env.LOG_SERVICE_NAME || 'docento-api'
 const environment = process.env.NODE_ENV || 'development'
@@ -90,7 +85,7 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> => {
 const serializeError = (
   error: Error,
   seen: WeakSet<object>,
-  depth: number
+  depth: number,
 ): JsonValue => {
   const serialized: Record<string, JsonValue> = {
     name: error.name,
@@ -110,7 +105,7 @@ const serializeError = (
     serialized[key] = sanitizeValue(
       (error as unknown as Record<string, unknown>)[key],
       seen,
-      depth + 1
+      depth + 1,
     )
   })
 
@@ -120,7 +115,7 @@ const serializeError = (
 const sanitizeValue = (
   value: unknown,
   seen = new WeakSet<object>(),
-  depth = 0
+  depth = 0,
 ): JsonValue => {
   if (value === null || value === undefined) return null
   if (
@@ -188,7 +183,7 @@ const parseProviderHeaders = () => {
         headers[key] = String(value)
         return headers
       },
-      {}
+      {},
     )
   } catch (error) {
     nativeConsole.warn(
@@ -200,7 +195,7 @@ const parseProviderHeaders = () => {
         environment,
         pid: process.pid,
         meta: sanitizeMeta({ error }),
-      })
+      }),
     )
     return {}
   }
@@ -214,14 +209,14 @@ class HttpLogTransport {
     .trim()
     .toLowerCase()
   private readonly flushIntervalMs = Number(
-    process.env.LOG_PROVIDER_FLUSH_INTERVAL_MS || 2000
+    process.env.LOG_PROVIDER_FLUSH_INTERVAL_MS || 2000,
   )
   private readonly batchSize = Number(process.env.LOG_PROVIDER_BATCH_SIZE || 25)
   private readonly maxQueueSize = Number(
-    process.env.LOG_PROVIDER_MAX_QUEUE_SIZE || 1000
+    process.env.LOG_PROVIDER_MAX_QUEUE_SIZE || 1000,
   )
   private readonly timeoutMs = Number(
-    process.env.LOG_PROVIDER_TIMEOUT_MS || 5000
+    process.env.LOG_PROVIDER_TIMEOUT_MS || 5000,
   )
 
   private queue: StructuredLogEntry[] = []
@@ -241,7 +236,8 @@ class HttpLogTransport {
         JSON.stringify({
           timestamp: new Date().toISOString(),
           level: 'warn',
-          message: 'Dropping oldest log entry because the provider queue is full',
+          message:
+            'Dropping oldest log entry because the provider queue is full',
           service: serviceName,
           environment,
           pid: process.pid,
@@ -250,7 +246,7 @@ class HttpLogTransport {
             maxQueueSize: this.maxQueueSize,
             providerUrl: this.url,
           },
-        })
+        }),
       )
     }
 
@@ -315,7 +311,7 @@ class HttpLogTransport {
               status: response.status,
               statusText: response.statusText,
             },
-          })
+          }),
         )
       }
     } catch (error) {
@@ -331,7 +327,7 @@ class HttpLogTransport {
             providerUrl: this.url,
             error: sanitizeValue(error),
           },
-        })
+        }),
       )
     } finally {
       clearTimeout(timeout)
@@ -377,7 +373,7 @@ const writeToConsole = (level: LogLevel, entry: StructuredLogEntry) => {
 const buildLogEntry = (
   level: LogLevel,
   message: string,
-  meta?: LogMeta
+  meta?: LogMeta,
 ): StructuredLogEntry => {
   const requestContext = requestContextStorage.getStore()
 
@@ -486,13 +482,13 @@ export const installConsoleBridge = () => {
 
 export const runWithLogContext = <T>(
   context: RequestLogContext,
-  callback: () => T
+  callback: () => T,
 ) => requestContextStorage.run(context, callback)
 
 export const getLogContext = () => requestContextStorage.getStore()
 
 export const getRequestIdFromHeaders = (
-  headers: Record<string, string | string[] | undefined>
+  headers: Record<string, string | string[] | undefined>,
 ) =>
   getHeaderValue(headers[REQUEST_ID_HEADER]) ||
   getHeaderValue(headers['x-correlation-id'])

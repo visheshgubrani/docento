@@ -14,7 +14,7 @@ router.post(
   '/clipmux',
   verifyClipmuxWebhookSignature,
   webhookRateLimiter,
-  handleClipmuxWebhook
+  handleClipmuxWebhook,
 )
 
 // Razorpay webhook handler for payment updates
@@ -22,7 +22,7 @@ router.post(
   '/razorpay',
   verifyRazorpayWebhookSignature,
   webhookRateLimiter,
-  handleRazorpayWebhook
+  handleRazorpayWebhook,
 )
 
 // TODO: PUBLISH ROUTE

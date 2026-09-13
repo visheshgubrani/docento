@@ -1,23 +1,23 @@
-"use client";
+'use client'
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { BsThreeDotsVertical } from "react-icons/bs";
-import { FaVideo, FaYoutube } from "react-icons/fa";
-import { X, Plus, Pencil, Trash2 } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useCourse } from "@/lib/hooks/use-courses";
-import { useUpdateLesson } from "@/lib/hooks/use-lessons";
-import { useProjectRouteId } from "@/lib/hooks/use-project-route-id";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { BsThreeDotsVertical } from 'react-icons/bs'
+import { FaVideo, FaYoutube } from 'react-icons/fa'
+import { X, Plus, Pencil, Trash2 } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useCourse } from '@/lib/hooks/use-courses'
+import { useUpdateLesson } from '@/lib/hooks/use-lessons'
+import { useProjectRouteId } from '@/lib/hooks/use-project-route-id'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu'
 import {
   Dialog,
   DialogContent,
@@ -25,9 +25,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/use-toast";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/dialog'
+import { useToast } from '@/components/ui/use-toast'
+import { cn } from '@/lib/utils'
 import {
   deleteVideoFromLesson,
   fetchLessonUploads,
@@ -39,84 +39,84 @@ import {
   type Assignment,
   type Quiz,
   type Upload,
-} from "@/lib/api";
-import { IoAddCircleOutline } from "react-icons/io5";
-import { VideoUploadModal } from "./components/video-upload-modal";
-import { VideoPreviewBox } from "./components/video-preview-box";
-import { YouTubeLinkModal } from "./components/youtube-link-modal";
-import { YouTubePreviewBox } from "./components/youtube-preview-box";
-import { Textarea } from "@/components/ui/textarea";
-import { Skeleton } from "@/components/ui/skeleton";
-import { TextImagesEditor } from "./components/text-images-editor";
-import { QuizPreviewBox } from "./components/quiz-preview-box";
-import { ResourcesUploadModal } from "./components/ResourcesUploadModal";
-import { ResourcesContentPreview } from "./components/ResourcesContentPreview";
-import { MdOutlineAssignment } from "react-icons/md";
-import { BsQuestionCircleFill } from "react-icons/bs";
-import { LuLetterText } from "react-icons/lu";
-import { FaPenToSquare } from "react-icons/fa6";
+} from '@/lib/api'
+import { IoAddCircleOutline } from 'react-icons/io5'
+import { VideoUploadModal } from './components/video-upload-modal'
+import { VideoPreviewBox } from './components/video-preview-box'
+import { YouTubeLinkModal } from './components/youtube-link-modal'
+import { YouTubePreviewBox } from './components/youtube-preview-box'
+import { Textarea } from '@/components/ui/textarea'
+import { Skeleton } from '@/components/ui/skeleton'
+import { TextImagesEditor } from './components/text-images-editor'
+import { QuizPreviewBox } from './components/quiz-preview-box'
+import { ResourcesUploadModal } from './components/ResourcesUploadModal'
+import { ResourcesContentPreview } from './components/ResourcesContentPreview'
+import { MdOutlineAssignment } from 'react-icons/md'
+import { BsQuestionCircleFill } from 'react-icons/bs'
+import { LuLetterText } from 'react-icons/lu'
+import { FaPenToSquare } from 'react-icons/fa6'
 
 // Content types with specified icons - single accent color for all
 const contentTypes = [
-  { id: "video", label: "Video", icon: FaVideo },
-  { id: "text", label: "Text & Images", icon: LuLetterText },
-  { id: "quiz", label: "Quiz", icon: BsQuestionCircleFill },
+  { id: 'video', label: 'Video', icon: FaVideo },
+  { id: 'text', label: 'Text & Images', icon: LuLetterText },
+  { id: 'quiz', label: 'Quiz', icon: BsQuestionCircleFill },
   // { id: "mock-test", label: "Mock Test", icon: FaPenToSquare },
-  { id: "assignment", label: "Assignment", icon: MdOutlineAssignment },
-  { id: "youtube", label: "YouTube / External Link", icon: FaYoutube },
-];
+  { id: 'assignment', label: 'Assignment', icon: MdOutlineAssignment },
+  { id: 'youtube', label: 'YouTube / External Link', icon: FaYoutube },
+]
 
 const BLOCK_NODE_TYPES = new Set([
-  "paragraph",
-  "heading",
-  "blockquote",
-  "codeBlock",
-  "listItem",
-  "taskItem",
-]);
+  'paragraph',
+  'heading',
+  'blockquote',
+  'codeBlock',
+  'listItem',
+  'taskItem',
+])
 
 const stripBasicMarkdown = (value: string): string =>
   value
-    .replace(/^#{1,6}\s+/gm, "")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .replace(/\*\*([^*]+)\*\*/g, "$1")
-    .replace(/\*([^*]+)\*/g, "$1")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/^[-*+]\s+/gm, "")
-    .replace(/^\d+\.\s+/gm, "")
-    .trim();
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/^[-*+]\s+/gm, '')
+    .replace(/^\d+\.\s+/gm, '')
+    .trim()
 
 const extractTextFromTiptapJson = (node: unknown): string => {
-  const chunks: string[] = [];
+  const chunks: string[] = []
 
   const walk = (value: unknown) => {
-    if (!value) return;
+    if (!value) return
 
     if (Array.isArray(value)) {
-      value.forEach(walk);
-      return;
+      value.forEach(walk)
+      return
     }
 
-    if (typeof value !== "object") return;
+    if (typeof value !== 'object') return
 
     const input = value as {
-      type?: string;
-      text?: string;
-      content?: unknown[];
-    };
-
-    if (input.type === "hardBreak") {
-      chunks.push("\n");
-      return;
+      type?: string
+      text?: string
+      content?: unknown[]
     }
 
-    if (typeof input.text === "string") {
-      chunks.push(input.text);
+    if (input.type === 'hardBreak') {
+      chunks.push('\n')
+      return
     }
 
-    const before = chunks.length;
+    if (typeof input.text === 'string') {
+      chunks.push(input.text)
+    }
+
+    const before = chunks.length
     if (Array.isArray(input.content)) {
-      input.content.forEach(walk);
+      input.content.forEach(walk)
     }
 
     if (
@@ -124,125 +124,125 @@ const extractTextFromTiptapJson = (node: unknown): string => {
       BLOCK_NODE_TYPES.has(input.type) &&
       chunks.length > before
     ) {
-      chunks.push("\n");
+      chunks.push('\n')
     }
-  };
+  }
 
-  walk(node);
+  walk(node)
 
   return chunks
-    .join("")
-    .replace(/[ \t]+\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-};
+    .join('')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
 
 const getLessonTextPreview = (
-  rawContent: string | null | undefined
+  rawContent: string | null | undefined,
 ): string => {
-  if (!rawContent?.trim()) return "";
+  if (!rawContent?.trim()) return ''
 
   try {
-    const parsed = JSON.parse(rawContent);
-    if (typeof parsed === "string") {
-      return stripBasicMarkdown(parsed);
+    const parsed = JSON.parse(rawContent)
+    if (typeof parsed === 'string') {
+      return stripBasicMarkdown(parsed)
     }
-    return extractTextFromTiptapJson(parsed);
+    return extractTextFromTiptapJson(parsed)
   } catch {
-    return stripBasicMarkdown(rawContent);
+    return stripBasicMarkdown(rawContent)
   }
-};
+}
 
 export default function LessonEditorPage() {
-  const projectId = useProjectRouteId();
-  const params = useParams();
-  const router = useRouter();
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  const courseId = typeof params?.courseId === "string" ? params.courseId : "";
-  const lessonId = typeof params?.lessonId === "string" ? params.lessonId : "";
+  const projectId = useProjectRouteId()
+  const params = useParams()
+  const router = useRouter()
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+  const courseId = typeof params?.courseId === 'string' ? params.courseId : ''
+  const lessonId = typeof params?.lessonId === 'string' ? params.lessonId : ''
 
-  const { data: course, isLoading } = useCourse(projectId, courseId);
+  const { data: course, isLoading } = useCourse(projectId, courseId)
 
   // State for renaming and panel toggle
-  const [isRenaming, setIsRenaming] = useState(false);
-  const [lessonTitle, setLessonTitle] = useState("");
-  const [showAddContent, setShowAddContent] = useState(false);
-  const [videoModalOpen, setVideoModalOpen] = useState(false);
-  const [isDeletingVideo, setIsDeletingVideo] = useState(false);
-  const [youtubeModalOpen, setYoutubeModalOpen] = useState(false);
-  const [isDeletingYoutube, setIsDeletingYoutube] = useState(false);
-  const [lessonDescription, setLessonDescription] = useState("");
-  const [draftDescription, setDraftDescription] = useState("");
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
-  const [isSavingDescription, setIsSavingDescription] = useState(false);
-  const [showTextEditor, setShowTextEditor] = useState(false);
-  const [isSavingTextContent, setIsSavingTextContent] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [quiz, setQuiz] = useState<Quiz | null>(null);
-  const [isLoadingQuiz, setIsLoadingQuiz] = useState(false);
-  const [isDeletingQuiz, setIsDeletingQuiz] = useState(false);
-  const [assignment, setAssignment] = useState<Assignment | null>(null);
-  const [isLoadingAssignment, setIsLoadingAssignment] = useState(false);
-  const [isDeletingAssignment, setIsDeletingAssignment] = useState(false);
-  const [resourcesModalOpen, setResourcesModalOpen] = useState(false);
-  const [deletingUploadId, setDeletingUploadId] = useState<string | null>(null);
+  const [isRenaming, setIsRenaming] = useState(false)
+  const [lessonTitle, setLessonTitle] = useState('')
+  const [showAddContent, setShowAddContent] = useState(false)
+  const [videoModalOpen, setVideoModalOpen] = useState(false)
+  const [isDeletingVideo, setIsDeletingVideo] = useState(false)
+  const [youtubeModalOpen, setYoutubeModalOpen] = useState(false)
+  const [isDeletingYoutube, setIsDeletingYoutube] = useState(false)
+  const [lessonDescription, setLessonDescription] = useState('')
+  const [draftDescription, setDraftDescription] = useState('')
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
+  const [isSavingDescription, setIsSavingDescription] = useState(false)
+  const [showTextEditor, setShowTextEditor] = useState(false)
+  const [isSavingTextContent, setIsSavingTextContent] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [quiz, setQuiz] = useState<Quiz | null>(null)
+  const [isLoadingQuiz, setIsLoadingQuiz] = useState(false)
+  const [isDeletingQuiz, setIsDeletingQuiz] = useState(false)
+  const [assignment, setAssignment] = useState<Assignment | null>(null)
+  const [isLoadingAssignment, setIsLoadingAssignment] = useState(false)
+  const [isDeletingAssignment, setIsDeletingAssignment] = useState(false)
+  const [resourcesModalOpen, setResourcesModalOpen] = useState(false)
+  const [deletingUploadId, setDeletingUploadId] = useState<string | null>(null)
   const [showDeleteResourcesDialog, setShowDeleteResourcesDialog] =
-    useState(false);
-  const [lessonUploads, setLessonUploads] = useState<Upload[]>([]);
-  const [isLoadingUploads, setIsLoadingUploads] = useState(false);
-  const [isDeletingAllResources, setIsDeletingAllResources] = useState(false);
+    useState(false)
+  const [lessonUploads, setLessonUploads] = useState<Upload[]>([])
+  const [isLoadingUploads, setIsLoadingUploads] = useState(false)
+  const [isDeletingAllResources, setIsDeletingAllResources] = useState(false)
 
   // Find current lesson and its module from the course data (API)
   const currentModule = course?.modules?.find((m) =>
-    m.lessons.some((l) => l.id === lessonId)
-  );
-  const currentLesson = currentModule?.lessons?.find((l) => l.id === lessonId);
+    m.lessons.some((l) => l.id === lessonId),
+  )
+  const currentLesson = currentModule?.lessons?.find((l) => l.id === lessonId)
 
   // Check if lesson has video content
   const hasVideoContent =
-    currentLesson?.contentType === "VIDEO" &&
-    (currentLesson?.videoUrl || currentLesson?.videoId);
+    currentLesson?.contentType === 'VIDEO' &&
+    (currentLesson?.videoUrl || currentLesson?.videoId)
 
   // Check if lesson has text content (contentType must be TEXT AND have actual textContent)
   const hasTextContent =
-    currentLesson?.contentType === "TEXT" && currentLesson?.textContent;
+    currentLesson?.contentType === 'TEXT' && currentLesson?.textContent
   const textContentPreview = getLessonTextPreview(currentLesson?.textContent)
-    .replace(/\r\n/g, "\n")
-    .split("\n")
+    .replace(/\r\n/g, '\n')
+    .split('\n')
     .map((line) => line.trim())
     .filter(Boolean)
     .slice(0, 3)
-    .join("\n");
+    .join('\n')
 
   // Check if lesson has quiz content
-  const isMockTestLesson = currentLesson?.contentType === "MOCK_TEST";
+  const isMockTestLesson = currentLesson?.contentType === 'MOCK_TEST'
   const hasQuizContent =
-    currentLesson?.contentType === "QUIZ" || isMockTestLesson;
-  const isAssignmentLesson = currentLesson?.contentType === "ASSIGNMENT";
-  const hasAssignmentContent = isAssignmentLesson && Boolean(assignment);
+    currentLesson?.contentType === 'QUIZ' || isMockTestLesson
+  const isAssignmentLesson = currentLesson?.contentType === 'ASSIGNMENT'
+  const hasAssignmentContent = isAssignmentLesson && Boolean(assignment)
   const hasYoutubeContent =
-    currentLesson?.contentType === "YOUTUBE" && currentLesson?.videoUrl;
+    currentLesson?.contentType === 'YOUTUBE' && currentLesson?.videoUrl
   const hasPrimaryLessonContent =
     hasVideoContent ||
     hasTextContent ||
     hasQuizContent ||
     hasAssignmentContent ||
     hasYoutubeContent ||
-    (isAssignmentLesson && isLoadingAssignment);
+    (isAssignmentLesson && isLoadingAssignment)
   const assignmentDueDateLabel = assignment?.dueDate
     ? new Date(assignment.dueDate).toLocaleString()
-    : "No due date";
+    : 'No due date'
 
   // Initialize lesson title and description when lesson is found
   useEffect(() => {
     if (currentLesson && !isRenaming) {
-      setLessonTitle(currentLesson.title);
+      setLessonTitle(currentLesson.title)
     }
     if (currentLesson && !isDescriptionExpanded) {
-      setLessonDescription(currentLesson.description || "");
+      setLessonDescription(currentLesson.description || '')
     }
-  }, [currentLesson, isRenaming, isDescriptionExpanded]);
+  }, [currentLesson, isRenaming, isDescriptionExpanded])
 
   // Load quiz data if lesson has quiz content
   useEffect(() => {
@@ -254,29 +254,29 @@ export default function LessonEditorPage() {
         !currentModule?.id ||
         !lessonId
       ) {
-        setQuiz(null);
-        return;
+        setQuiz(null)
+        return
       }
 
       try {
-        setIsLoadingQuiz(true);
+        setIsLoadingQuiz(true)
         const quizData = await getQuiz(
           projectId,
           courseId,
           currentModule.id,
-          lessonId
-        );
-        setQuiz(quizData);
+          lessonId,
+        )
+        setQuiz(quizData)
       } catch (error) {
-        console.error("Failed to load quiz:", error);
-        setQuiz(null);
+        console.error('Failed to load quiz:', error)
+        setQuiz(null)
       } finally {
-        setIsLoadingQuiz(false);
+        setIsLoadingQuiz(false)
       }
-    };
+    }
 
-    loadQuiz();
-  }, [hasQuizContent, projectId, courseId, currentModule?.id, lessonId]);
+    loadQuiz()
+  }, [hasQuizContent, projectId, courseId, currentModule?.id, lessonId])
 
   useEffect(() => {
     const loadAssignment = async () => {
@@ -287,289 +287,289 @@ export default function LessonEditorPage() {
         !currentModule?.id ||
         !lessonId
       ) {
-        setAssignment(null);
-        setIsLoadingAssignment(false);
-        return;
+        setAssignment(null)
+        setIsLoadingAssignment(false)
+        return
       }
 
       try {
-        setIsLoadingAssignment(true);
+        setIsLoadingAssignment(true)
         const assignmentData = await getAssignment(
           projectId,
           courseId,
           currentModule.id,
-          lessonId
-        );
-        setAssignment(assignmentData);
+          lessonId,
+        )
+        setAssignment(assignmentData)
       } catch (error) {
-        console.error("Failed to load assignment:", error);
-        setAssignment(null);
+        console.error('Failed to load assignment:', error)
+        setAssignment(null)
       } finally {
-        setIsLoadingAssignment(false);
+        setIsLoadingAssignment(false)
       }
-    };
+    }
 
-    loadAssignment();
-  }, [isAssignmentLesson, projectId, courseId, currentModule?.id, lessonId]);
+    loadAssignment()
+  }, [isAssignmentLesson, projectId, courseId, currentModule?.id, lessonId])
 
   // Load uploads data for this lesson (resources are complementary content)
   useEffect(() => {
     const loadUploads = async () => {
       if (!projectId || !courseId || !currentModule?.id || !lessonId) {
-        setLessonUploads([]);
-        return;
+        setLessonUploads([])
+        return
       }
 
       try {
-        setIsLoadingUploads(true);
+        setIsLoadingUploads(true)
         const uploads = await fetchLessonUploads(
           projectId,
           courseId,
           currentModule.id,
-          lessonId
-        );
-        setLessonUploads(uploads);
+          lessonId,
+        )
+        setLessonUploads(uploads)
       } catch (error) {
-        console.error("Failed to load uploads:", error);
-        setLessonUploads([]);
+        console.error('Failed to load uploads:', error)
+        setLessonUploads([])
       } finally {
-        setIsLoadingUploads(false);
+        setIsLoadingUploads(false)
       }
-    };
+    }
 
-    loadUploads();
-  }, [projectId, courseId, currentModule?.id, lessonId]);
+    loadUploads()
+  }, [projectId, courseId, currentModule?.id, lessonId])
 
   const handleRenameLesson = () => {
-    setIsRenaming(true);
-  };
+    setIsRenaming(true)
+  }
 
   const handleSaveRename = () => {
     // TODO: Save to backend
-    setIsRenaming(false);
-  };
+    setIsRenaming(false)
+  }
 
   const handleCancelRename = () => {
     if (currentLesson) {
-      setLessonTitle(currentLesson.title);
+      setLessonTitle(currentLesson.title)
     }
-    setIsRenaming(false);
-  };
+    setIsRenaming(false)
+  }
 
   const handleDeleteLesson = () => {
     // TODO: Implement delete with confirmation
-    console.log("Delete lesson:", lessonId);
-    router.push(`/p/${projectId}/courses/${courseId}/curriculum`);
-  };
+    console.log('Delete lesson:', lessonId)
+    router.push(`/p/${projectId}/courses/${courseId}/curriculum`)
+  }
 
   // Update lesson mutation
   const updateLessonMutation = useUpdateLesson(
     projectId,
     courseId,
-    currentModule?.id ?? "",
-    lessonId
-  );
+    currentModule?.id ?? '',
+    lessonId,
+  )
 
   const handleContentTypeSelect = async (contentType: string) => {
-    setShowAddContent(false);
+    setShowAddContent(false)
 
-    if (contentType === "video") {
+    if (contentType === 'video') {
       // First update the lesson contentType to VIDEO on backend
       try {
-        await updateLessonMutation.mutateAsync({ contentType: "VIDEO" });
-        setVideoModalOpen(true);
+        await updateLessonMutation.mutateAsync({ contentType: 'VIDEO' })
+        setVideoModalOpen(true)
       } catch {
         toast({
-          title: "Error",
-          description: "Failed to set lesson type. Please try again.",
-          variant: "destructive",
-        });
+          title: 'Error',
+          description: 'Failed to set lesson type. Please try again.',
+          variant: 'destructive',
+        })
       }
-    } else if (contentType === "text") {
+    } else if (contentType === 'text') {
       // Update the lesson contentType to TEXT on backend
       try {
-        await updateLessonMutation.mutateAsync({ contentType: "TEXT" });
-        setShowTextEditor(true);
+        await updateLessonMutation.mutateAsync({ contentType: 'TEXT' })
+        setShowTextEditor(true)
       } catch {
         toast({
-          title: "Error",
-          description: "Failed to set lesson type. Please try again.",
-          variant: "destructive",
-        });
+          title: 'Error',
+          description: 'Failed to set lesson type. Please try again.',
+          variant: 'destructive',
+        })
       }
-    } else if (contentType === "quiz") {
+    } else if (contentType === 'quiz') {
       // Update the lesson contentType to QUIZ on backend and navigate to quiz page
       try {
-        await updateLessonMutation.mutateAsync({ contentType: "QUIZ" });
+        await updateLessonMutation.mutateAsync({ contentType: 'QUIZ' })
         router.push(
-          `/p/${projectId}/courses/${courseId}/curriculum/${lessonId}/quiz`
-        );
+          `/p/${projectId}/courses/${courseId}/curriculum/${lessonId}/quiz`,
+        )
       } catch {
         toast({
-          title: "Error",
-          description: "Failed to set lesson type. Please try again.",
-          variant: "destructive",
-        });
+          title: 'Error',
+          description: 'Failed to set lesson type. Please try again.',
+          variant: 'destructive',
+        })
       }
-    } else if (contentType === "mock-test") {
+    } else if (contentType === 'mock-test') {
       try {
-        await updateLessonMutation.mutateAsync({ contentType: "MOCK_TEST" });
+        await updateLessonMutation.mutateAsync({ contentType: 'MOCK_TEST' })
         router.push(
-          `/p/${projectId}/courses/${courseId}/curriculum/${lessonId}/quiz`
-        );
+          `/p/${projectId}/courses/${courseId}/curriculum/${lessonId}/quiz`,
+        )
       } catch {
         toast({
-          title: "Error",
-          description: "Failed to set lesson type. Please try again.",
-          variant: "destructive",
-        });
+          title: 'Error',
+          description: 'Failed to set lesson type. Please try again.',
+          variant: 'destructive',
+        })
       }
-    } else if (contentType === "assignment") {
+    } else if (contentType === 'assignment') {
       try {
-        await updateLessonMutation.mutateAsync({ contentType: "ASSIGNMENT" });
+        await updateLessonMutation.mutateAsync({ contentType: 'ASSIGNMENT' })
         router.push(
-          `/p/${projectId}/courses/${courseId}/curriculum/${lessonId}/assignment`
-        );
+          `/p/${projectId}/courses/${courseId}/curriculum/${lessonId}/assignment`,
+        )
       } catch {
         toast({
-          title: "Error",
-          description: "Failed to set lesson type. Please try again.",
-          variant: "destructive",
-        });
+          title: 'Error',
+          description: 'Failed to set lesson type. Please try again.',
+          variant: 'destructive',
+        })
       }
-    } else if (contentType === "youtube") {
+    } else if (contentType === 'youtube') {
       try {
-        await updateLessonMutation.mutateAsync({ contentType: "YOUTUBE" });
-        setYoutubeModalOpen(true);
+        await updateLessonMutation.mutateAsync({ contentType: 'YOUTUBE' })
+        setYoutubeModalOpen(true)
       } catch {
         toast({
-          title: "Error",
-          description: "Failed to set lesson type. Please try again.",
-          variant: "destructive",
-        });
+          title: 'Error',
+          description: 'Failed to set lesson type. Please try again.',
+          variant: 'destructive',
+        })
       }
     }
-  };
+  }
 
   const handleVideoUploadComplete = async () => {
     // Refresh course data to get updated lesson
     await queryClient.invalidateQueries({
-      queryKey: ["project-course", projectId, courseId],
-    });
+      queryKey: ['project-course', projectId, courseId],
+    })
     toast({
-      title: "Video uploaded",
-      description: "Your video is now processing. This may take a few minutes.",
-    });
-  };
+      title: 'Video uploaded',
+      description: 'Your video is now processing. This may take a few minutes.',
+    })
+  }
 
   const handleDeleteVideo = async () => {
-    if (!projectId || !courseId || !currentModule?.id || !lessonId) return;
+    if (!projectId || !courseId || !currentModule?.id || !lessonId) return
 
-    setIsDeletingVideo(true);
+    setIsDeletingVideo(true)
     try {
       await deleteVideoFromLesson(
         projectId,
         courseId,
         currentModule.id,
-        lessonId
-      );
+        lessonId,
+      )
       await queryClient.invalidateQueries({
-        queryKey: ["project-course", projectId, courseId],
-      });
+        queryKey: ['project-course', projectId, courseId],
+      })
       toast({
-        title: "Video deleted",
-        description: "The video has been removed from this lesson.",
-      });
+        title: 'Video deleted',
+        description: 'The video has been removed from this lesson.',
+      })
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to delete video";
+        error instanceof Error ? error.message : 'Failed to delete video'
       toast({
-        title: "Error",
+        title: 'Error',
         description: message,
-        variant: "destructive",
-      });
+        variant: 'destructive',
+      })
     } finally {
-      setIsDeletingVideo(false);
+      setIsDeletingVideo(false)
     }
-  };
+  }
 
   const handleSaveTextContent = async (content: string) => {
-    setIsSavingTextContent(true);
+    setIsSavingTextContent(true)
     try {
-      await updateLessonMutation.mutateAsync({ textContent: content });
+      await updateLessonMutation.mutateAsync({ textContent: content })
       toast({
-        title: "Content saved",
-        description: "Your lesson content has been saved successfully.",
-      });
-      setShowTextEditor(false);
+        title: 'Content saved',
+        description: 'Your lesson content has been saved successfully.',
+      })
+      setShowTextEditor(false)
     } catch {
       toast({
-        title: "Error",
-        description: "Failed to save content. Please try again.",
-        variant: "destructive",
-      });
+        title: 'Error',
+        description: 'Failed to save content. Please try again.',
+        variant: 'destructive',
+      })
     } finally {
-      setIsSavingTextContent(false);
+      setIsSavingTextContent(false)
     }
-  };
+  }
 
   const handleDeleteQuiz = async () => {
-    if (!projectId || !courseId || !currentModule?.id || !lessonId) return;
+    if (!projectId || !courseId || !currentModule?.id || !lessonId) return
 
-    setIsDeletingQuiz(true);
+    setIsDeletingQuiz(true)
     try {
-      await deleteQuiz(projectId, courseId, currentModule.id, lessonId);
+      await deleteQuiz(projectId, courseId, currentModule.id, lessonId)
       await queryClient.invalidateQueries({
-        queryKey: ["project-course", projectId, courseId],
-      });
-      setQuiz(null);
+        queryKey: ['project-course', projectId, courseId],
+      })
+      setQuiz(null)
       toast({
-        title: "Quiz deleted",
-        description: "The quiz has been removed from this lesson.",
-      });
+        title: 'Quiz deleted',
+        description: 'The quiz has been removed from this lesson.',
+      })
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to delete quiz";
+        error instanceof Error ? error.message : 'Failed to delete quiz'
       toast({
-        title: "Error",
+        title: 'Error',
         description: message,
-        variant: "destructive",
-      });
+        variant: 'destructive',
+      })
     } finally {
-      setIsDeletingQuiz(false);
+      setIsDeletingQuiz(false)
     }
-  };
+  }
 
   const handleDeleteAssignment = async () => {
-    if (!projectId || !courseId || !currentModule?.id || !lessonId) return;
+    if (!projectId || !courseId || !currentModule?.id || !lessonId) return
 
-    setIsDeletingAssignment(true);
+    setIsDeletingAssignment(true)
     try {
-      await deleteAssignment(projectId, courseId, currentModule.id, lessonId);
+      await deleteAssignment(projectId, courseId, currentModule.id, lessonId)
       await queryClient.invalidateQueries({
-        queryKey: ["project-course", projectId, courseId],
-      });
-      setAssignment(null);
+        queryKey: ['project-course', projectId, courseId],
+      })
+      setAssignment(null)
       toast({
-        title: "Assignment deleted",
-        description: "The assignment has been removed from this lesson.",
-      });
+        title: 'Assignment deleted',
+        description: 'The assignment has been removed from this lesson.',
+      })
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to delete assignment";
+        error instanceof Error ? error.message : 'Failed to delete assignment'
       toast({
-        title: "Error",
+        title: 'Error',
         description: message,
-        variant: "destructive",
-      });
+        variant: 'destructive',
+      })
     } finally {
-      setIsDeletingAssignment(false);
+      setIsDeletingAssignment(false)
     }
-  };
+  }
 
   const handleCancelTextEditor = () => {
-    setShowTextEditor(false);
-  };
+    setShowTextEditor(false)
+  }
 
   const handleResourcesUploadComplete = async () => {
     // Refresh uploads list
@@ -579,26 +579,26 @@ export default function LessonEditorPage() {
           projectId,
           courseId,
           currentModule.id,
-          lessonId
-        );
-        setLessonUploads(uploads);
+          lessonId,
+        )
+        setLessonUploads(uploads)
       } catch (error) {
-        console.error("Failed to refresh uploads:", error);
+        console.error('Failed to refresh uploads:', error)
       }
     }
     await queryClient.invalidateQueries({
-      queryKey: ["project-course", projectId, courseId],
-    });
+      queryKey: ['project-course', projectId, courseId],
+    })
     toast({
-      title: "Resources uploaded",
-      description: "Your resources have been uploaded successfully.",
-    });
-  };
+      title: 'Resources uploaded',
+      description: 'Your resources have been uploaded successfully.',
+    })
+  }
 
   const handleDeleteAllResources = async () => {
-    if (!projectId || !courseId || !currentModule?.id || !lessonId) return;
+    if (!projectId || !courseId || !currentModule?.id || !lessonId) return
 
-    setIsDeletingAllResources(true);
+    setIsDeletingAllResources(true)
     try {
       // Delete all uploads
       for (const upload of lessonUploads) {
@@ -607,60 +607,60 @@ export default function LessonEditorPage() {
           courseId,
           currentModule.id,
           lessonId,
-          upload.id
-        );
+          upload.id,
+        )
       }
       await queryClient.invalidateQueries({
-        queryKey: ["project-course", projectId, courseId],
-      });
-      setLessonUploads([]);
+        queryKey: ['project-course', projectId, courseId],
+      })
+      setLessonUploads([])
       toast({
-        title: "Resources deleted",
-        description: "All resources have been removed from this lesson.",
-      });
+        title: 'Resources deleted',
+        description: 'All resources have been removed from this lesson.',
+      })
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to delete resources";
+        error instanceof Error ? error.message : 'Failed to delete resources'
       toast({
-        title: "Error",
+        title: 'Error',
         description: message,
-        variant: "destructive",
-      });
+        variant: 'destructive',
+      })
     } finally {
-      setIsDeletingAllResources(false);
-      setShowDeleteResourcesDialog(false);
+      setIsDeletingAllResources(false)
+      setShowDeleteResourcesDialog(false)
     }
-  };
+  }
 
   const handleDeleteSingleResource = async (uploadId: string) => {
-    if (!projectId || !courseId || !currentModule?.id || !lessonId) return;
+    if (!projectId || !courseId || !currentModule?.id || !lessonId) return
 
-    setDeletingUploadId(uploadId);
+    setDeletingUploadId(uploadId)
     try {
       await deleteLessonUpload(
         projectId,
         courseId,
         currentModule.id,
         lessonId,
-        uploadId
-      );
-      setLessonUploads((prev) => prev.filter((u) => u.id !== uploadId));
+        uploadId,
+      )
+      setLessonUploads((prev) => prev.filter((u) => u.id !== uploadId))
       toast({
-        title: "Resource deleted",
-        description: "The resource has been removed.",
-      });
+        title: 'Resource deleted',
+        description: 'The resource has been removed.',
+      })
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Failed to delete resource";
+        error instanceof Error ? error.message : 'Failed to delete resource'
       toast({
-        title: "Error",
+        title: 'Error',
         description: message,
-        variant: "destructive",
-      });
+        variant: 'destructive',
+      })
     } finally {
-      setDeletingUploadId(null);
+      setDeletingUploadId(null)
     }
-  };
+  }
 
   if (!projectId || !courseId || !lessonId) {
     return (
@@ -668,24 +668,24 @@ export default function LessonEditorPage() {
         Missing lesson information. Select a lesson from the curriculum to
         continue.
       </div>
-    );
+    )
   }
 
   // Show full-screen text editor only when explicitly editing
   if (showTextEditor) {
     return (
       <TextImagesEditor
-        lessonTitle={currentLesson?.title || "Untitled Lesson"}
+        lessonTitle={currentLesson?.title || 'Untitled Lesson'}
         projectId={projectId}
         courseId={courseId}
-        moduleId={currentModule?.id || ""}
+        moduleId={currentModule?.id || ''}
         lessonId={lessonId}
         initialContent={currentLesson?.textContent || undefined}
         onSave={handleSaveTextContent}
         onCancel={handleCancelTextEditor}
         isSaving={isSavingTextContent}
       />
-    );
+    )
   }
 
   return (
@@ -708,7 +708,7 @@ export default function LessonEditorPage() {
               href={`/p/${projectId}/courses/${courseId}/curriculum`}
               className="text-accent underline hover:text-foreground transition-colors"
             >
-              {course?.title ?? "Untitled Course"}
+              {course?.title ?? 'Untitled Course'}
             </Link>
           )}
           <span className="text-foreground/60 mb-0.5">|</span>
@@ -716,7 +716,7 @@ export default function LessonEditorPage() {
             <span className="h-4 w-24 bg-slate-200 rounded animate-pulse" />
           ) : (
             <span className="text-foreground/50">
-              {currentLesson?.title ?? "Lesson"}
+              {currentLesson?.title ?? 'Lesson'}
             </span>
           )}
         </div>
@@ -749,8 +749,8 @@ export default function LessonEditorPage() {
                       value={lessonTitle}
                       onChange={(e) => setLessonTitle(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") handleSaveRename();
-                        if (e.key === "Escape") handleCancelRename();
+                        if (e.key === 'Enter') handleSaveRename()
+                        if (e.key === 'Escape') handleCancelRename()
                       }}
                       className="flex-1 h-11 rounded-sm border-muted-foreground/60 shadow-none bg-white text-lg font-medium"
                     />
@@ -779,7 +779,7 @@ export default function LessonEditorPage() {
                       <h3 className="text-lg font-semibold text-foreground">
                         {lessonTitle ||
                           currentLesson?.title ||
-                          "Untitled Lesson"}
+                          'Untitled Lesson'}
                       </h3>
                     )}
                     <DropdownMenu>
@@ -850,10 +850,10 @@ export default function LessonEditorPage() {
             <VideoPreviewBox
               projectId={projectId}
               courseId={courseId}
-              moduleId={currentModule?.id ?? ""}
+              moduleId={currentModule?.id ?? ''}
               lessonId={lessonId}
               videoUrl={currentLesson.videoUrl ?? null}
-              videoStatus={currentLesson.videoStatus ?? "PROCESSING"}
+              videoStatus={currentLesson.videoStatus ?? 'PROCESSING'}
               videoTitle={currentLesson.title}
               onDelete={handleDeleteVideo}
               isDeleting={isDeletingVideo}
@@ -865,37 +865,37 @@ export default function LessonEditorPage() {
             <YouTubePreviewBox
               projectId={projectId}
               courseId={courseId}
-              moduleId={currentModule?.id ?? ""}
+              moduleId={currentModule?.id ?? ''}
               lessonId={lessonId}
               videoUrl={currentLesson.videoUrl!}
               videoTitle={currentLesson.title}
               onDelete={async () => {
-                setIsDeletingYoutube(true);
+                setIsDeletingYoutube(true)
                 try {
                   await updateLessonMutation.mutateAsync({
                     videoUrl: null,
-                    contentType: "VIDEO",
-                  });
+                    contentType: 'VIDEO',
+                  })
                   await queryClient.invalidateQueries({
-                    queryKey: ["project-course", projectId, courseId],
-                  });
+                    queryKey: ['project-course', projectId, courseId],
+                  })
                   toast({
-                    title: "Link deleted",
+                    title: 'Link deleted',
                     description:
-                      "The external video link has been removed from this lesson.",
-                  });
+                      'The external video link has been removed from this lesson.',
+                  })
                 } catch (error) {
                   const message =
                     error instanceof Error
                       ? error.message
-                      : "Failed to delete link";
+                      : 'Failed to delete link'
                   toast({
-                    title: "Error",
+                    title: 'Error',
                     description: message,
-                    variant: "destructive",
-                  });
+                    variant: 'destructive',
+                  })
                 } finally {
-                  setIsDeletingYoutube(false);
+                  setIsDeletingYoutube(false)
                 }
               }}
               isDeleting={isDeletingYoutube}
@@ -968,20 +968,20 @@ export default function LessonEditorPage() {
                     try {
                       await updateLessonMutation.mutateAsync({
                         textContent: null,
-                        contentType: "VIDEO",
-                      });
+                        contentType: 'VIDEO',
+                      })
                       toast({
-                        title: "Content deleted",
-                        description: "Text content has been removed.",
-                      });
-                      setShowDeleteDialog(false);
+                        title: 'Content deleted',
+                        description: 'Text content has been removed.',
+                      })
+                      setShowDeleteDialog(false)
                     } catch {
                       toast({
-                        title: "Error",
+                        title: 'Error',
                         description:
-                          "Failed to delete content. Please try again.",
-                        variant: "destructive",
-                      });
+                          'Failed to delete content. Please try again.',
+                        variant: 'destructive',
+                      })
                     }
                   }}
                   className="cursor-pointer"
@@ -1024,23 +1024,23 @@ export default function LessonEditorPage() {
             <div className="rounded-md border border-neutral-300 bg-white overflow-hidden">
               <div className="flex items-center justify-between px-5 py-4 bg-neutral-50 border-b border-neutral-200">
                 <h4 className="font-medium text-lg text-foreground">
-                  {isMockTestLesson ? "Mock Test" : "Quiz"}
+                  {isMockTestLesson ? 'Mock Test' : 'Quiz'}
                 </h4>
               </div>
               <div className="px-5 py-8 text-center">
                 <p className="text-sm text-foreground/60 mb-4">
-                  No {isMockTestLesson ? "mock test" : "quiz"} has been created
+                  No {isMockTestLesson ? 'mock test' : 'quiz'} has been created
                   yet for this lesson.
                 </p>
                 <Button
                   onClick={() =>
                     router.push(
-                      `/p/${projectId}/courses/${courseId}/curriculum/${lessonId}/quiz`
+                      `/p/${projectId}/courses/${courseId}/curriculum/${lessonId}/quiz`,
                     )
                   }
                   className="bg-accent/80 hover:bg-accent/90 cursor-pointer rounded-md"
                 >
-                  {isMockTestLesson ? "Create Mock Test" : "Create Quiz"}
+                  {isMockTestLesson ? 'Create Mock Test' : 'Create Quiz'}
                 </Button>
               </div>
             </div>
@@ -1057,7 +1057,7 @@ export default function LessonEditorPage() {
                     type="button"
                     onClick={() =>
                       router.push(
-                        `/p/${projectId}/courses/${courseId}/curriculum/${lessonId}/assignment`
+                        `/p/${projectId}/courses/${courseId}/curriculum/${lessonId}/assignment`,
                       )
                     }
                     className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-foreground/80 hover:text-accent transition-colors cursor-pointer"
@@ -1072,7 +1072,7 @@ export default function LessonEditorPage() {
                     className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-foreground/80 hover:text-foreground transition-colors cursor-pointer disabled:opacity-50"
                   >
                     <Trash2 className="size-4" />
-                    {isDeletingAssignment ? "Deleting..." : "Delete"}
+                    {isDeletingAssignment ? 'Deleting...' : 'Delete'}
                   </button>
                 </div>
               </div>
@@ -1091,13 +1091,13 @@ export default function LessonEditorPage() {
                 )}
                 <div className="mt-4 flex flex-col items-start gap-2 text-sm text-foreground/90">
                   <span>
-                    Points:{" "}
+                    Points:{' '}
                     <span className="ml-1 font-semibold text-lime-700">
                       {assignment.totalPoints}
                     </span>
                   </span>
                   <span>
-                    Due:{" "}
+                    Due:{' '}
                     <span className="ml-1 font-medium text-lime-800">
                       {assignmentDueDateLabel}
                     </span>
@@ -1135,7 +1135,7 @@ export default function LessonEditorPage() {
                   className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-foreground/80 hover:text-accent transition-colors cursor-pointer"
                 >
                   <Pencil className="size-4" />
-                  {lessonUploads.length > 0 ? "Manage" : "Add"}
+                  {lessonUploads.length > 0 ? 'Manage' : 'Add'}
                 </button>
                 <button
                   type="button"
@@ -1192,7 +1192,7 @@ export default function LessonEditorPage() {
                   disabled={isDeletingAllResources}
                   className="cursor-pointer"
                 >
-                  {isDeletingAllResources ? "Deleting..." : "Delete All"}
+                  {isDeletingAllResources ? 'Deleting...' : 'Delete All'}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -1225,8 +1225,8 @@ export default function LessonEditorPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        setDraftDescription("");
-                        setIsDescriptionExpanded(true);
+                        setDraftDescription('')
+                        setIsDescriptionExpanded(true)
                       }}
                       className="flex items-center gap-1.5 px-3 py-1.5 text-base font-medium text-accent hover:text-accent/80 hover:bg-accent/5 rounded-md transition-colors cursor-pointer"
                     >
@@ -1238,8 +1238,8 @@ export default function LessonEditorPage() {
                       <button
                         type="button"
                         onClick={() => {
-                          setDraftDescription(lessonDescription);
-                          setIsDescriptionExpanded(true);
+                          setDraftDescription(lessonDescription)
+                          setIsDescriptionExpanded(true)
                         }}
                         className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-foreground/80 hover:text-accent rounded-md transition-colors cursor-pointer"
                       >
@@ -1250,26 +1250,26 @@ export default function LessonEditorPage() {
                         type="button"
                         disabled={isSavingDescription}
                         onClick={async () => {
-                          setIsSavingDescription(true);
+                          setIsSavingDescription(true)
                           try {
                             await updateLessonMutation.mutateAsync({
                               description: null,
-                            });
-                            setLessonDescription("");
+                            })
+                            setLessonDescription('')
                             toast({
-                              title: "Description deleted",
+                              title: 'Description deleted',
                               description:
-                                "Your lesson description has been removed.",
-                            });
+                                'Your lesson description has been removed.',
+                            })
                           } catch {
                             toast({
-                              title: "Error",
+                              title: 'Error',
                               description:
-                                "Failed to delete description. Please try again.",
-                              variant: "destructive",
-                            });
+                                'Failed to delete description. Please try again.',
+                              variant: 'destructive',
+                            })
                           } finally {
-                            setIsSavingDescription(false);
+                            setIsSavingDescription(false)
                           }
                         }}
                         className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-foreground/80 hover:text-foreground rounded-md transition-colors cursor-pointer disabled:opacity-50"
@@ -1285,8 +1285,8 @@ export default function LessonEditorPage() {
                       type="button"
                       disabled={isSavingDescription}
                       onClick={() => {
-                        setDraftDescription("");
-                        setIsDescriptionExpanded(false);
+                        setDraftDescription('')
+                        setIsDescriptionExpanded(false)
                       }}
                       className="px-3 py-1.5 text-sm font-medium text-foreground bg-muted-foreground/10 hover:text-foreground hover:bg-neutral-200 rounded-md transition-colors cursor-pointer disabled:opacity-50"
                     >
@@ -1296,32 +1296,32 @@ export default function LessonEditorPage() {
                       type="button"
                       disabled={isSavingDescription}
                       onClick={async () => {
-                        setIsSavingDescription(true);
+                        setIsSavingDescription(true)
                         try {
                           await updateLessonMutation.mutateAsync({
                             description: draftDescription.trim() || null,
-                          });
-                          setLessonDescription(draftDescription);
-                          setIsDescriptionExpanded(false);
+                          })
+                          setLessonDescription(draftDescription)
+                          setIsDescriptionExpanded(false)
                           toast({
-                            title: "Description saved",
+                            title: 'Description saved',
                             description:
-                              "Your lesson description has been saved.",
-                          });
+                              'Your lesson description has been saved.',
+                          })
                         } catch {
                           toast({
-                            title: "Error",
+                            title: 'Error',
                             description:
-                              "Failed to save description. Please try again.",
-                            variant: "destructive",
-                          });
+                              'Failed to save description. Please try again.',
+                            variant: 'destructive',
+                          })
                         } finally {
-                          setIsSavingDescription(false);
+                          setIsSavingDescription(false)
                         }
                       }}
                       className="px-4 py-1 text-sm font-medium text-white bg-accent/70 border-2 hover:bg-accent/80 rounded-md transition-colors cursor-pointer disabled:opacity-50"
                     >
-                      {isSavingDescription ? "Saving..." : "Save"}
+                      {isSavingDescription ? 'Saving...' : 'Save'}
                     </button>
                   </div>
                 )}
@@ -1366,22 +1366,22 @@ export default function LessonEditorPage() {
                       try {
                         await updateLessonMutation.mutateAsync({
                           isFree: e.target.checked,
-                        });
+                        })
                         toast({
                           title: e.target.checked
-                            ? "Free preview disabled"
-                            : "Free preview enabled",
+                            ? 'Free preview disabled'
+                            : 'Free preview enabled',
                           description: e.target.checked
-                            ? "This lesson is no longer a free preview."
-                            : "This lesson is now available as a free preview.",
-                        });
+                            ? 'This lesson is no longer a free preview.'
+                            : 'This lesson is now available as a free preview.',
+                        })
                       } catch {
                         toast({
-                          title: "Error",
+                          title: 'Error',
                           description:
-                            "Failed to update lesson. Please try again.",
-                          variant: "destructive",
-                        });
+                            'Failed to update lesson. Please try again.',
+                          variant: 'destructive',
+                        })
                       }
                     }}
                     className="mt-0.5 size-6 rounded-md border-2 border-neutral-400 text-accent cursor-pointer accent-accent focus:ring-2 focus:ring-accent/30 transition-all shrink-0"
@@ -1422,7 +1422,7 @@ export default function LessonEditorPage() {
                 <div className="p-4">
                   <div className="grid w-full grid-cols-2 sm:grid-cols-3 gap-3">
                     {contentTypes.map((type) => {
-                      const Icon = type.icon;
+                      const Icon = type.icon
                       return (
                         <button
                           key={type.id}
@@ -1435,7 +1435,7 @@ export default function LessonEditorPage() {
                             {type.label}
                           </span>
                         </button>
-                      );
+                      )
                     })}
                   </div>
                 </div>
@@ -1496,10 +1496,10 @@ export default function LessonEditorPage() {
                                 key={lesson.id}
                                 href={`/p/${projectId}/courses/${courseId}/curriculum/${lesson.id}`}
                                 className={cn(
-                                  "block px-3 py-2 text-sm rounded-md transition-colors",
+                                  'block px-3 py-2 text-sm rounded-md transition-colors',
                                   lesson.id === lessonId
-                                    ? "text-accent font-medium"
-                                    : "text-foreground/70 hover:text-foreground"
+                                    ? 'text-accent font-medium'
+                                    : 'text-foreground/70 hover:text-foreground',
                                 )}
                               >
                                 {lesson.title}
@@ -1525,7 +1525,7 @@ export default function LessonEditorPage() {
           <VideoUploadModal
             open={videoModalOpen}
             onOpenChange={setVideoModalOpen}
-            lessonTitle={currentLesson?.title ?? "Lesson"}
+            lessonTitle={currentLesson?.title ?? 'Lesson'}
             projectId={projectId}
             courseId={courseId}
             moduleId={currentModule.id}
@@ -1539,7 +1539,7 @@ export default function LessonEditorPage() {
           <YouTubeLinkModal
             open={youtubeModalOpen}
             onOpenChange={setYoutubeModalOpen}
-            lessonTitle={currentLesson?.title ?? "Lesson"}
+            lessonTitle={currentLesson?.title ?? 'Lesson'}
             projectId={projectId}
             courseId={courseId}
             moduleId={currentModule.id}
@@ -1561,5 +1561,5 @@ export default function LessonEditorPage() {
         )}
       </div>
     </div>
-  );
+  )
 }

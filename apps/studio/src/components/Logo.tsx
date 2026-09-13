@@ -1,29 +1,29 @@
-import Image from "next/image";
-import Link from "next/link";
-import React from "react";
+import Image from 'next/image'
+import Link from 'next/link'
+import React from 'react'
 
-export type LogoSize = "big" | "small";
+export type LogoSize = 'big' | 'small'
 
 export type LogoProps = {
-  size?: LogoSize;
-  className?: string;
-  priority?: boolean;
-  showWordmark?: boolean;
-};
+  size?: LogoSize
+  className?: string
+  priority?: boolean
+  showWordmark?: boolean
+}
 
 const iconSizes: Record<LogoSize, string> = {
-  big: "h-10 w-10",
-  small: "h-6 w-6",
-};
+  big: 'h-10 w-10',
+  small: 'h-6 w-6',
+}
 
 const wordmarkSizes: Record<LogoSize, string> = {
-  big: "text-lg",
-  small: "text-sm",
-};
+  big: 'text-lg',
+  small: 'text-sm',
+}
 
 export const Logo: React.FC<LogoProps> = ({
-  size = "big",
-  className = "",
+  size = 'big',
+  className = '',
   priority = false,
   showWordmark = true,
 }) => {
@@ -49,5 +49,5 @@ export const Logo: React.FC<LogoProps> = ({
         </span>
       )}
     </Link>
-  );
-};
+  )
+}

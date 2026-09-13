@@ -1,12 +1,17 @@
-"use client";
+'use client'
 
-import Image from "next/image";
-import { useMemo, useRef } from "react";
-import { useReactToPrint } from "react-to-print";
-import { HiArrowDownTray, HiFolder, HiPlayCircle, HiShoppingCart } from "react-icons/hi2";
-import { Button } from "@/components/ui/button";
-import { noisePattern } from "@/components/noise-pattern";
-import { siteConfig } from "@/config/site";
+import Image from 'next/image'
+import { useMemo, useRef } from 'react'
+import { useReactToPrint } from 'react-to-print'
+import {
+  HiArrowDownTray,
+  HiFolder,
+  HiPlayCircle,
+  HiShoppingCart,
+} from 'react-icons/hi2'
+import { Button } from '@/components/ui/button'
+import { noisePattern } from '@/components/noise-pattern'
+import { siteConfig } from '@/config/site'
 import {
   fontSans,
   fontDisplay,
@@ -14,30 +19,30 @@ import {
   fontCinzel,
   fontScript,
   fontBaskerville,
-} from "@/lib/fonts";
+} from '@/lib/fonts'
 
 type CourseCertificatePreviewPageProps = {
-  projectName: string;
-  courseName: string;
-  instructorName?: string | null;
-  studentName: string;
-  studentEmail?: string | null;
-  completionDate: string;
-  completionDateShort: string;
-  totalCourseLength: string;
-  referenceNumber: string;
-  courseThumbnail?: string | null;
-  modulesCount: number;
-  lessonsCount: number;
-  priceText: string;
-};
+  projectName: string
+  courseName: string
+  instructorName?: string | null
+  studentName: string
+  studentEmail?: string | null
+  completionDate: string
+  completionDateShort: string
+  totalCourseLength: string
+  referenceNumber: string
+  courseThumbnail?: string | null
+  modulesCount: number
+  lessonsCount: number
+  priceText: string
+}
 
 function formatCertificateHours(value: string) {
   return value
-    .replace(/\bon-?demand video\b/gi, "")
-    .replace(/\s{2,}/g, " ")
-    .replace(/\s+\./g, ".")
-    .trim();
+    .replace(/\bon-?demand video\b/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\s+\./g, '.')
+    .trim()
 }
 
 function toPascalCase(value: string) {
@@ -46,7 +51,7 @@ function toPascalCase(value: string) {
     .split(/\s+/)
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-    .join(" ");
+    .join(' ')
 }
 
 export function CourseCertificatePreviewPage({
@@ -64,16 +69,16 @@ export function CourseCertificatePreviewPage({
   lessonsCount,
   priceText,
 }: CourseCertificatePreviewPageProps) {
-  const certificateRef = useRef<HTMLDivElement>(null);
+  const certificateRef = useRef<HTMLDivElement>(null)
 
   const safeFileName = useMemo(
     () =>
-      `${courseName || "course"}-certificate`
+      `${courseName || 'course'}-certificate`
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, ""),
-    [courseName]
-  );
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, ''),
+    [courseName],
+  )
 
   const printBodyClass = useMemo(
     () =>
@@ -84,14 +89,14 @@ export function CourseCertificatePreviewPage({
         fontCinzel.variable,
         fontScript.variable,
         fontBaskerville.variable,
-      ].join(" "),
-    []
-  );
+      ].join(' '),
+    [],
+  )
 
   const handleDownloadPdf = useReactToPrint({
     contentRef: certificateRef,
     bodyClass: printBodyClass,
-    documentTitle: safeFileName || "certificate",
+    documentTitle: safeFileName || 'certificate',
     pageStyle: `
       @page { size: A4 landscape; margin: 8mm; }
       body {
@@ -100,12 +105,12 @@ export function CourseCertificatePreviewPage({
         color-adjust: exact;
       }
     `,
-  });
+  })
 
-  const teacherName = instructorName?.trim() || "Acme Learning team";
-  const certificateHours = formatCertificateHours(totalCourseLength);
-  const studentDisplayName = toPascalCase(studentName);
-  const courseDisplayName = toPascalCase(courseName);
+  const teacherName = instructorName?.trim() || `${siteConfig.name} team`
+  const certificateHours = formatCertificateHours(totalCourseLength)
+  const studentDisplayName = toPascalCase(studentName)
+  const courseDisplayName = toPascalCase(courseName)
 
   return (
     <div className="mx-auto w-full max-w-[90rem] px-4 py-10 sm:px-6 lg:px-10">
@@ -123,11 +128,19 @@ export function CourseCertificatePreviewPage({
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.95fr)_minmax(320px,0.75fr)]">
         <div className="space-y-6">
-          <div ref={certificateRef} className="border border-black bg-white p-3 text-black">
+          <div
+            ref={certificateRef}
+            className="border border-black bg-white p-3 text-black"
+          >
             <div className="border-[3px] border-black p-2.5">
               <div className="flex min-h-[25.75rem] select-none bg-neutral-100/50 flex-col justify-between border border-black/20 px-7 py-6">
                 <div className="mx-auto flex max-w-fit items-center justify-center gap-2 text-center">
-                  <Image src={siteConfig.logo} alt={siteConfig.name} width={30} height={30} />
+                  <Image
+                    src={siteConfig.logo}
+                    alt={siteConfig.name}
+                    width={30}
+                    height={30}
+                  />
                   <span className="font-brand font-extrabold lowercase text-black text-2xl">
                     {projectName}
                   </span>
@@ -175,18 +188,28 @@ export function CourseCertificatePreviewPage({
 
                 <div className="mt-8 grid grid-cols-3 gap-3 border-t border-black/15 pt-5 text-center">
                   <div className="break-words">
-                    <p className="text-[0.68rem] font-semibold text-black/55">Date</p>
-                    <p className="mt-1.5 text-sm font-semibold text-black/85">{completionDate}</p>
-                  </div>
-                  <div className="break-words">
-                    <p className="text-[0.68rem] font-semibold text-black/55">Instructor</p>
+                    <p className="text-[0.68rem] font-semibold text-black/55">
+                      Date
+                    </p>
                     <p className="mt-1.5 text-sm font-semibold text-black/85">
-                      {instructorName?.trim() || "Acme Learning Team"}
+                      {completionDate}
                     </p>
                   </div>
                   <div className="break-words">
-                    <p className="text-[0.68rem] font-semibold text-black/55">Total Hours</p>
-                    <p className="mt-1.5 text-sm font-semibold text-black/85">{certificateHours}</p>
+                    <p className="text-[0.68rem] font-semibold text-black/55">
+                      Instructor
+                    </p>
+                    <p className="mt-1.5 text-sm font-semibold text-black/85">
+                      {instructorName?.trim() || `${siteConfig.name} Team`}
+                    </p>
+                  </div>
+                  <div className="break-words">
+                    <p className="text-[0.68rem] font-semibold text-black/55">
+                      Total Hours
+                    </p>
+                    <p className="mt-1.5 text-sm font-semibold text-black/85">
+                      {certificateHours}
+                    </p>
                   </div>
                 </div>
 
@@ -201,14 +224,16 @@ export function CourseCertificatePreviewPage({
 
           <div className="bg-muted/25 px-5 py-4 text-sm leading-7 text-foreground/75 sm:px-6">
             <p>
-              This certificate above verifies that{" "}
-              <span className="font-semibold">{studentDisplayName}</span> successfully completed the
-              course <span className="font-semibold">{courseName}</span> on{" "}
-              <span className="font-semibold">{completionDateShort}</span> as taught by{" "}
-              <span className="font-semibold">{teacherName}</span> on{" "}
-              <span className="font-semibold">{projectName}</span>. The certificate indicates the
-              entire course was completed as validated by the student. The course length represents
-              the total hours of the videos and article lectures of the course at the time of most
+              This certificate above verifies that{' '}
+              <span className="font-semibold">{studentDisplayName}</span>{' '}
+              successfully completed the course{' '}
+              <span className="font-semibold">{courseName}</span> on{' '}
+              <span className="font-semibold">{completionDateShort}</span> as
+              taught by <span className="font-semibold">{teacherName}</span> on{' '}
+              <span className="font-semibold">{projectName}</span>. The
+              certificate indicates the entire course was completed as validated
+              by the student. The course length represents the total hours of
+              the videos and article lectures of the course at the time of most
               recent completion.
             </p>
           </div>
@@ -220,8 +245,12 @@ export function CourseCertificatePreviewPage({
               Certificate Recipient
             </p>
             <div className="mt-4 min-w-0">
-              <p className="text-lg font-semibold text-foreground">{studentDisplayName}</p>
-              <p className="truncate text-sm text-foreground/60">{studentEmail || "Learner"}</p>
+              <p className="text-lg font-semibold text-foreground">
+                {studentDisplayName}
+              </p>
+              <p className="truncate text-sm text-foreground/60">
+                {studentEmail || 'Learner'}
+              </p>
             </div>
           </div>
 
@@ -291,5 +320,5 @@ export function CourseCertificatePreviewPage({
         </aside>
       </div>
     </div>
-  );
+  )
 }

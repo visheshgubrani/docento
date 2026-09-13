@@ -29,12 +29,12 @@ export function usePreviewStorage<T>(config: PreviewStorageConfig<T>) {
       try {
         const fullKey = getFullKey()
         const item = localStorage.getItem(fullKey)
-        
+
         if (item) {
           const parsed: StoredPreview<T> = JSON.parse(item)
           const now = Date.now()
           const expirationMs = expirationMinutes * 60 * 1000
-          
+
           // Check if data has expired
           if (now - parsed.timestamp < expirationMs) {
             setStoredData(parsed)
@@ -54,23 +54,26 @@ export function usePreviewStorage<T>(config: PreviewStorageConfig<T>) {
   }, [getFullKey, expirationMinutes])
 
   // Save data to localStorage
-  const savePreview = useCallback((data: T, metadata?: Record<string, unknown>) => {
-    try {
-      const fullKey = getFullKey()
-      const storedPreview: StoredPreview<T> = {
-        data,
-        timestamp: Date.now(),
-        metadata,
+  const savePreview = useCallback(
+    (data: T, metadata?: Record<string, unknown>) => {
+      try {
+        const fullKey = getFullKey()
+        const storedPreview: StoredPreview<T> = {
+          data,
+          timestamp: Date.now(),
+          metadata,
+        }
+
+        localStorage.setItem(fullKey, JSON.stringify(storedPreview))
+        setStoredData(storedPreview)
+        return true
+      } catch (error) {
+        console.error('Failed to save preview data to storage:', error)
+        return false
       }
-      
-      localStorage.setItem(fullKey, JSON.stringify(storedPreview))
-      setStoredData(storedPreview)
-      return true
-    } catch (error) {
-      console.error('Failed to save preview data to storage:', error)
-      return false
-    }
-  }, [getFullKey])
+    },
+    [getFullKey],
+  )
 
   // Clear data from localStorage
   const clearPreview = useCallback(() => {

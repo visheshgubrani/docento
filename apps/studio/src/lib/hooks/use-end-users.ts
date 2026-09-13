@@ -1,10 +1,6 @@
 'use client'
 
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import {
   fetchProjectEndUsers,
@@ -24,7 +20,7 @@ export type UseProjectEndUsersOptions = {
 
 export function useProjectEndUsers(
   projectId: string,
-  options: UseProjectEndUsersOptions = {}
+  options: UseProjectEndUsersOptions = {},
 ) {
   return useQuery<EndUserList, Error>({
     queryKey: [

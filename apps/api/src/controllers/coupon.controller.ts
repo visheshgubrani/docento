@@ -101,7 +101,7 @@ const mapCoupon = (coupon: CouponWithRelations) => ({
 export const listCoupons = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project
@@ -133,7 +133,7 @@ export const listCoupons = async (
     return res.status(200).json(
       new ApiResponse(200, 'Coupons fetched successfully', {
         coupons: coupons.map(mapCoupon),
-      })
+      }),
     )
   } catch (error) {
     console.error('[LIST_COUPONS_ERROR]', error)
@@ -144,7 +144,7 @@ export const listCoupons = async (
 export const createCoupon = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project
@@ -167,12 +167,14 @@ export const createCoupon = async (
     }
 
     if (code.length > 64) {
-      return next(new ApiError(400, 'Coupon code must be 64 characters or less'))
+      return next(
+        new ApiError(400, 'Coupon code must be 64 characters or less'),
+      )
     }
 
     if (!discountType) {
       return next(
-        new ApiError(400, 'discountType must be either PERCENTAGE or FLAT')
+        new ApiError(400, 'discountType must be either PERCENTAGE or FLAT'),
       )
     }
 
@@ -182,7 +184,7 @@ export const createCoupon = async (
 
     if (discountType === 'PERCENTAGE' && discountValue > 100) {
       return next(
-        new ApiError(400, 'Percentage discount cannot be greater than 100')
+        new ApiError(400, 'Percentage discount cannot be greater than 100'),
       )
     }
 
@@ -213,7 +215,7 @@ export const createCoupon = async (
 
     if (!appliesToAll && courseIds.length === 0) {
       return next(
-        new ApiError(400, 'Select at least one course or set appliesToAll')
+        new ApiError(400, 'Select at least one course or set appliesToAll'),
       )
     }
 
@@ -232,7 +234,10 @@ export const createCoupon = async (
 
       if (matchedCourses.length !== courseIds.length) {
         return next(
-          new ApiError(400, 'One or more selected courses do not belong to this project')
+          new ApiError(
+            400,
+            'One or more selected courses do not belong to this project',
+          ),
         )
       }
     }
@@ -273,14 +278,16 @@ export const createCoupon = async (
     return res.status(201).json(
       new ApiResponse(201, 'Coupon created successfully', {
         coupon: mapCoupon(created),
-      })
+      }),
     )
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === 'P2002'
     ) {
-      return next(new ApiError(409, 'Coupon code already exists in this project'))
+      return next(
+        new ApiError(409, 'Coupon code already exists in this project'),
+      )
     }
 
     console.error('[CREATE_COUPON_ERROR]', error)
@@ -291,7 +298,7 @@ export const createCoupon = async (
 export const updateCouponStatus = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project
@@ -348,7 +355,7 @@ export const updateCouponStatus = async (
     return res.status(200).json(
       new ApiResponse(200, 'Coupon status updated successfully', {
         coupon: mapCoupon(updated),
-      })
+      }),
     )
   } catch (error) {
     console.error('[UPDATE_COUPON_STATUS_ERROR]', error)

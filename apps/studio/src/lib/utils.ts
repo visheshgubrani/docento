@@ -1,30 +1,30 @@
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
-import { siteConfig } from "@/lib/site";
-import { Metadata } from "next";
+import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
+import { siteConfig } from '@/lib/site'
+import { Metadata } from 'next'
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs))
 }
 
 export function absoluteUrl(path: string) {
-  return `${process.env.NEXT_PUBLIC_APP_URL || siteConfig.url}${path}`;
+  return `${process.env.NEXT_PUBLIC_APP_URL || siteConfig.url}${path}`
 }
 
 export function constructMetadata({
   title = siteConfig.name,
   description = siteConfig.description,
-  image = absoluteUrl("/og"),
+  image = absoluteUrl('/og'),
   ...props
 }: {
-  title?: string;
-  description?: string;
-  image?: string;
-  [key: string]: Metadata[keyof Metadata];
+  title?: string
+  description?: string
+  image?: string
+  [key: string]: Metadata[keyof Metadata]
 }): Metadata {
   return {
     title: {
-      template: "%s | " + siteConfig.name,
+      template: '%s | ' + siteConfig.name,
       default: siteConfig.name,
     },
     description: description || siteConfig.description,
@@ -42,8 +42,8 @@ export function constructMetadata({
           alt: title,
         },
       ],
-      type: "website",
-      locale: "en_US",
+      type: 'website',
+      locale: 'en_US',
     },
     icons: {
       icon: '/docento-logo.svg',
@@ -58,36 +58,36 @@ export function constructMetadata({
       },
     ],
     ...props,
-  };
+  }
 }
 
 export function formatDate(date: string) {
-  const currentDate = new Date().getTime();
-  if (!date.includes("T")) {
-    date = `${date}T00:00:00`;
+  const currentDate = new Date().getTime()
+  if (!date.includes('T')) {
+    date = `${date}T00:00:00`
   }
-  const targetDate = new Date(date).getTime();
-  const timeDifference = Math.abs(currentDate - targetDate);
-  const daysAgo = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+  const targetDate = new Date(date).getTime()
+  const timeDifference = Math.abs(currentDate - targetDate)
+  const daysAgo = Math.floor(timeDifference / (1000 * 60 * 60 * 24))
 
-  const fullDate = new Date(date).toLocaleString("en-us", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  const fullDate = new Date(date).toLocaleString('en-us', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
 
   if (daysAgo < 1) {
-    return "Today";
+    return 'Today'
   } else if (daysAgo < 7) {
-    return `${fullDate} (${daysAgo}d ago)`;
+    return `${fullDate} (${daysAgo}d ago)`
   } else if (daysAgo < 30) {
-    const weeksAgo = Math.floor(daysAgo / 7);
-    return `${fullDate} (${weeksAgo}w ago)`;
+    const weeksAgo = Math.floor(daysAgo / 7)
+    return `${fullDate} (${weeksAgo}w ago)`
   } else if (daysAgo < 365) {
-    const monthsAgo = Math.floor(daysAgo / 30);
-    return `${fullDate} (${monthsAgo}mo ago)`;
+    const monthsAgo = Math.floor(daysAgo / 30)
+    return `${fullDate} (${monthsAgo}mo ago)`
   } else {
-    const yearsAgo = Math.floor(daysAgo / 365);
-    return `${fullDate} (${yearsAgo}y ago)`;
+    const yearsAgo = Math.floor(daysAgo / 365)
+    return `${fullDate} (${yearsAgo}y ago)`
   }
 }

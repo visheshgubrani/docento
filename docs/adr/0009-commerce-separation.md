@@ -30,13 +30,13 @@ inconvenience.
 
 Five separate concepts, with explicit transitions between them.
 
-| Concept | Answers | Mutable? |
-| --- | --- | --- |
-| **Offer** | What is for sale, at what price, in what currency, with what access terms | Yes — this is the current price |
-| **Order** | What a specific learner was charged, and what happened to the payment | Append-only, plus status transitions |
-| **Access grant** | *Why* a learner may access this course, and whether that reason still holds | Yes — grant and revoke |
-| **Enrollment** | The learning relationship: progress, attempts, history | Yes |
-| **Cloud subscription** | A workspace's contract for managed services | Yes |
+| Concept                | Answers                                                                     | Mutable?                             |
+| ---------------------- | --------------------------------------------------------------------------- | ------------------------------------ |
+| **Offer**              | What is for sale, at what price, in what currency, with what access terms   | Yes — this is the current price      |
+| **Order**              | What a specific learner was charged, and what happened to the payment       | Append-only, plus status transitions |
+| **Access grant**       | _Why_ a learner may access this course, and whether that reason still holds | Yes — grant and revoke               |
+| **Enrollment**         | The learning relationship: progress, attempts, history                      | Yes                                  |
+| **Cloud subscription** | A workspace's contract for managed services                                 | Yes                                  |
 
 The critical separation is **grant** from **enrollment**. Enrollment records
 learning. A grant records permission, and permission can come from several

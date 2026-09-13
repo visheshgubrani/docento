@@ -28,19 +28,18 @@ product and its interfaces.
 
 Licenses are assigned per directory, and the split follows that boundary.
 
-| Path | License |
-| --- | --- |
-| `apps/*` | AGPL-3.0-only |
-| `packages/domain` | AGPL-3.0-only |
+| Path                    | License       |
+| ----------------------- | ------------- |
+| `apps/*`                | AGPL-3.0-only |
+| `packages/domain`       | AGPL-3.0-only |
 | `packages/integrations` | AGPL-3.0-only |
-| `packages/ui` | AGPL-3.0-only |
-| `packages/config` | AGPL-3.0-only |
-| `packages/contracts` | Apache-2.0 |
-| `packages/sdk` | Apache-2.0 |
+| `packages/config`       | AGPL-3.0-only |
+| `packages/contracts`    | Apache-2.0    |
+| `packages/sdk`          | Apache-2.0    |
 
 **Enforced invariant: an Apache-2.0 package must never import an AGPL-3.0
 package.** Dependency direction is strictly one-way — `packages/contracts` is
-imported *by* `packages/sdk` and by the applications, never the reverse. If an
+imported _by_ `packages/sdk` and by the applications, never the reverse. If an
 Apache-2.0 package depended on AGPL-3.0 code, the whole SDK would inherit AGPL
 obligations and the permissive license would be a lie.
 
@@ -74,7 +73,7 @@ Contributions use the **Developer Certificate of Origin**, not a CLA — see
 - The dual-license structure surprises people and needs explaining in the README,
   `CONTRIBUTING.md`, and per-package `LICENSE` files.
 - The import-direction rule is a real constraint on refactoring. When shared code
-  needs to move, it moves *down* into `packages/contracts`, which occasionally
+  needs to move, it moves _down_ into `packages/contracts`, which occasionally
   means placing something in the contracts package that feels more like
   implementation than interface.
 - AGPL is unacceptable to some enterprises outright. That is a known cost of

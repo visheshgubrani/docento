@@ -1,20 +1,20 @@
-import React from "react";
-import { Metadata } from "next";
+import React from 'react'
+import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: "Terms",
+  title: 'Terms',
   description:
-    "Review the Terms & Conditions for using Docento. Understand your responsibilities, usage rules, and the policies that guide our platform.",
+    'Review the Terms & Conditions for using Docento. Understand your responsibilities, usage rules, and the policies that guide our platform.',
   openGraph: {
-    title: "Terms & Conditions — Docento",
+    title: 'Terms & Conditions — Docento',
     description:
-      "Read the official Terms & Conditions for using Docento. Learn about account use, billing, rights, and responsibilities.",
-    url: "https://docento.dev/terms",
+      'Read the official Terms & Conditions for using Docento. Learn about account use, billing, rights, and responsibilities.',
+    url: 'https://docento.dev/terms',
   },
   alternates: {
-    canonical: "https://docento.dev/terms",
+    canonical: 'https://docento.dev/terms',
   },
-};
+}
 
 export default function TermsOfService() {
   return (
@@ -70,7 +70,7 @@ export default function TermsOfService() {
                 <p className="text-foreground/85 font-noto">
                   These Terms govern your use of Docento (“we”, “us”, “our”) and
                   the services we provide. By accessing the platform, you agree
-                  to follow these Terms and our{" "}
+                  to follow these Terms and our{' '}
                   <a href="/privacy" className="text-primary underline">
                     Privacy Policy
                   </a>
@@ -84,9 +84,9 @@ export default function TermsOfService() {
                   Use of Our Services
                 </h2>
                 <p className="text-foreground/80 font-noto">
-                  We grant you a limited, non-transferable license to use Docento
-                  for personal or commercial purposes depending on your plan.
-                  You must comply with all applicable laws while using the
+                  We grant you a limited, non-transferable license to use
+                  Docento for personal or commercial purposes depending on your
+                  plan. You must comply with all applicable laws while using the
                   platform.
                 </p>
               </section>
@@ -98,8 +98,8 @@ export default function TermsOfService() {
                 </h2>
                 <p className="text-foreground/80 font-noto">
                   All branding, platform features, designs, and materials on
-                  Docento belong exclusively to Docento This does not extend
-                  to your own uploaded materials or the content you create using
+                  Docento belong exclusively to Docento This does not extend to
+                  your own uploaded materials or the content you create using
                   the platform.
                 </p>
                 <p className="text-foreground/70 font-noto mt-2 text-sm">
@@ -192,7 +192,7 @@ export default function TermsOfService() {
                 </h2>
                 <ul className="list-none text-foreground/70 font-noto">
                   <li>
-                    Email:{" "}
+                    Email:{' '}
                     <a
                       href="mailto:legal@docento.dev"
                       className="text-primary underline"
@@ -212,5 +212,5 @@ export default function TermsOfService() {
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -11,7 +11,8 @@ import {
   type ProjectCouponStatus,
 } from '@/lib/api'
 
-const couponsQueryKey = (projectId: string) => ['project-coupons', projectId] as const
+const couponsQueryKey = (projectId: string) =>
+  ['project-coupons', projectId] as const
 
 export function useProjectCoupons(projectId: string) {
   return useQuery<ProjectCoupon[], Error>({

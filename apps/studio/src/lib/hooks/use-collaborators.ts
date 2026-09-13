@@ -36,7 +36,8 @@ export function useRemoveProjectCollaborator(projectId: string) {
   const queryClient = useQueryClient()
 
   return useMutation<void, Error, { memberId: string }>({
-    mutationFn: ({ memberId }) => removeProjectCollaborator(projectId, memberId),
+    mutationFn: ({ memberId }) =>
+      removeProjectCollaborator(projectId, memberId),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ['project-collaborators', projectId],

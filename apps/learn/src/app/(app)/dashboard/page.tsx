@@ -1,47 +1,53 @@
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getDashboardData } from "@/actions/dashboard";
-import { CourseCard } from "@/components/common/course-card";
-import { fetchAPI } from "@/lib/fetch-api";
-import type { StorefrontCourse } from "@/lib/lms-api-client";
-import type { Metadata } from "next";
-import { ImBooks } from "react-icons/im";
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { getDashboardData } from '@/actions/dashboard'
+import { CourseCard } from '@/components/common/course-card'
+import { fetchAPI } from '@/lib/fetch-api'
+import type { StorefrontCourse } from '@/lib/lms-api-client'
+import type { Metadata } from 'next'
+import { ImBooks } from 'react-icons/im'
 
 export const metadata: Metadata = {
-  title: "Dashboard",
-  description: "Your enrolled courses and learning progress.",
-};
+  title: 'Dashboard',
+  description: 'Your enrolled courses and learning progress.',
+}
 
 type StorefrontCatalogResponse = {
   data?: {
-    courses?: StorefrontCourse[];
-  };
-};
+    courses?: StorefrontCourse[]
+  }
+}
 
 export default async function DashboardPage() {
-  const result = await getDashboardData();
+  const result = await getDashboardData()
 
   if (!result.success) {
-    redirect("/login");
+    redirect('/login')
   }
 
-  const { userName, enrollments } = result.data;
-  const enrolledCourseIds = new Set(enrollments.map((enrollment) => enrollment.course.id));
-  let catalogCourses: StorefrontCourse[] = [];
-  let latestCourses: StorefrontCourse[] = [];
+  const { userName, enrollments } = result.data
+  const enrolledCourseIds = new Set(
+    enrollments.map((enrollment) => enrollment.course.id),
+  )
+  let catalogCourses: StorefrontCourse[] = []
+  let latestCourses: StorefrontCourse[] = []
 
   try {
-    const catalogResponse = await fetchAPI<StorefrontCatalogResponse>("/storefront/courses");
-    catalogCourses = catalogResponse.data?.courses ?? [];
+    const catalogResponse = await fetchAPI<StorefrontCatalogResponse>(
+      '/storefront/courses',
+    )
+    catalogCourses = catalogResponse.data?.courses ?? []
     latestCourses = catalogCourses
       .filter((course) => !enrolledCourseIds.has(course.id))
-      .slice(0, 3);
+      .slice(0, 3)
   } catch {
-    catalogCourses = [];
-    latestCourses = [];
+    catalogCourses = []
+    latestCourses = []
   }
 
-  const catalogCourseById = new Map(catalogCourses.map((course) => [course.id, course]));
+  const catalogCourseById = new Map(
+    catalogCourses.map((course) => [course.id, course]),
+  )
 
   return (
     <>
@@ -54,8 +60,8 @@ export default async function DashboardPage() {
           </h1>
           <p className="mt-3 text-lg text-foreground/70">
             {enrollments.length > 0
-              ? "Continue where you left off."
-              : "Start your learning journey today."}
+              ? 'Continue where you left off.'
+              : 'Start your learning journey today.'}
           </p>
         </div>
 
@@ -67,18 +73,23 @@ export default async function DashboardPage() {
                 My Courses
               </h2>
               <span className="text-sm bg-muted-foreground/15 dark:bg-muted px-4 py-1 rounded-full text-foreground/70">
-                {enrollments.length} {enrollments.length === 1 ? "course" : "courses"}
+                {enrollments.length}{' '}
+                {enrollments.length === 1 ? 'course' : 'courses'}
               </span>
             </div>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {enrollments.map((enrollment, index) => {
-                const enrolledDate = new Date(enrollment.enrolledAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                });
-                const catalogCourse = catalogCourseById.get(enrollment.course.id);
+                const enrolledDate = new Date(
+                  enrollment.enrolledAt,
+                ).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                })
+                const catalogCourse = catalogCourseById.get(
+                  enrollment.course.id,
+                )
 
                 return (
                   <CourseCard
@@ -98,14 +109,17 @@ export default async function DashboardPage() {
                       id: enrollment.course.id,
                       title: enrollment.course.title,
                       description: catalogCourse?.description ?? null,
-                      thumbnail: enrollment.course.thumbnail ?? catalogCourse?.thumbnail ?? null,
+                      thumbnail:
+                        enrollment.course.thumbnail ??
+                        catalogCourse?.thumbnail ??
+                        null,
                       slug: enrollment.course.slug ?? catalogCourse?.slug,
                       price: catalogCourse?.price ?? null,
                       category: catalogCourse?.category ?? [],
                       instructors: catalogCourse?.instructors ?? [],
                     }}
                   />
-                );
+                )
               })}
             </div>
           </section>
@@ -120,7 +134,8 @@ export default async function DashboardPage() {
               You&apos;re not enrolled in any courses
             </h2>
             <p className="mt-3 max-w-sm text-base text-foreground/80">
-              Browse our course catalog and enroll in a class to begin building new skills today.
+              Browse our course catalog and enroll in a class to begin building
+              new skills today.
             </p>
 
             {/* <Link
@@ -185,5 +200,5 @@ export default async function DashboardPage() {
         </section>
       </main>
     </>
-  );
+  )
 }

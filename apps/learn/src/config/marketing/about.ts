@@ -1,59 +1,71 @@
-// ===== About Page Data =====
+/**
+ * Copy for the learner "about" page.
+ *
+ * Describes how learning works on this platform rather than inventing an
+ * employer. The tenant's own story belongs to the academy and comes from
+ * `Academy.branding`; there is deliberately no fabricated company history,
+ * headcount, or staff quote here.
+ */
 export const aboutPageData = {
   hero: {
-    eyebrow: "About Acme Learning",
-    headline: "Empowering our team through continuous learning.",
+    eyebrow: 'About',
+    headline: 'Learning that fits around the rest of your life.',
     description:
-      "We believe that investing in our people is investing in our future. Acme Learning provides the resources, courses, and support you need to develop new skills and reach your professional goals.",
-    image: "/images/about.jpg",
+      'Courses here are self-paced and built to be finished. Each one is a sequence of lessons you can work through in order, with your place saved so you can stop and come back.',
   },
   stats: {
-    eyebrow: "Our Impact",
-    headline: "Learning that makes a difference.",
+    eyebrow: 'What you get',
+    headline: 'Built for finishing, not for browsing.',
     description:
-      "Acme Learning helps employees across all departments build the knowledge and skills they need to succeed. Here's how we're making an impact.",
+      'The things that make a course completable are the boring ones: a clear structure, a way to resume, and a reason to finish.',
     items: [
-      { value: "2,500+", text: "Employees trained across all departments." },
-      { value: "85%", text: "Average course completion rate." },
-      { value: "50+", text: "Courses available on demand." },
+      {
+        value: 'Self-paced',
+        text: 'No scheduled sessions. Start any lesson at any time.',
+      },
+      {
+        value: 'Resumable',
+        text: 'Your position in every course is saved as you go.',
+      },
+      {
+        value: 'Verifiable',
+        text: 'Certificates carry a public link an employer can check.',
+      },
     ],
-  },
-  testimonial: {
-    quote:
-      "The leadership courses helped me transition from an individual contributor to a team lead. The content was practical and immediately applicable to my daily work.",
-    name: "Priya Sharma",
-    role: "Engineering Team Lead",
-    image: "/images/testimonial.jpg",
   },
   values: {
-    eyebrow: "Our Values",
-    headline: "What guides our approach",
-    description: "These principles shape how we design and deliver learning experiences.",
+    eyebrow: 'Principles',
+    headline: 'What guides the learner experience',
+    description: 'These are the properties the platform is held to.',
     items: [
       {
-        title: "Accessible",
-        description: "Learning should be available anytime, anywhere, on any device.",
+        title: 'Accessible',
+        description:
+          'Available on any device, with a browser’s own video player.',
       },
       {
-        title: "Practical",
-        description: "Every course focuses on skills you can apply immediately.",
+        title: 'Practical',
+        description: 'Lessons are short and ordered, so progress is visible.',
       },
       {
-        title: "Engaging",
-        description: "Interactive content that keeps you motivated to learn.",
+        title: 'Honest',
+        description:
+          'Completion is computed from what you did on the server, not from a client report.',
       },
       {
-        title: "Supportive",
-        description: "Resources and guidance when you need help along the way.",
+        title: 'Private',
+        description:
+          'Your progress and certificates belong to this academy and nothing else.',
       },
       {
-        title: "Measurable",
-        description: "Track your progress and see how far you've come.",
+        title: 'Measurable',
+        description: 'Attempts, scores and completion are recorded per course.',
       },
       {
-        title: "Inclusive",
-        description: "Designed for all learning styles and experience levels.",
+        title: 'Durable',
+        description:
+          'Course updates never revoke a lesson you have already completed.',
       },
     ],
   },
-};
+}

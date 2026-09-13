@@ -11,7 +11,7 @@ interface EndUserJwtPayload extends jwt.JwtPayload {
 export const optionalVerifyManagedUser = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const token =
@@ -27,7 +27,7 @@ export const optionalVerifyManagedUser = async (
     // 2. IF TOKEN EXISTS: Try to verify it
     const payload = jwt.verify(
       token,
-      process.env.JWT_SECRET!
+      process.env.JWT_SECRET!,
     ) as EndUserJwtPayload
 
     const endUser = await prisma.endUser.findUnique({

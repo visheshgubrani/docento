@@ -17,7 +17,7 @@ interface UploadConfig {
 export async function uploadVideoFile(
   file: File,
   config: UploadConfig,
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
 ): Promise<string> {
   const { projectId, courseId, moduleId, lessonId } = config
   const playbackPolicy = config.playbackPolicy ?? 'signed'
@@ -34,7 +34,7 @@ export async function uploadVideoFile(
     file.name,
     playbackPolicy,
     generateSubtitle,
-    generateChapters
+    generateChapters,
   )
 
   console.log('[SDK_DEBUG] Got session:', {
@@ -47,13 +47,16 @@ export async function uploadVideoFile(
   console.log('[SDK_DEBUG] Step 2: Loading @clipmux/uploader SDK...')
   const clipmuxModule = await import('@clipmux/uploader')
   console.log('[SDK_DEBUG] SDK module exported:', Object.keys(clipmuxModule))
-  
+
   const { ClipmuxUploader } = clipmuxModule
   console.log('[SDK_DEBUG] ClipmuxUploader:', typeof ClipmuxUploader)
-  
+
   // Check the constructor
-  console.log('[SDK_DEBUG] ClipmuxUploader.prototype:', Object.getOwnPropertyNames(ClipmuxUploader.prototype))
-  
+  console.log(
+    '[SDK_DEBUG] ClipmuxUploader.prototype:',
+    Object.getOwnPropertyNames(ClipmuxUploader.prototype),
+  )
+
   // Create uploader instance with debug
   const uploaderConfig = {
     baseUrl: uploadSession.apiUrl || 'http://localhost:4080',
@@ -63,17 +66,21 @@ export async function uploadVideoFile(
     baseUrl: uploaderConfig.baseUrl,
     uploadToken: uploaderConfig.uploadToken?.substring(0, 30) + '...',
   })
-  
+
   const uploader = new ClipmuxUploader(uploaderConfig)
   console.log('[SDK_DEBUG] Uploader instance created:', uploader)
   console.log('[SDK_DEBUG] Uploader instance keys:', Object.keys(uploader))
-  
+
   // Check what properties the uploader has
   console.log('[SDK_DEBUG] Uploader properties:')
   const uploaderRecord = uploader as unknown as Record<string, unknown>
   for (const key of Object.keys(uploaderRecord)) {
     const value = uploaderRecord[key]
-    console.log(`  ${key}:`, typeof value, typeof value === 'string' ? value.substring(0, 30) + '...' : '')
+    console.log(
+      `  ${key}:`,
+      typeof value,
+      typeof value === 'string' ? value.substring(0, 30) + '...' : '',
+    )
   }
 
   // Step 3: Monkey-patch fetch to see what headers are being sent
@@ -85,30 +92,39 @@ export async function uploadVideoFile(
     headers?: HeadersInit
     timestamp: number
   }> = []
-  
-  window.fetch = async function(input: RequestInfo | URL, init?: RequestInit) {
-    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url
-    
+
+  window.fetch = async function (input: RequestInfo | URL, init?: RequestInit) {
+    const url =
+      typeof input === 'string'
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : input.url
+
     console.log('[SDK_DEBUG] Fetch intercepted:', {
       url: url.substring(0, 100),
       method: init?.method,
       headers: init?.headers,
     })
-    
+
     requestLog.push({
       url,
       method: init?.method,
       headers: init?.headers,
       timestamp: Date.now(),
     })
-    
+
     return originalFetch(input, init)
   }
 
   try {
     console.log('[SDK_DEBUG] Step 4: Starting upload via SDK...')
-    console.log('[SDK_DEBUG] Calling uploader.upload() with file:', file.name, file.size)
-    
+    console.log(
+      '[SDK_DEBUG] Calling uploader.upload() with file:',
+      file.name,
+      file.size,
+    )
+
     const result = await uploader.upload(file, {
       title: file.name,
       playbackPolicy: uploadSession.playbackPolicy,
@@ -127,16 +143,10 @@ export async function uploadVideoFile(
 
     // Step 5: Link the video to the lesson
     console.log('[SDK_DEBUG] Step 5: Linking video to lesson...')
-    await linkVideoToLesson(
-      projectId,
-      courseId,
-      moduleId,
-      lessonId,
-      {
-        videoId: result.fileId,
-        title: file.name,
-      }
-    )
+    await linkVideoToLesson(projectId, courseId, moduleId, lessonId, {
+      videoId: result.fileId,
+      title: file.name,
+    })
 
     return result.fileId
   } finally {

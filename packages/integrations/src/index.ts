@@ -8,11 +8,7 @@
  * has a meaningful independent interface. See ARCHITECTURE.md.
  */
 
-export {
-  JOB_DEFINITIONS,
-  JobQueue,
-  createJobQueue,
-} from './jobs/index.js'
+export { JOB_DEFINITIONS, JobQueue, createJobQueue } from './jobs/index.js'
 export type {
   EnqueueOptions,
   JobHandler,

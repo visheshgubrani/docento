@@ -96,6 +96,8 @@ describe('JobQueue', () => {
 
   it('reports which handlers are registered', async () => {
     expect(queue.registeredHandlers().length).toBeGreaterThan(0)
-    expect(queue.registeredHandlers()).toContain('maintenance.prune-rate-limits')
+    expect(queue.registeredHandlers()).toContain(
+      'maintenance.prune-rate-limits',
+    )
   })
 })

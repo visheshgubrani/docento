@@ -1,30 +1,33 @@
-"use client";
+'use client'
 
-import { noisePattern } from "@/components/noise-pattern";
-import { cn } from "@/lib/utils";
+import { noisePattern } from '@/components/noise-pattern'
+import { cn } from '@/lib/utils'
 
 type CourseCardSkeletonProps = {
-  index?: number;
-  className?: string;
-};
+  index?: number
+  className?: string
+}
 
-export function CourseCardSkeleton({ index = 0, className }: CourseCardSkeletonProps) {
-  const isEven = index % 2 === 0;
+export function CourseCardSkeleton({
+  index = 0,
+  className,
+}: CourseCardSkeletonProps) {
+  const isEven = index % 2 === 0
 
   return (
     <div
       className={cn(
-        "h-full rounded-lg border border-border bg-muted/60 p-2",
-        className
+        'h-full rounded-lg border border-border bg-muted/60 p-2',
+        className,
       )}
       aria-hidden="true"
     >
       <div
         className={cn(
-          "relative overflow-hidden rounded-sm",
+          'relative overflow-hidden rounded-sm',
           isEven
-            ? "bg-gradient-to-b from-[#7b627d] to-[#8f6976] dark:from-[#412c42] dark:to-[#3c1a26]"
-            : "bg-gradient-to-b from-[#9ca88f] to-[#596352] dark:from-[#333a2b] dark:to-[#26361b]"
+            ? 'bg-gradient-to-b from-[#7b627d] to-[#8f6976] dark:from-[#412c42] dark:to-[#3c1a26]'
+            : 'bg-gradient-to-b from-[#9ca88f] to-[#596352] dark:from-[#333a2b] dark:to-[#26361b]',
         )}
       >
         <div
@@ -67,5 +70,5 @@ export function CourseCardSkeleton({ index = 0, className }: CourseCardSkeletonP
         </div>
       </div>
     </div>
-  );
+  )
 }

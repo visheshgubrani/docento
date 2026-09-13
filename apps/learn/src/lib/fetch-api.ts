@@ -23,18 +23,23 @@ interface FetchOptions extends RequestInit {
 
 export async function fetchAPI<T>(
   endpoint: string,
-  options: FetchOptions = {}
+  options: FetchOptions = {},
 ): Promise<T> {
-  const { requireAuth = false, retries = 1, authToken, ...fetchOptions } = options
-  
+  const {
+    requireAuth = false,
+    retries = 1,
+    authToken,
+    ...fetchOptions
+  } = options
+
   const url = `${LMS_API_URL}${endpoint}`
-  
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'X-API-Key': LMS_SECRET_API_KEY,
     ...((fetchOptions.headers as Record<string, string>) || {}),
   }
-  
+
   if (requireAuth) {
     const tokenFromCookie = authToken
       ? authToken
@@ -43,18 +48,18 @@ export async function fetchAPI<T>(
       headers['Authorization'] = `Bearer ${tokenFromCookie}`
     }
   }
-  
+
   const config: RequestInit = {
     ...fetchOptions,
     headers,
   }
-  
+
   let lastError: Error | null = null
-  
+
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const response = await fetch(url, config)
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => null)
         const errorMessage =
@@ -67,19 +72,21 @@ export async function fetchAPI<T>(
 
         throw new APIError(errorMessage, response.status, errorData)
       }
-      
+
       return await response.json()
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error))
-      
+
       if (attempt < retries) {
-        await new Promise((resolve) => setTimeout(resolve, 1000 * (attempt + 1)))
+        await new Promise((resolve) =>
+          setTimeout(resolve, 1000 * (attempt + 1)),
+        )
         continue
       }
-      
+
       throw lastError
     }
   }
-  
+
   throw lastError || new Error('Unknown error')
 }

@@ -1,14 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next'
+import { siteConfig } from '@/config/site'
 
 export const metadata: Metadata = {
-  title: "Contact",
-  description: "Contact Acme Learning support.",
-};
+  title: 'Contact',
+  description: `Contact ${siteConfig.name} support.`,
+}
 
 export default function ContactLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
-  return children;
+  return children
 }

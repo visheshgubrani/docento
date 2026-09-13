@@ -41,7 +41,7 @@ export function DefaultLessonSettings({
     projectId,
     courseId,
     moduleId,
-    lesson.id
+    lesson.id,
   )
 
   const handleSave = async () => {
@@ -75,45 +75,45 @@ export function DefaultLessonSettings({
   }
 
   return (
-    <Card className='border border-slate-200/80 shadow-sm dark:border-slate-800'>
-      <CardHeader className='border-b border-slate-100 pb-4 dark:border-slate-800'>
-        <CardTitle className='text-xl font-semibold'>Lesson settings</CardTitle>
+    <Card className="border border-slate-200/80 shadow-sm dark:border-slate-800">
+      <CardHeader className="border-b border-slate-100 pb-4 dark:border-slate-800">
+        <CardTitle className="text-xl font-semibold">Lesson settings</CardTitle>
         <CardDescription>
           Update metadata for this{' '}
           {lesson.contentType?.toLowerCase() ?? 'custom'} lesson.
         </CardDescription>
       </CardHeader>
-      <CardContent className='space-y-4 pt-4'>
-        <div className='space-y-2'>
+      <CardContent className="space-y-4 pt-4">
+        <div className="space-y-2">
           <Label htmlFor={`generic-title-${lesson.id}`}>Title</Label>
           <Input
             id={`generic-title-${lesson.id}`}
             value={title}
-            placeholder='Lesson title'
+            placeholder="Lesson title"
             onChange={(event) => setTitle(event.target.value)}
           />
         </div>
-        <div className='space-y-2'>
+        <div className="space-y-2">
           <Label htmlFor={`generic-description-${lesson.id}`}>
             Description
           </Label>
           <Textarea
             id={`generic-description-${lesson.id}`}
             value={description}
-            placeholder='Describe the key takeaways'
+            placeholder="Describe the key takeaways"
             rows={4}
             onChange={(event) => setDescription(event.target.value)}
           />
         </div>
         <Button
-          className='w-full'
+          className="w-full"
           onClick={handleSave}
           disabled={isPending || !moduleId}
         >
           {isPending ? 'Saving...' : 'Save lesson'}
         </Button>
         {!moduleId ? (
-          <p className='text-xs text-muted-foreground'>
+          <p className="text-xs text-muted-foreground">
             Select a module to enable saving changes.
           </p>
         ) : null}

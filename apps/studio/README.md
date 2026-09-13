@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# @docento/studio
 
-## Getting Started
+The staff and creator application: where someone signs in, creates a workspace
+and an academy, authors a course, and publishes it.
 
-First, run the development server:
+## The tenancy model
+
+Two levels, and they mean different things:
+
+- A **workspace** is the tenant and the isolation boundary. Staff belong to a
+  workspace and may belong to several; provider connections, service keys and
+  members live here.
+- An **academy** is a student-facing property inside a workspace. One workspace
+  can run several without duplicating learners or staff. Courses belong to an
+  academy. See [ADR 2](../../docs/adr/0002-workspace-and-academy-tenancy.md).
+
+Routes carry both: `/w/[workspaceSlug]/a/[academySlug]/…`. The workspace in the
+URL is checked against the session, never trusted.
+
+## Authoring and publishing
+
+Authors edit a **draft**. Publishing promotes it to an **immutable release**, so
+a learner following a course never sees a half-finished edit, and a quiz already
+in progress is never regraded by a later change. See
+[ADR 5](../../docs/adr/0005-immutable-published-releases.md).
+
+## What it talks to
+
+Only the public HTTP API (`apps/api`), through `@docento/sdk` — the same surface
+a third party would use. That is deliberate: an API the maintainers do not use
+is an API that quietly rots. It never imports `packages/domain` and never
+touches the database.
+
+Authentication is the **staff realm** of Better Auth at `/api/auth/staff`,
+separate from the learner realm in `apps/learn`.
+
+## Running it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+docker compose up -d
+pnpm db:migrate
+pnpm db:seed                # prints the owner email and password
+pnpm --filter @docento/studio dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

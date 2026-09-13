@@ -61,7 +61,9 @@ beforeAll(async () => {
 
 beforeEach(async () => {
   // Isolate each test from the ones before it.
-  await prisma.learner.deleteMany({ where: { academyId: { in: [academyAId, academyBId] } } })
+  await prisma.learner.deleteMany({
+    where: { academyId: { in: [academyAId, academyBId] } },
+  })
   await prisma.staffUser.deleteMany({ where: { email: SHARED_EMAIL } })
 })
 
@@ -299,11 +301,19 @@ describe('check 5 — staff and learner identities never interact', () => {
     const authA = getLearnerAuth(academyAId)
 
     const learner = await authA.api.signUpEmail({
-      body: { email: SHARED_EMAIL, password: ACADEMY_A_PASSWORD, name: 'Learner' },
+      body: {
+        email: SHARED_EMAIL,
+        password: ACADEMY_A_PASSWORD,
+        name: 'Learner',
+      },
     })
 
     const staff = await staffAuth.api.signUpEmail({
-      body: { email: SHARED_EMAIL, password: 'staff-password-1', name: 'Staff' },
+      body: {
+        email: SHARED_EMAIL,
+        password: 'staff-password-1',
+        name: 'Staff',
+      },
     })
 
     expect(staff.user.id).not.toBe(learner.user.id)
@@ -312,9 +322,9 @@ describe('check 5 — staff and learner identities never interact', () => {
     expect(
       await prisma.staffUser.findUnique({ where: { email: SHARED_EMAIL } }),
     ).not.toBeNull()
-    expect(
-      await prisma.learner.count({ where: { email: SHARED_EMAIL } }),
-    ).toBe(1)
+    expect(await prisma.learner.count({ where: { email: SHARED_EMAIL } })).toBe(
+      1,
+    )
 
     // The learner password does not work against the staff realm, and vice versa.
     await expect(
@@ -378,10 +388,7 @@ describe('check 7 — isolation is verifiable by schema inspection', () => {
         table,
       )
 
-      expect(
-        columns.length,
-        `${table} must have an academyId column`,
-      ).toBe(1)
+      expect(columns.length, `${table} must have an academyId column`).toBe(1)
     }
 
     // The learner table's email uniqueness must include the academy, which is

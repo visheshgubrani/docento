@@ -44,7 +44,7 @@ const isValidOrigin = (value?: string | null) => {
 const getAllowedOrigins = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { projectId } = req.params
@@ -54,7 +54,7 @@ const getAllowedOrigins = async (
     return res.status(200).json(
       new ApiResponse(200, 'Allowed origins fetched', {
         origins: project.allowedOrigins ?? [],
-      })
+      }),
     )
   } catch (error) {
     return next(error)
@@ -64,7 +64,7 @@ const getAllowedOrigins = async (
 const addAllowedOrigin = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { projectId } = req.params
@@ -73,7 +73,7 @@ const addAllowedOrigin = async (
 
     if (!isValidOrigin(origin)) {
       return next(
-        new ApiError(400, 'A valid origin is required (http:// or https://)')
+        new ApiError(400, 'A valid origin is required (http:// or https://)'),
       )
     }
 
@@ -89,7 +89,7 @@ const addAllowedOrigin = async (
       return res.status(200).json(
         new ApiResponse(200, 'Origin already allowed', {
           origins: existingOrigins,
-        })
+        }),
       )
     }
 
@@ -108,7 +108,7 @@ const addAllowedOrigin = async (
     return res.status(201).json(
       new ApiResponse(201, 'Origin added', {
         origins: updated.allowedOrigins ?? [],
-      })
+      }),
     )
   } catch (error) {
     if (error instanceof ApiError) {
@@ -122,7 +122,7 @@ const addAllowedOrigin = async (
 const deleteAllowedOrigin = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { projectId } = req.params
@@ -131,7 +131,7 @@ const deleteAllowedOrigin = async (
 
     if (!isValidOrigin(origin)) {
       return next(
-        new ApiError(400, 'A valid origin is required (http:// or https://)')
+        new ApiError(400, 'A valid origin is required (http:// or https://)'),
       )
     }
 
@@ -144,7 +144,7 @@ const deleteAllowedOrigin = async (
 
     const existingOrigins = project.allowedOrigins ?? []
     const filtered = existingOrigins.filter(
-      (item) => normalizeOrigin(item) !== normalized
+      (item) => normalizeOrigin(item) !== normalized,
     )
 
     const updated = await prisma.project.update({
@@ -159,7 +159,7 @@ const deleteAllowedOrigin = async (
     return res.status(200).json(
       new ApiResponse(200, 'Origin removed', {
         origins: updated.allowedOrigins ?? [],
-      })
+      }),
     )
   } catch (error) {
     if (error instanceof ApiError) {

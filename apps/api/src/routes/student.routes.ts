@@ -164,7 +164,7 @@ router.get('/courses/:courseId', studentController.getCourseContent)
 router.get(
   '/lessons/:lessonId',
   authorizeLessonAccess,
-  studentController.getLesson
+  studentController.getLesson,
 )
 /**
  * @openapi
@@ -207,7 +207,7 @@ router.get(
 router.post(
   '/lessons/:lessonId/progress',
   authorizeLessonAccess,
-  studentController.updateProgress
+  studentController.updateProgress,
 )
 
 // --- Orders ---
@@ -284,7 +284,7 @@ router.get('/lessons/:lessonId/play', authorizeLessonAccess, playableVideoUrl)
 router.get(
   '/lessons/:lessonId/quiz',
   authorizeLessonAccess,
-  studentQuizController.getQuizForStudent
+  studentQuizController.getQuizForStudent,
 )
 
 /**
@@ -312,7 +312,7 @@ router.get(
 router.get(
   '/lessons/:lessonId/quiz/history',
   authorizeLessonAccess,
-  studentQuizController.getQuizHistory
+  studentQuizController.getQuizHistory,
 )
 
 /**
@@ -342,7 +342,7 @@ router.get(
 router.post(
   '/lessons/:lessonId/quiz/attempts',
   authorizeLessonAccess,
-  studentQuizController.startQuizAttempt
+  studentQuizController.startQuizAttempt,
 )
 
 /**
@@ -405,7 +405,7 @@ router.post(
 router.post(
   '/lessons/:lessonId/quiz/attempts/:attemptId/submit',
   authorizeLessonAccess,
-  studentQuizController.submitQuizAttempt
+  studentQuizController.submitQuizAttempt,
 )
 
 /**
@@ -441,7 +441,7 @@ router.post(
 router.get(
   '/lessons/:lessonId/quiz/attempts/:attemptId/results',
   authorizeLessonAccess,
-  studentQuizController.getQuizResults
+  studentQuizController.getQuizResults,
 )
 
 // --- Assignment Routes (Secured) ---
@@ -470,7 +470,7 @@ router.get(
 router.get(
   '/lessons/:lessonId/assignment',
   authorizeLessonAccess,
-  assignmentController.getAssignmentForStudent
+  assignmentController.getAssignmentForStudent,
 )
 
 /**
@@ -517,7 +517,7 @@ router.get(
 router.post(
   '/lessons/:lessonId/assignment/upload/presign',
   authorizeLessonAccess,
-  assignmentController.createAssignmentUploadPresign
+  assignmentController.createAssignmentUploadPresign,
 )
 
 /**
@@ -562,7 +562,7 @@ router.post(
 router.post(
   '/lessons/:lessonId/assignment/submit',
   authorizeLessonAccess,
-  assignmentController.submitAssignment
+  assignmentController.submitAssignment,
 )
 
 /**
@@ -590,7 +590,7 @@ router.post(
 router.get(
   '/lessons/:lessonId/assignment/submission',
   authorizeLessonAccess,
-  assignmentController.getMySubmission
+  assignmentController.getMySubmission,
 )
 
 export default router

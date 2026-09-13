@@ -17,9 +17,9 @@ export function GenericLessonEditor({
   module,
 }: GenericLessonEditorProps) {
   return (
-    <Card className='border border-slate-200/80 shadow-sm dark:border-slate-800'>
+    <Card className="border border-slate-200/80 shadow-sm dark:border-slate-800">
       <CardHeader>
-        <CardTitle className='text-xl font-semibold'>
+        <CardTitle className="text-xl font-semibold">
           Editing {lesson.title}
         </CardTitle>
         <CardDescription>
@@ -27,7 +27,7 @@ export function GenericLessonEditor({
           {lesson.contentType ?? 'Custom'} lesson
         </CardDescription>
       </CardHeader>
-      <CardContent className='space-y-3 text-sm text-muted-foreground'>
+      <CardContent className="space-y-3 text-sm text-muted-foreground">
         <p>
           This lesson type does not yet have a dedicated builder. Use the
           settings panel to update its content and metadata.

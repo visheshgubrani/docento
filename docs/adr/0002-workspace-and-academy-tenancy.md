@@ -68,6 +68,6 @@ are a separate assignment layer, because organization roles cannot express
 - A migration-free fresh start makes this cheap now. It would have been close to
   impossible later without breaking every URL and every API key.
 
-**Deliberate limit.** Courses are *not* shared between academies. That is a
+**Deliberate limit.** Courses are _not_ shared between academies. That is a
 separate decision with its own trade-offs — see
 [ADR 4](./0004-academy-owned-courses.md).

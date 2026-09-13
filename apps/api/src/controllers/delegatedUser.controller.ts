@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken'
 export const delegatedLogin = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     // 1. Auth Check (Done by previous middleware: authorizeProjectAccess)
@@ -23,7 +23,7 @@ export const delegatedLogin = async (
     if (project.authMode !== 'DELEGATED') {
       throw new ApiError(
         403,
-        'This project is not configured for delegated auth.'
+        'This project is not configured for delegated auth.',
       )
     }
 
@@ -91,7 +91,7 @@ export const delegatedLogin = async (
         type: 'DELEGATED',
       },
       process.env.JWT_SECRET!, // Use SAME secret as Managed Users
-      { expiresIn: '7d' }
+      { expiresIn: '7d' },
     )
 
     // 5. Return Token to Client Backend
@@ -102,7 +102,7 @@ export const delegatedLogin = async (
           id: endUser.id,
           externalId: externalUserId,
         },
-      })
+      }),
     )
   } catch (error) {
     next(error)

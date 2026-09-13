@@ -3,7 +3,9 @@ type ResolveEnrollmentValidityInput = {
   courseEnrollmentValidityDays?: number | null
 }
 
-const normalizePositiveInt = (value: number | null | undefined): number | null => {
+const normalizePositiveInt = (
+  value: number | null | undefined,
+): number | null => {
   if (value === null || value === undefined) return null
   if (!Number.isInteger(value) || value <= 0) return null
   return value
@@ -21,7 +23,7 @@ export const resolveEnrollmentDurationInDays = ({
 
 export const computeEnrollmentExpiresAt = (
   enrolledAt: Date,
-  durationInDays: number | null
+  durationInDays: number | null,
 ): Date | null => {
   if (!durationInDays) return null
 
@@ -29,4 +31,3 @@ export const computeEnrollmentExpiresAt = (
   expiresAt.setDate(expiresAt.getDate() + durationInDays)
   return expiresAt
 }
-

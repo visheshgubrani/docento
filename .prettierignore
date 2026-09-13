@@ -1,0 +1,39 @@
+# Generated, vendored, and tool-produced files are not formatted.
+#
+# Nothing here is hand-written source, so reformatting it would produce a diff
+# that a tool regenerates on its next run.
+
+node_modules/
+.next/
+dist/
+build/
+.turbo/
+coverage/
+.vercel/
+.data/
+
+# Prisma's generated client.
+**/generated/
+
+# Fumadocs generates its own source tree from the content directory.
+apps/docs/.source/
+
+# Next.js writes this on every build and explicitly asks that it not be edited.
+**/next-env.d.ts
+
+# Vendored editor sources: kept as close to upstream as possible so an upstream
+# diff still applies.
+apps/studio/src/components/tiptap-ui-primitive/
+apps/studio/src/components/tiptap-icons/
+apps/studio/src/components/tiptap-node/
+
+# pnpm owns this file's formatting entirely.
+pnpm-lock.yaml
+
+# The previous closed-source application, which this milestone deletes.
+#
+# Formatting code that is on its way out would add sixty-eight files of churn
+# to a diff nobody needs to review, and reformatting it cannot make it
+# correct — it is excluded from the lint and typecheck gate for the same
+# reason. The exclusion goes away with the directory.
+apps/api/

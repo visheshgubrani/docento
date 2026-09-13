@@ -1,18 +1,18 @@
-"use client";
+'use client'
 
-import { useDeferredValue, useMemo, useState } from "react";
-import { CheckCircle2, Clock3, Eye, Loader2 } from "lucide-react";
-import { useParams } from "next/navigation";
-import type { IconType } from "react-icons";
-import { BiSortAlt2 } from "react-icons/bi";
-import { FaMoneyBillWave } from "react-icons/fa";
-import { FaUserGraduate } from "react-icons/fa6";
-import { IoSearch } from "react-icons/io5";
-import { PiLadderSimpleBold } from "react-icons/pi";
-import { TbChartDonutFilled } from "react-icons/tb";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { useDeferredValue, useMemo, useState } from 'react'
+import { CheckCircle2, Clock3, Eye, Loader2 } from 'lucide-react'
+import { useParams } from 'next/navigation'
+import type { IconType } from 'react-icons'
+import { BiSortAlt2 } from 'react-icons/bi'
+import { FaMoneyBillWave } from 'react-icons/fa'
+import { FaUserGraduate } from 'react-icons/fa6'
+import { IoSearch } from 'react-icons/io5'
+import { PiLadderSimpleBold } from 'react-icons/pi'
+import { TbChartDonutFilled } from 'react-icons/tb'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -20,134 +20,133 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import type { CourseEnrollment } from "@/lib/api";
+} from '@/components/ui/table'
+import type { CourseEnrollment } from '@/lib/api'
 import {
   useProjectAnalyticsCourseInsights,
   useProjectAnalyticsStudents,
-} from "@/lib/hooks/use-analytics";
-import { useCourseEnrollments } from "@/lib/hooks/use-course-enrollments";
-import { useProjectRouteId } from "@/lib/hooks/use-project-route-id";
-import { cn } from "@/lib/utils";
+} from '@/lib/hooks/use-analytics'
+import { useCourseEnrollments } from '@/lib/hooks/use-course-enrollments'
+import { useProjectRouteId } from '@/lib/hooks/use-project-route-id'
+import { cn } from '@/lib/utils'
 
-type ReportStatus = "in_progress" | "completed";
-type CertificateStatus = "received" | "not_available";
-type FilterTab = "all" | "in_progress" | "completed";
-type SortBy = "name_asc" | "progress_desc" | "progress_asc" | "recent_activity";
+type ReportStatus = 'in_progress' | 'completed'
+type CertificateStatus = 'received' | 'not_available'
+type FilterTab = 'all' | 'in_progress' | 'completed'
+type SortBy = 'name_asc' | 'progress_desc' | 'progress_asc' | 'recent_activity'
 
 type StudentReportRow = {
-  id: string;
-  name: string;
-  email: string;
-  progress: number;
-  status: ReportStatus;
-  certificateStatus: CertificateStatus;
-  lastActive: string | null;
-};
+  id: string
+  name: string
+  email: string
+  progress: number
+  status: ReportStatus
+  certificateStatus: CertificateStatus
+  lastActive: string | null
+}
 
-const currencyFormatter = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
+const currencyFormatter = new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
   maximumFractionDigits: 0,
-});
+})
 
-const lastActiveFormatter = new Intl.DateTimeFormat("en-US", {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
+const lastActiveFormatter = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
 
 function getDisplayName(enrollment: CourseEnrollment) {
   return (
     enrollment.endUser?.managedUser?.name?.trim() ||
     enrollment.endUser?.email ||
     enrollment.endUser?.externalId ||
-    "Unnamed user"
-  );
+    'Unnamed user'
+  )
 }
 
 function getContact(enrollment: CourseEnrollment) {
   return (
     enrollment.endUser?.email ||
     enrollment.endUser?.externalId ||
-    "Not provided"
-  );
+    'Not provided'
+  )
 }
 
 function getInitials(name: string) {
-  const [first, second] = name.trim().split(" ");
-  return `${first?.[0] ?? ""}${second?.[0] ?? ""}`.toUpperCase() || "ST";
+  const [first, second] = name.trim().split(' ')
+  return `${first?.[0] ?? ''}${second?.[0] ?? ''}`.toUpperCase() || 'ST'
 }
 
 function getStageLabel(progress: number) {
-  if (progress === 100) return "Stage 5";
-  if (progress >= 76) return "Stage 4";
-  if (progress >= 51) return "Stage 3";
-  if (progress >= 26) return "Stage 2";
-  return "Stage 1";
+  if (progress === 100) return 'Stage 5'
+  if (progress >= 76) return 'Stage 4'
+  if (progress >= 51) return 'Stage 3'
+  if (progress >= 26) return 'Stage 2'
+  return 'Stage 1'
 }
 
 function formatLastActive(timestamp: string | null) {
-  if (!timestamp) return "Not tracked";
+  if (!timestamp) return 'Not tracked'
 
   try {
-    return lastActiveFormatter.format(new Date(timestamp));
+    return lastActiveFormatter.format(new Date(timestamp))
   } catch {
-    return "Not tracked";
+    return 'Not tracked'
   }
 }
 
 function getStatusMeta(status: ReportStatus) {
-  if (status === "completed") {
+  if (status === 'completed') {
     return {
-      label: "Completed",
-      className: "border-lime-400 bg-lime-50 font-medium text-lime-700",
-    };
+      label: 'Completed',
+      className: 'border-lime-400 bg-lime-50 font-medium text-lime-700',
+    }
   }
 
   return {
-    label: "In Progress",
-    className: "border-sky-200 bg-sky-50 font-medium text-sky-700",
-  };
+    label: 'In Progress',
+    className: 'border-sky-200 bg-sky-50 font-medium text-sky-700',
+  }
 }
 
 function getCertificateMeta(certificateStatus: CertificateStatus) {
-  if (certificateStatus === "received") {
+  if (certificateStatus === 'received') {
     return {
-      label: "Certificate Available",
+      label: 'Certificate Available',
       icon: CheckCircle2,
-      className: "text-lime-700 font-medium",
-    };
+      className: 'text-lime-700 font-medium',
+    }
   }
 
   return {
-    label: "Not Yet Available",
+    label: 'Not Yet Available',
     icon: Clock3,
-    className: "text-amber-700 font-medium",
-  };
+    className: 'text-amber-700 font-medium',
+  }
 }
 
 export default function CourseReportsPage() {
-  const projectId = useProjectRouteId();
-  const params = useParams();
-  const courseIdParam = params?.courseId;
+  const projectId = useProjectRouteId()
+  const params = useParams()
+  const courseIdParam = params?.courseId
   const courseId = Array.isArray(courseIdParam)
     ? courseIdParam[0]
-    : courseIdParam ?? "";
+    : (courseIdParam ?? '')
 
-  const [activeTab, setActiveTab] = useState<FilterTab>("all");
-  const [searchTerm, setSearchTerm] = useState("");
-  const deferredSearch = useDeferredValue(searchTerm);
-  const [sortBy, setSortBy] = useState<SortBy>("recent_activity");
+  const [activeTab, setActiveTab] = useState<FilterTab>('all')
+  const [searchTerm, setSearchTerm] = useState('')
+  const deferredSearch = useDeferredValue(searchTerm)
+  const [sortBy, setSortBy] = useState<SortBy>('recent_activity')
 
   const {
     data: courseInsights,
     isLoading: isCourseInsightsLoading,
     isError: isCourseInsightsError,
     error: courseInsightsError,
-  } = useProjectAnalyticsCourseInsights(projectId, courseId);
+  } = useProjectAnalyticsCourseInsights(projectId, courseId)
 
-  const { data: studentAnalytics = [] } =
-    useProjectAnalyticsStudents(projectId);
+  const { data: studentAnalytics = [] } = useProjectAnalyticsStudents(projectId)
 
   const {
     data: enrollmentsData,
@@ -159,8 +158,8 @@ export default function CourseReportsPage() {
   } = useCourseEnrollments(projectId, courseId, {
     page: 1,
     limit: 100,
-    status: "all",
-  });
+    status: 'all',
+  })
 
   const studentActivityMap = useMemo(
     () =>
@@ -168,138 +167,138 @@ export default function CourseReportsPage() {
         studentAnalytics.map((student) => [
           student.id,
           student.lastActiveAt ?? null,
-        ])
+        ]),
       ),
-    [studentAnalytics]
-  );
+    [studentAnalytics],
+  )
 
   const studentRows = useMemo<StudentReportRow[]>(() => {
-    const enrollments = enrollmentsData?.enrollments ?? [];
+    const enrollments = enrollmentsData?.enrollments ?? []
 
     return enrollments.map((enrollment) => {
       const progress = Math.max(
         0,
-        Math.min(100, Math.round(Number(enrollment.progress ?? 0)))
-      );
-      const isCompleted = Boolean(enrollment.completedAt) || progress >= 100;
+        Math.min(100, Math.round(Number(enrollment.progress ?? 0))),
+      )
+      const isCompleted = Boolean(enrollment.completedAt) || progress >= 100
 
       return {
         id: enrollment.endUserId,
         name: getDisplayName(enrollment),
         email: getContact(enrollment),
         progress,
-        status: isCompleted ? "completed" : "in_progress",
-        certificateStatus: isCompleted ? "received" : "not_available",
+        status: isCompleted ? 'completed' : 'in_progress',
+        certificateStatus: isCompleted ? 'received' : 'not_available',
         lastActive:
           studentActivityMap.get(enrollment.endUserId) ??
           enrollment.endUser?.delegatedUser?.lastSeenAt ??
           enrollment.enrolledAt,
-      };
-    });
-  }, [enrollmentsData, studentActivityMap]);
+      }
+    })
+  }, [enrollmentsData, studentActivityMap])
 
   const totalEnrollments =
     courseInsights?.metrics.totalEnrollments ??
     enrollmentsData?.pagination?.total ??
-    studentRows.length;
+    studentRows.length
 
   const completedStudents = studentRows.filter(
-    (row) => row.status === "completed"
-  ).length;
+    (row) => row.status === 'completed',
+  ).length
 
   const completionRate =
     courseInsights?.metrics.completionRate ??
     (totalEnrollments
       ? Math.round((completedStudents / totalEnrollments) * 100)
-      : 0);
+      : 0)
 
   const averageProgress =
     courseInsights?.metrics.averageProgress ??
     (studentRows.length
       ? Math.round(
           studentRows.reduce((sum, row) => sum + row.progress, 0) /
-            studentRows.length
+            studentRows.length,
         )
-      : 0);
+      : 0)
 
-  const totalRevenue = courseInsights?.metrics.revenue ?? 0;
+  const totalRevenue = courseInsights?.metrics.revenue ?? 0
 
   const filteredRows = useMemo(() => {
-    const normalizedSearch = deferredSearch.trim().toLowerCase();
+    const normalizedSearch = deferredSearch.trim().toLowerCase()
 
-    let rows = [...studentRows];
+    let rows = [...studentRows]
 
-    if (activeTab === "in_progress") {
-      rows = rows.filter((row) => row.status === "in_progress");
-    } else if (activeTab === "completed") {
-      rows = rows.filter((row) => row.status === "completed");
+    if (activeTab === 'in_progress') {
+      rows = rows.filter((row) => row.status === 'in_progress')
+    } else if (activeTab === 'completed') {
+      rows = rows.filter((row) => row.status === 'completed')
     }
 
     if (normalizedSearch) {
       rows = rows.filter(
         (row) =>
           row.name.toLowerCase().includes(normalizedSearch) ||
-          row.email.toLowerCase().includes(normalizedSearch)
-      );
+          row.email.toLowerCase().includes(normalizedSearch),
+      )
     }
 
     rows.sort((a, b) => {
-      if (sortBy === "name_asc") return a.name.localeCompare(b.name);
-      if (sortBy === "progress_desc") return b.progress - a.progress;
-      if (sortBy === "progress_asc") return a.progress - b.progress;
+      if (sortBy === 'name_asc') return a.name.localeCompare(b.name)
+      if (sortBy === 'progress_desc') return b.progress - a.progress
+      if (sortBy === 'progress_asc') return a.progress - b.progress
 
       return (
         new Date(b.lastActive ?? 0).getTime() -
         new Date(a.lastActive ?? 0).getTime()
-      );
-    });
+      )
+    })
 
-    return rows;
-  }, [activeTab, deferredSearch, sortBy, studentRows]);
+    return rows
+  }, [activeTab, deferredSearch, sortBy, studentRows])
 
   const kpiCards: {
-    id: string;
-    title: string;
-    value: string;
-    subtitle: string;
-    icon: IconType;
-    color: "emerald" | "violet" | "blue" | "amber" | "rose";
+    id: string
+    title: string
+    value: string
+    subtitle: string
+    icon: IconType
+    color: 'emerald' | 'violet' | 'blue' | 'amber' | 'rose'
   }[] = [
     {
-      id: "revenue",
-      title: "Total Revenue",
+      id: 'revenue',
+      title: 'Total Revenue',
       value: isCourseInsightsLoading
-        ? "..."
+        ? '...'
         : currencyFormatter.format(totalRevenue),
-      subtitle: "Course earnings",
+      subtitle: 'Course earnings',
       icon: FaMoneyBillWave,
-      color: "emerald",
+      color: 'emerald',
     },
     {
-      id: "enrollments",
-      title: "Total Enrollments",
-      value: isEnrollmentsLoading ? "..." : String(totalEnrollments),
-      subtitle: "Students enrolled",
+      id: 'enrollments',
+      title: 'Total Enrollments',
+      value: isEnrollmentsLoading ? '...' : String(totalEnrollments),
+      subtitle: 'Students enrolled',
       icon: FaUserGraduate,
-      color: "violet",
+      color: 'violet',
     },
     {
-      id: "completion-rate",
-      title: "Completion Rate",
-      value: isCourseInsightsLoading ? "..." : `${completionRate}%`,
-      subtitle: "Reached 100% progress",
+      id: 'completion-rate',
+      title: 'Completion Rate',
+      value: isCourseInsightsLoading ? '...' : `${completionRate}%`,
+      subtitle: 'Reached 100% progress',
       icon: TbChartDonutFilled,
-      color: "blue",
+      color: 'blue',
     },
     {
-      id: "average-progress",
-      title: "Average Progress",
-      value: isCourseInsightsLoading ? "..." : `${averageProgress}%`,
-      subtitle: "Across all students",
+      id: 'average-progress',
+      title: 'Average Progress',
+      value: isCourseInsightsLoading ? '...' : `${averageProgress}%`,
+      subtitle: 'Across all students',
       icon: PiLadderSimpleBold,
-      color: "rose",
+      color: 'rose',
     },
-  ];
+  ]
 
   if (isEnrollmentsError) {
     return (
@@ -318,14 +317,14 @@ export default function CourseReportsPage() {
             Unable to load reports
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {enrollmentsError?.message ?? "Please try again."}
+            {enrollmentsError?.message ?? 'Please try again.'}
           </p>
           <Button className="mt-4" variant="outline" onClick={() => refetch()}>
             Retry
           </Button>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -365,18 +364,18 @@ export default function CourseReportsPage() {
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="inline-flex w-fit items-center rounded-sm border border-sidebar/30 bg-muted-foreground/10">
               <FilterTabButton
-                active={activeTab === "all"}
-                onClick={() => setActiveTab("all")}
+                active={activeTab === 'all'}
+                onClick={() => setActiveTab('all')}
                 label="All"
               />
               <FilterTabButton
-                active={activeTab === "in_progress"}
-                onClick={() => setActiveTab("in_progress")}
+                active={activeTab === 'in_progress'}
+                onClick={() => setActiveTab('in_progress')}
                 label="In Progress"
               />
               <FilterTabButton
-                active={activeTab === "completed"}
-                onClick={() => setActiveTab("completed")}
+                active={activeTab === 'completed'}
+                onClick={() => setActiveTab('completed')}
                 label="Completed"
               />
             </div>
@@ -415,7 +414,7 @@ export default function CourseReportsPage() {
               <p className="text-lg text-foreground/70 max-w-sm">
                 {searchTerm
                   ? `No students match "${searchTerm}".`
-                  : "Students will appear here once they enroll in this course."}
+                  : 'Students will appear here once they enroll in this course.'}
               </p>
             </div>
           </div>
@@ -436,7 +435,7 @@ export default function CourseReportsPage() {
                       <span className="inline-flex items-center gap-1.5">
                         Student
                         <BiSortAlt2
-                          onClick={() => setSortBy("name_asc")}
+                          onClick={() => setSortBy('name_asc')}
                           className="size-4.5 cursor-pointer text-foreground/50"
                         />
                       </span>
@@ -447,9 +446,9 @@ export default function CourseReportsPage() {
                         <BiSortAlt2
                           onClick={() =>
                             setSortBy((current) =>
-                              current === "progress_desc"
-                                ? "progress_asc"
-                                : "progress_desc"
+                              current === 'progress_desc'
+                                ? 'progress_asc'
+                                : 'progress_desc',
                             )
                           }
                           className="size-4.5 cursor-pointer text-foreground/50"
@@ -469,11 +468,11 @@ export default function CourseReportsPage() {
                 </TableHeader>
                 <TableBody>
                   {filteredRows.map((student) => {
-                    const statusMeta = getStatusMeta(student.status);
+                    const statusMeta = getStatusMeta(student.status)
                     const certificateMeta = getCertificateMeta(
-                      student.certificateStatus
-                    );
-                    const CertificateIcon = certificateMeta.icon;
+                      student.certificateStatus,
+                    )
+                    const CertificateIcon = certificateMeta.icon
 
                     return (
                       <TableRow
@@ -518,8 +517,8 @@ export default function CourseReportsPage() {
                         <TableCell className="text-center">
                           <span
                             className={cn(
-                              "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold",
-                              statusMeta.className
+                              'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold',
+                              statusMeta.className,
                             )}
                           >
                             <span className="h-1.5 w-1.5 rounded-full bg-current" />
@@ -530,8 +529,8 @@ export default function CourseReportsPage() {
                         <TableCell className="text-center">
                           <span
                             className={cn(
-                              "inline-flex items-center gap-1.5 text-xs font-semibold",
-                              certificateMeta.className
+                              'inline-flex items-center gap-1.5 text-xs font-semibold',
+                              certificateMeta.className,
                             )}
                           >
                             <CertificateIcon className="size-4" />
@@ -545,7 +544,7 @@ export default function CourseReportsPage() {
                             variant="outline"
                             size="sm"
                             title={`Last active: ${formatLastActive(
-                              student.lastActive
+                              student.lastActive,
                             )}`}
                             className="h-8 rounded-sm cursor-pointer"
                           >
@@ -554,7 +553,7 @@ export default function CourseReportsPage() {
                           </Button>
                         </TableCell>
                       </TableRow>
-                    );
+                    )
                   })}
                 </TableBody>
               </Table>
@@ -562,11 +561,11 @@ export default function CourseReportsPage() {
 
             <div className="md:hidden divide-y divide-neutral-200">
               {filteredRows.map((student) => {
-                const statusMeta = getStatusMeta(student.status);
+                const statusMeta = getStatusMeta(student.status)
                 const certificateMeta = getCertificateMeta(
-                  student.certificateStatus
-                );
-                const CertificateIcon = certificateMeta.icon;
+                  student.certificateStatus,
+                )
+                const CertificateIcon = certificateMeta.icon
 
                 return (
                   <div key={student.id} className="space-y-3 bg-background p-4">
@@ -589,7 +588,7 @@ export default function CourseReportsPage() {
                         size="sm"
                         variant="outline"
                         title={`Last active: ${formatLastActive(
-                          student.lastActive
+                          student.lastActive,
                         )}`}
                         className="h-8 rounded-sm cursor-pointer"
                       >
@@ -617,8 +616,8 @@ export default function CourseReportsPage() {
                     <div className="flex flex-wrap justify-between mt-2 items-center gap-2.5">
                       <span
                         className={cn(
-                          "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold",
-                          statusMeta.className
+                          'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold',
+                          statusMeta.className,
                         )}
                       >
                         <span className="h-1.5 w-1.5 rounded-full bg-current" />
@@ -626,8 +625,8 @@ export default function CourseReportsPage() {
                       </span>
                       <span
                         className={cn(
-                          "inline-flex items-center gap-1.5 text-xs font-semibold",
-                          certificateMeta.className
+                          'inline-flex items-center gap-1.5 text-xs font-semibold',
+                          certificateMeta.className,
                         )}
                       >
                         <CertificateIcon className="size-4" />
@@ -635,14 +634,14 @@ export default function CourseReportsPage() {
                       </span>
                     </div>
                   </div>
-                );
+                )
               })}
             </div>
           </>
         )}
       </section>
     </div>
-  );
+  )
 }
 
 function FilterTabButton({
@@ -650,23 +649,23 @@ function FilterTabButton({
   onClick,
   label,
 }: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
+  active: boolean
+  onClick: () => void
+  label: string
 }) {
   return (
     <button
       onClick={onClick}
       className={cn(
-        "px-4 py-1.5 text-sm font-medium transition-colors cursor-pointer",
+        'px-4 py-1.5 text-sm font-medium transition-colors cursor-pointer',
         active
-          ? "bg-white border border-muted-foreground/30 rounded-sm font-semibold text-foreground"
-          : "text-foreground/60 bg-gray-100 border-l rounded-sm border-neutral-300 hover:bg-muted/50"
+          ? 'bg-white border border-muted-foreground/30 rounded-sm font-semibold text-foreground'
+          : 'text-foreground/60 bg-gray-100 border-l rounded-sm border-neutral-300 hover:bg-muted/50',
       )}
     >
       {label}
     </button>
-  );
+  )
 }
 
 function KpiCard({
@@ -676,19 +675,19 @@ function KpiCard({
   icon: Icon,
   color,
 }: {
-  title: string;
-  value: string;
-  subtitle: string;
-  icon: IconType;
-  color: "emerald" | "violet" | "blue" | "amber" | "rose";
+  title: string
+  value: string
+  subtitle: string
+  icon: IconType
+  color: 'emerald' | 'violet' | 'blue' | 'amber' | 'rose'
 }) {
   const colorClasses = {
-    emerald: "bg-[#87d932]/25 text-[#87d932]",
-    violet: "bg-[#ad90fe]/25 text-[#ad90fe]",
-    blue: "bg-[#0bdbf0]/25 text-[#0bdbf0]",
-    amber: "bg-[#fbbf24]/25 text-[#f59e0b]",
-    rose: "bg-[#fb7185]/20 text-[#f43f5e]",
-  };
+    emerald: 'bg-[#87d932]/25 text-[#87d932]',
+    violet: 'bg-[#ad90fe]/25 text-[#ad90fe]',
+    blue: 'bg-[#0bdbf0]/25 text-[#0bdbf0]',
+    amber: 'bg-[#fbbf24]/25 text-[#f59e0b]',
+    rose: 'bg-[#fb7185]/20 text-[#f43f5e]',
+  }
 
   return (
     <Card className="h-full rounded-sm border border-muted-foreground/30 shadow-sm shadow-muted-foreground/10 overflow-hidden">
@@ -696,8 +695,8 @@ function KpiCard({
         <div className="flex h-full">
           <div
             className={cn(
-              "flex items-center justify-center p-4",
-              colorClasses[color]
+              'flex items-center justify-center p-4',
+              colorClasses[color],
             )}
           >
             <Icon className="size-7" />
@@ -716,5 +715,5 @@ function KpiCard({
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

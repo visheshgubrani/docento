@@ -4,13 +4,13 @@ const LMS_API_URL = process.env.LMS_API_URL
 
 export async function POST(
   request: NextRequest,
-  context: { params: Promise<{ lessonId: string }> }
+  context: { params: Promise<{ lessonId: string }> },
 ) {
   try {
     if (!LMS_API_URL) {
       return NextResponse.json(
         { message: 'LMS_API_URL is not configured' },
-        { status: 500 }
+        { status: 500 },
       )
     }
 
@@ -18,7 +18,7 @@ export async function POST(
     if (!authToken) {
       return NextResponse.json(
         { message: 'Unauthorized: Please login first.' },
-        { status: 401 }
+        { status: 401 },
       )
     }
 
@@ -26,13 +26,16 @@ export async function POST(
     if (!lessonId?.trim()) {
       return NextResponse.json(
         { message: 'lessonId is required' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
     const requestBody = await request.json().catch(() => null)
     if (!requestBody || typeof requestBody !== 'object') {
-      return NextResponse.json({ message: 'Invalid request body' }, { status: 400 })
+      return NextResponse.json(
+        { message: 'Invalid request body' },
+        { status: 400 },
+      )
     }
 
     const response = await fetch(
@@ -45,7 +48,7 @@ export async function POST(
         },
         body: JSON.stringify(requestBody),
         cache: 'no-store',
-      }
+      },
     )
 
     const payload = await response.json().catch(() => ({
@@ -57,7 +60,7 @@ export async function POST(
     console.error('[STUDENT_ASSIGNMENT_SUBMIT_PROXY_ERROR]', error)
     return NextResponse.json(
       { message: 'Failed to submit assignment' },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

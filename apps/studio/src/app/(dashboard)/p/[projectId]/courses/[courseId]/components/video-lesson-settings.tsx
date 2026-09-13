@@ -34,7 +34,7 @@ export function VideoLessonSettings({
   const [duration, setDuration] = useState(
     lesson.duration !== undefined && lesson.duration !== null
       ? String(lesson.duration)
-      : ''
+      : '',
   )
   const [isFree, setIsFree] = useState(Boolean(lesson.isFree))
 
@@ -44,7 +44,7 @@ export function VideoLessonSettings({
     setDuration(
       lesson.duration !== undefined && lesson.duration !== null
         ? String(lesson.duration)
-        : ''
+        : '',
     )
     setIsFree(Boolean(lesson.isFree))
   }, [lesson])
@@ -53,7 +53,7 @@ export function VideoLessonSettings({
     projectId,
     courseId,
     moduleId,
-    lesson.id
+    lesson.id,
   )
 
   const handleSave = async () => {
@@ -86,9 +86,7 @@ export function VideoLessonSettings({
         title: title.trim(),
         description: description.trim() === '' ? null : description.trim(),
         duration:
-          normalizedDuration === null
-            ? null
-            : Math.round(normalizedDuration),
+          normalizedDuration === null ? null : Math.round(normalizedDuration),
         isFree,
       })
 
@@ -107,71 +105,71 @@ export function VideoLessonSettings({
   }
 
   return (
-    <Card className='border border-slate-200/80 shadow-sm dark:border-slate-800'>
-      <CardHeader className='border-b border-slate-100 pb-4 dark:border-slate-800'>
-        <CardTitle className='text-xl font-semibold'>Video settings</CardTitle>
+    <Card className="border border-slate-200/80 shadow-sm dark:border-slate-800">
+      <CardHeader className="border-b border-slate-100 pb-4 dark:border-slate-800">
+        <CardTitle className="text-xl font-semibold">Video settings</CardTitle>
         <CardDescription>
           Fine-tune how students experience this video.
         </CardDescription>
       </CardHeader>
-      <CardContent className='space-y-4 pt-4'>
-        <div className='space-y-2'>
+      <CardContent className="space-y-4 pt-4">
+        <div className="space-y-2">
           <Label htmlFor={`lesson-title-${lesson.id}`}>Title</Label>
           <Input
             id={`lesson-title-${lesson.id}`}
             value={title}
-            placeholder='Lesson title'
+            placeholder="Lesson title"
             onChange={(event) => setTitle(event.target.value)}
           />
         </div>
-        <div className='space-y-2'>
+        <div className="space-y-2">
           <Label htmlFor={`lesson-description-${lesson.id}`}>Description</Label>
           <Textarea
             id={`lesson-description-${lesson.id}`}
             value={description}
-            placeholder='Describe what students will learn'
+            placeholder="Describe what students will learn"
             rows={4}
             onChange={(event) => setDescription(event.target.value)}
           />
         </div>
-        <div className='space-y-2'>
+        <div className="space-y-2">
           <Label htmlFor={`lesson-duration-${lesson.id}`}>
             Video duration (minutes)
           </Label>
           <Input
             id={`lesson-duration-${lesson.id}`}
-            type='number'
+            type="number"
             min={0}
-            placeholder='12'
+            placeholder="12"
             value={duration}
             onChange={(event) => setDuration(event.target.value)}
           />
         </div>
-        <label className='flex items-start gap-3 rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-800'>
+        <label className="flex items-start gap-3 rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-800">
           <input
-            type='checkbox'
-            className='mt-1 h-4 w-4'
+            type="checkbox"
+            className="mt-1 h-4 w-4"
             checked={isFree}
             onChange={(event) => setIsFree(event.target.checked)}
           />
           <div>
-            <p className='font-medium text-slate-900 dark:text-white'>
+            <p className="font-medium text-slate-900 dark:text-white">
               Free preview
             </p>
-            <p className='text-xs text-muted-foreground'>
+            <p className="text-xs text-muted-foreground">
               Allow non-enrolled students to watch this lesson.
             </p>
           </div>
         </label>
         <Button
-          className='w-full'
+          className="w-full"
           onClick={handleSave}
           disabled={isPending || !moduleId}
         >
           {isPending ? 'Saving...' : 'Save lesson settings'}
         </Button>
         {!moduleId ? (
-          <p className='text-xs text-muted-foreground'>
+          <p className="text-xs text-muted-foreground">
             Select a module to enable saving changes.
           </p>
         ) : null}

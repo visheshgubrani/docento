@@ -5,7 +5,7 @@ description: Integrating Docento with Auth0, Clerk, Firebase, or your custom SSO
 
 # Delegated Authentication
 
-**Delegated Authentication** allows you to bring your own users. If you already have an application with authentication, you don't want your users to create a separate password to access your learning content. 
+**Delegated Authentication** allows you to bring your own users. If you already have an application with authentication, you don't want your users to create a separate password to access your learning content.
 
 In Delegated mode, Docento stores a minimal reference to your user (an "EndUser) and trusts your backend to vouch for their identity.
 
@@ -42,6 +42,7 @@ Content-Type: application/json
 The `userId` can be any string that uniquely identifies the user in your database (e.g., a Firebase UID, an Auth0 sub, or a UUID from Postgres).
 
 **Response (200 OK):**
+
 ```json
 {
   "status": 200,
@@ -58,7 +59,7 @@ The `userId` can be any string that uniquely identifies the user in your databas
 
 ### 2. Provide Token to Frontend
 
-Take the `accessToken` returned by Docento and send it back to your frontend application. 
+Take the `accessToken` returned by Docento and send it back to your frontend application.
 
 ### 3. Consume LMS APIs
 
@@ -70,5 +71,6 @@ Authorization: Bearer eyJhbG...
 ```
 
 ## Security Best Practices
+
 - **Never expose the `x-api-key`**. The `/delegated/login` request MUST come from your secure server.
 - The issued `accessToken` is short-lived for security reasons. Upon expiration, your frontend should request a new token quietly via your backend handshake route.

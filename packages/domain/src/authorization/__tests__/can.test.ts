@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
 import { ACTIONS, type Action } from '../actions.js'
-import { REQUIRED_RESOURCE_FIELDS, can, canViaAssignment, type Resource } from '../can.js'
+import {
+  REQUIRED_RESOURCE_FIELDS,
+  can,
+  canViaAssignment,
+  type Resource,
+} from '../can.js'
 import type { Principal, StaffAssignment } from '../principal.js'
 
 const WS = 'workspace-1'
@@ -73,9 +78,10 @@ describe('resource requirements are structural', () => {
       if (openWithNoResource.includes(action)) {
         expect(decision.allowed, `${action} should be public`).toBe(true)
       } else {
-        expect(decision.allowed, `${action} must not be permitted with {}`).toBe(
-          false,
-        )
+        expect(
+          decision.allowed,
+          `${action} must not be permitted with {}`,
+        ).toBe(false)
       }
     }
   })
@@ -85,7 +91,9 @@ describe('resource requirements are structural', () => {
 
     for (const action of ACTIONS) {
       if (action === 'catalog:read') continue
-      expect(can(broad, action, {}).allowed, `${action} must not pass`).toBe(false)
+      expect(can(broad, action, {}).allowed, `${action} must not pass`).toBe(
+        false,
+      )
     }
   })
 
@@ -93,12 +101,18 @@ describe('resource requirements are structural', () => {
     // Exhaustiveness: adding an action without deciding its scope is a build
     // error, not a silently permissive default.
     for (const action of ACTIONS) {
-      expect(REQUIRED_RESOURCE_FIELDS[action], `missing entry for ${action}`).toBeDefined()
+      expect(
+        REQUIRED_RESOURCE_FIELDS[action],
+        `missing entry for ${action}`,
+      ).toBeDefined()
     }
   })
 
   it('names the missing identifier in the refusal', () => {
-    const decision = can(owner, 'course:update', { workspaceId: WS, academyId: ACADEMY })
+    const decision = can(owner, 'course:update', {
+      workspaceId: WS,
+      academyId: ACADEMY,
+    })
 
     expect(decision.allowed).toBe(false)
     expect(decision.allowed === false && decision.reason).toMatch(/courseId/)
@@ -118,7 +132,11 @@ describe('anonymous', () => {
 
 describe('tenant containment', () => {
   it('refuses a workspace owner acting on another workspace', () => {
-    const decision = can(owner, 'course:update', full({ workspaceId: OTHER_WS }))
+    const decision = can(
+      owner,
+      'course:update',
+      full({ workspaceId: OTHER_WS }),
+    )
 
     expect(decision.allowed).toBe(false)
     expect(decision.allowed === false && decision.reason).toMatch(
@@ -128,17 +146,21 @@ describe('tenant containment', () => {
 
   it('refuses a bare resource id with no tenant, which was the original bug', () => {
     // Reproduces the exact reported call.
-    expect(can(owner, 'course:update', { courseId: 'course-in-ws-B' }).allowed).toBe(
-      false,
-    )
-    expect(can(key(['course:update']), 'course:update', { courseId: 'x' }).allowed).toBe(
-      false,
-    )
+    expect(
+      can(owner, 'course:update', { courseId: 'course-in-ws-B' }).allowed,
+    ).toBe(false)
+    expect(
+      can(key(['course:update']), 'course:update', { courseId: 'x' }).allowed,
+    ).toBe(false)
     expect(can(owner, 'workspace:delete', {}).allowed).toBe(false)
   })
 
   it('refuses a learner acting on another academy', () => {
-    const decision = can(learner, 'course:read', full({ academyId: OTHER_ACADEMY }))
+    const decision = can(
+      learner,
+      'course:read',
+      full({ academyId: OTHER_ACADEMY }),
+    )
 
     expect(decision.allowed).toBe(false)
     expect(decision.allowed === false && decision.reason).toMatch(
@@ -148,7 +170,8 @@ describe('tenant containment', () => {
 
   it('refuses a service key acting on another workspace', () => {
     expect(
-      can(key(['course:read']), 'course:read', full({ workspaceId: OTHER_WS })).allowed,
+      can(key(['course:read']), 'course:read', full({ workspaceId: OTHER_WS }))
+        .allowed,
     ).toBe(false)
   })
 
@@ -213,13 +236,17 @@ describe('service keys', () => {
     ] as const) {
       const decision = can(broad, action, full())
       expect(decision.allowed).toBe(false)
-      expect(decision.allowed === false && decision.reason).toMatch(/staff session/)
+      expect(decision.allowed === false && decision.reason).toMatch(
+        /staff session/,
+      )
     }
   })
 
   it('requires the scope to be present', () => {
     expect(can(key(['course:read']), 'course:read', full()).allowed).toBe(true)
-    expect(can(key(['course:read']), 'course:update', full()).allowed).toBe(false)
+    expect(can(key(['course:read']), 'course:update', full()).allowed).toBe(
+      false,
+    )
   })
 
   it('honours an academy restriction when the key carries one', () => {
@@ -227,7 +254,11 @@ describe('service keys', () => {
 
     expect(can(restricted, 'course:read', full()).allowed).toBe(true)
 
-    const decision = can(restricted, 'course:read', full({ academyId: OTHER_ACADEMY }))
+    const decision = can(
+      restricted,
+      'course:read',
+      full({ academyId: OTHER_ACADEMY }),
+    )
     expect(decision.allowed).toBe(false)
     expect(decision.allowed === false && decision.reason).toMatch(
       /restricted to a different academy/,
@@ -252,10 +283,16 @@ describe('learners', () => {
   })
 
   it("may not act on another learner's records", () => {
-    const decision = can(learner, 'learner:progress:write', full({ learnerId: 'l-2' }))
+    const decision = can(
+      learner,
+      'learner:progress:write',
+      full({ learnerId: 'l-2' }),
+    )
 
     expect(decision.allowed).toBe(false)
-    expect(decision.allowed === false && decision.reason).toMatch(/different learner/)
+    expect(decision.allowed === false && decision.reason).toMatch(
+      /different learner/,
+    )
   })
 
   it('may not reach staff actions', () => {
@@ -305,9 +342,9 @@ describe('assignments', () => {
       'member:manage',
       'certificate:revoke',
     ] as const) {
-      expect(canViaAssignment(action, full(), [instructorOnCourse]).allowed).toBe(
-        false,
-      )
+      expect(
+        canViaAssignment(action, full(), [instructorOnCourse]).allowed,
+      ).toBe(false)
     }
   })
 
@@ -322,15 +359,17 @@ describe('assignments', () => {
       canViaAssignment('submission:grade', full(), [graderOnAcademy]).allowed,
     ).toBe(true)
 
-    expect(canViaAssignment('course:publish', full({ courseId: null }), [graderOnAcademy]).allowed).toBe(
-      false,
-    )
+    expect(
+      canViaAssignment('course:publish', full({ courseId: null }), [
+        graderOnAcademy,
+      ]).allowed,
+    ).toBe(false)
   })
 
   it('applies the same resource requirements as can()', () => {
-    expect(canViaAssignment('course:update', {}, [instructorOnCourse]).allowed).toBe(
-      false,
-    )
+    expect(
+      canViaAssignment('course:update', {}, [instructorOnCourse]).allowed,
+    ).toBe(false)
   })
 
   it('denies when there are no assignments', () => {

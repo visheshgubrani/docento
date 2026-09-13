@@ -10,7 +10,10 @@ import { Prisma } from '../generated/prisma'
 import { PutObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { getR2Client, getR2PublicBaseUrl } from '../lib/r2'
-import { getCourseIncludes, getCourseIncludesMap } from '../utils/course-duration'
+import {
+  getCourseIncludes,
+  getCourseIncludesMap,
+} from '../utils/course-duration'
 
 type CourseInstructorProfile = {
   name: string
@@ -21,7 +24,7 @@ type CourseInstructorProfile = {
 
 const normalizeOptionalString = (
   value: unknown,
-  maxLength: number
+  maxLength: number,
 ): string | null => {
   if (typeof value !== 'string') return null
   const trimmed = value.trim()
@@ -29,7 +32,9 @@ const normalizeOptionalString = (
   return trimmed.slice(0, maxLength)
 }
 
-const normalizeInstructor = (value: unknown): CourseInstructorProfile | null => {
+const normalizeInstructor = (
+  value: unknown,
+): CourseInstructorProfile | null => {
   if (typeof value === 'string') {
     const trimmed = value.trim()
     if (!trimmed) return null
@@ -80,7 +85,7 @@ const normalizeInstructors = (value: unknown): CourseInstructorProfile[] => {
 }
 
 const withNormalizedInstructors = <T extends { instructors: unknown }>(
-  course: T
+  course: T,
 ) => ({
   ...course,
   instructors: normalizeInstructors(course.instructors),
@@ -93,7 +98,7 @@ const isValidEnrollmentValidityDays = (value: unknown): value is number => {
 const createCourse = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const project = req.project
 
@@ -136,8 +141,8 @@ const createCourse = async (
     return next(
       new ApiError(
         400,
-        'enrollmentValidityDays must be a positive integer or null'
-      )
+        'enrollmentValidityDays must be a positive integer or null',
+      ),
     )
   }
 
@@ -164,18 +169,17 @@ const createCourse = async (
 
   captureServerEvent(req, 'course_created_server', {
     course_id: newCourse.id,
-    has_description: typeof description === 'string' && description.trim().length > 0,
+    has_description:
+      typeof description === 'string' && description.trim().length > 0,
     is_published: newCourse.isPublished,
     project_id: project.id,
   })
 
-  return res
-    .status(201)
-    .json(
-      new ApiResponse(201, 'Course Created Successfully', {
-        course: withNormalizedInstructors(newCourse),
-      })
-    )
+  return res.status(201).json(
+    new ApiResponse(201, 'Course Created Successfully', {
+      course: withNormalizedInstructors(newCourse),
+    }),
+  )
 }
 
 const getCourses = async (req: Request, res: Response, next: NextFunction) => {
@@ -215,13 +219,15 @@ const getCourses = async (req: Request, res: Response, next: NextFunction) => {
     },
   })
 
-  const includesMap = await getCourseIncludesMap(courses.map((course) => course.id))
+  const includesMap = await getCourseIncludesMap(
+    courses.map((course) => course.id),
+  )
 
   // Calculate total lessons for each course
   const coursesWithLessonsCount = courses.map((course) => {
     const totalLessons = course.modules.reduce(
       (sum, module) => sum + (module._count?.lessons ?? 0),
-      0
+      0,
     )
     return {
       ...course,
@@ -237,7 +243,7 @@ const getCourses = async (req: Request, res: Response, next: NextFunction) => {
   return res.status(200).json(
     new ApiResponse(200, 'Courses fetched successfully', {
       courses: coursesWithLessonsCount,
-    })
+    }),
   )
 }
 
@@ -295,14 +301,14 @@ const getCourse = async (req: Request, res: Response, next: NextFunction) => {
               includes,
             }
           : courseWithDetails,
-    })
+    }),
   )
 }
 
 const deleteCourse = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const course = req.course!
 
@@ -320,7 +326,7 @@ const deleteCourse = async (
 const updateCourse = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const project = req.project!
   const { courseId } = req.params
@@ -349,8 +355,8 @@ const updateCourse = async (
     return next(
       new ApiError(
         400,
-        'enrollmentValidityDays must be a positive integer or null'
-      )
+        'enrollmentValidityDays must be a positive integer or null',
+      ),
     )
   }
   if (enrollmentValidityDays !== undefined) {
@@ -362,11 +368,12 @@ const updateCourse = async (
     dataToUpdate.instructors = normalizeInstructors(instructors)
   }
   if (isPublished !== undefined) dataToUpdate.isPublished = isPublished
-  if (certificatesEnabled !== undefined) dataToUpdate.certificatesEnabled = certificatesEnabled
+  if (certificatesEnabled !== undefined)
+    dataToUpdate.certificatesEnabled = certificatesEnabled
 
   if (Object.keys(dataToUpdate).length === 0) {
     return next(
-      new ApiError(400, 'Please provide at least one field to update.')
+      new ApiError(400, 'Please provide at least one field to update.'),
     )
   }
 
@@ -383,14 +390,14 @@ const updateCourse = async (
   return res.status(200).json(
     new ApiResponse(200, 'Course Updated Successfully', {
       course: withNormalizedInstructors(updatedCourse),
-    })
+    }),
   )
 }
 
 const togglePublishCourse = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const course = req.course!
   const updated = await prisma.course.update({
@@ -405,10 +412,11 @@ const togglePublishCourse = async (
     .json(
       new ApiResponse(
         200,
-        `Course ${updated.isPublished ? 'published' : 'unpublished'
+        `Course ${
+          updated.isPublished ? 'published' : 'unpublished'
         } successfully`,
-        { course: withNormalizedInstructors(updated) }
-      )
+        { course: withNormalizedInstructors(updated) },
+      ),
     )
 }
 
@@ -445,7 +453,7 @@ const resolvePublicUrl = (key: string) => {
 const createThumbnailUpload = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const course = req.course!
@@ -469,8 +477,8 @@ const createThumbnailUpload = async (
       return next(
         new ApiError(
           500,
-          'Missing R2_PUBLIC_URL or R2_PUBLIC_BASE_URL in environment.'
-        )
+          'Missing R2_PUBLIC_URL or R2_PUBLIC_BASE_URL in environment.',
+        ),
       )
     }
 
@@ -506,7 +514,7 @@ const createThumbnailUpload = async (
         headers: {
           'Content-Type': contentType || 'image/jpeg',
         },
-      })
+      }),
     )
   } catch (error) {
     return next(error)
@@ -516,7 +524,7 @@ const createThumbnailUpload = async (
 const createInstructorAvatarUpload = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const course = req.course!
@@ -540,8 +548,8 @@ const createInstructorAvatarUpload = async (
       return next(
         new ApiError(
           500,
-          'Missing R2_PUBLIC_URL or R2_PUBLIC_BASE_URL in environment.'
-        )
+          'Missing R2_PUBLIC_URL or R2_PUBLIC_BASE_URL in environment.',
+        ),
       )
     }
 
@@ -564,7 +572,7 @@ const createInstructorAvatarUpload = async (
         headers: {
           'Content-Type': contentType || 'image/jpeg',
         },
-      })
+      }),
     )
   } catch (error) {
     return next(error)

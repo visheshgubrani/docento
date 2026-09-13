@@ -12,7 +12,7 @@ import { logger } from '../utils/logger'
 export const getQuizForStudent = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const endUser = req.endUser!
@@ -123,7 +123,7 @@ export const getQuizForStudent = async (
           ? quiz.maxAttempts -
             previousAttempts.filter((a) => a.completedAt).length
           : null,
-      })
+      }),
     )
   } catch (error) {
     console.error('[GET_QUIZ_FOR_STUDENT_ERROR]', error)
@@ -135,7 +135,7 @@ export const getQuizForStudent = async (
 export const startQuizAttempt = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const endUser = req.endUser!
@@ -169,7 +169,9 @@ export const startQuizAttempt = async (
       if (timeLimitSeconds !== null) {
         const elapsedSeconds = Math.max(
           0,
-          Math.floor((now.getTime() - incompleteAttempt.startedAt.getTime()) / 1000)
+          Math.floor(
+            (now.getTime() - incompleteAttempt.startedAt.getTime()) / 1000,
+          ),
         )
 
         // Stale incomplete attempts should be finalized before creating a new attempt.
@@ -189,7 +191,7 @@ export const startQuizAttempt = async (
               attempt: incompleteAttempt,
               timeLimit: quiz.timeLimit,
               remainingSeconds: Math.max(0, timeLimitSeconds - elapsedSeconds),
-            })
+            }),
           )
         }
       } else {
@@ -198,7 +200,7 @@ export const startQuizAttempt = async (
             attempt: incompleteAttempt,
             timeLimit: quiz.timeLimit,
             remainingSeconds: null,
-          })
+          }),
         )
       }
     }
@@ -227,8 +229,8 @@ export const startQuizAttempt = async (
         return next(
           new ApiError(
             403,
-            `You have reached the maximum number of attempts (${quiz.maxAttempts})`
-          )
+            `You have reached the maximum number of attempts (${quiz.maxAttempts})`,
+          ),
         )
       }
     }
@@ -275,7 +277,7 @@ export const startQuizAttempt = async (
         attempt,
         timeLimit: quiz.timeLimit, // Send time limit to frontend
         remainingSeconds,
-      })
+      }),
     )
   } catch (error) {
     console.error('[START_QUIZ_ATTEMPT_ERROR]', error)
@@ -287,7 +289,7 @@ export const startQuizAttempt = async (
 export const submitQuizAttempt = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const endUser = req.endUser!
@@ -341,7 +343,7 @@ export const submitQuizAttempt = async (
     // Validate time limit (if set)
     if (attempt.quiz.timeLimit && timeSpent > attempt.quiz.timeLimit * 60) {
       return next(
-        new ApiError(400, 'Time limit exceeded. Quiz attempt is invalid.')
+        new ApiError(400, 'Time limit exceeded. Quiz attempt is invalid.'),
       )
     }
 
@@ -371,7 +373,7 @@ export const submitQuizAttempt = async (
 
     for (const answer of answers) {
       const question = attempt.quiz.questions.find(
-        (q) => q.id === answer.questionId
+        (q) => q.id === answer.questionId,
       )
 
       if (!question) {
@@ -384,7 +386,7 @@ export const submitQuizAttempt = async (
         answer.userAnswer || '',
         answer.userAnswers || [],
         attempt.quiz.negativeMarking,
-        attempt.quiz.defaultNegativeMark
+        attempt.quiz.defaultNegativeMark,
       )
 
       totalPointsEarned += gradeResult.pointsEarned
@@ -491,7 +493,7 @@ export const submitQuizAttempt = async (
           negativeMarking: attempt.quiz.negativeMarking,
           timeSpent,
         },
-      })
+      }),
     )
   } catch (error) {
     console.error('[SUBMIT_QUIZ_ATTEMPT_ERROR]', error)
@@ -503,7 +505,7 @@ export const submitQuizAttempt = async (
 export const getQuizResults = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const endUser = req.endUser!
@@ -564,7 +566,7 @@ export const getQuizResults = async (
     return res.status(200).json(
       new ApiResponse(200, 'Quiz results fetched successfully', {
         attempt,
-      })
+      }),
     )
   } catch (error) {
     console.error('[GET_QUIZ_RESULTS_ERROR]', error)
@@ -576,7 +578,7 @@ export const getQuizResults = async (
 export const getQuizHistory = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const endUser = req.endUser!
@@ -631,7 +633,7 @@ export const getQuizHistory = async (
             ? quiz.maxAttempts - attempts.length
             : null,
         },
-      })
+      }),
     )
   } catch (error) {
     console.error('[GET_QUIZ_HISTORY_ERROR]', error)
@@ -665,7 +667,7 @@ function gradeAnswer(
   userAnswer: string,
   userAnswers: string[],
   quizNegativeMarking: boolean,
-  defaultNegativeMark: number | null
+  defaultNegativeMark: number | null,
 ): { isCorrect: boolean; pointsEarned: number } {
   const maxPoints = question.points || 1
   const negPoints = question.negativePoints || defaultNegativeMark || 0
@@ -707,7 +709,7 @@ function gradeAnswer(
         // JEE Advanced proportional: points * (correctSelected / totalCorrect)
         const partialPoints =
           Math.round(
-            (maxPoints * (correctSelections.length / correctSet.size)) * 100
+            maxPoints * (correctSelections.length / correctSet.size) * 100,
           ) / 100
         return { isCorrect: false, pointsEarned: partialPoints }
       }

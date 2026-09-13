@@ -1,12 +1,12 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
-import { useParams } from "next/navigation";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ExternalLink, Loader2, Search } from "lucide-react";
+import Link from 'next/link'
+import { useMemo, useState } from 'react'
+import { useParams } from 'next/navigation'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { ArrowLeft, ExternalLink, Loader2, Search } from 'lucide-react'
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -14,10 +14,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Table,
   TableBody,
@@ -25,9 +25,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
+} from '@/components/ui/table'
+import { Textarea } from '@/components/ui/textarea'
+import { useToast } from '@/components/ui/use-toast'
 import {
   fetchCourseEnrollments,
   getAssignment,
@@ -35,38 +35,38 @@ import {
   listAssignmentSubmissions,
   type AssignmentSubmission,
   type CourseEnrollment,
-} from "@/lib/api";
-import { useCourse } from "@/lib/hooks/use-courses";
-import { useProjectRouteId } from "@/lib/hooks/use-project-route-id";
-import { cn } from "@/lib/utils";
+} from '@/lib/api'
+import { useCourse } from '@/lib/hooks/use-courses'
+import { useProjectRouteId } from '@/lib/hooks/use-project-route-id'
+import { cn } from '@/lib/utils'
 
-type AssignmentsDetailTab = "submitted" | "not-submitted";
+type AssignmentsDetailTab = 'submitted' | 'not-submitted'
 
-const submissionDateFormatter = new Intl.DateTimeFormat("en-US", {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
+const submissionDateFormatter = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
 
-const lastActiveFormatter = new Intl.DateTimeFormat("en-US", {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
+const lastActiveFormatter = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+})
 
 function formatSubmissionDate(value?: string | null) {
-  if (!value) return "Unknown";
+  if (!value) return 'Unknown'
   try {
-    return submissionDateFormatter.format(new Date(value));
+    return submissionDateFormatter.format(new Date(value))
   } catch {
-    return "Unknown";
+    return 'Unknown'
   }
 }
 
 function formatLastActive(value?: string | null) {
-  if (!value) return "Not tracked";
+  if (!value) return 'Not tracked'
   try {
-    return lastActiveFormatter.format(new Date(value));
+    return lastActiveFormatter.format(new Date(value))
   } catch {
-    return "Not tracked";
+    return 'Not tracked'
   }
 }
 
@@ -75,66 +75,66 @@ function getEnrollmentDisplayName(enrollment: CourseEnrollment) {
     enrollment.endUser?.managedUser?.name?.trim() ||
     enrollment.endUser?.email ||
     enrollment.endUser?.externalId ||
-    "Unnamed user"
-  );
+    'Unnamed user'
+  )
 }
 
 function getEnrollmentContact(enrollment: CourseEnrollment) {
   return (
     enrollment.endUser?.email ||
     enrollment.endUser?.externalId ||
-    "Not provided"
-  );
+    'Not provided'
+  )
 }
 
 function getSubmissionFileName(fileUrl?: string | null) {
-  if (!fileUrl) return "Uploaded file";
+  if (!fileUrl) return 'Uploaded file'
 
   const normalizeFileName = (value: string) => {
-    const decoded = decodeURIComponent(value);
-    const extensionIndex = decoded.lastIndexOf(".");
+    const decoded = decodeURIComponent(value)
+    const extensionIndex = decoded.lastIndexOf('.')
     const baseName =
-      extensionIndex > 0 ? decoded.slice(0, extensionIndex) : decoded;
-    const extension = extensionIndex > 0 ? decoded.slice(extensionIndex) : "";
+      extensionIndex > 0 ? decoded.slice(0, extensionIndex) : decoded
+    const extension = extensionIndex > 0 ? decoded.slice(extensionIndex) : ''
     const cleanedBaseName = baseName.replace(
       /-[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-      ""
-    );
+      '',
+    )
 
     return cleanedBaseName
       ? `${cleanedBaseName}${extension}`
-      : decoded || "Uploaded file";
-  };
+      : decoded || 'Uploaded file'
+  }
 
   try {
-    const pathname = new URL(fileUrl).pathname;
-    const filename = pathname.split("/").pop();
-    return filename ? normalizeFileName(filename) : "Uploaded file";
+    const pathname = new URL(fileUrl).pathname
+    const filename = pathname.split('/').pop()
+    return filename ? normalizeFileName(filename) : 'Uploaded file'
   } catch {
-    const filename = fileUrl.split("/").pop()?.split("?")[0];
-    return filename ? normalizeFileName(filename) : "Uploaded file";
+    const filename = fileUrl.split('/').pop()?.split('?')[0]
+    return filename ? normalizeFileName(filename) : 'Uploaded file'
   }
 }
 
 function getSubmissionViewHref(submission: AssignmentSubmission) {
-  const fileUrl = submission.fileUrl?.trim();
-  if (fileUrl) return fileUrl;
+  const fileUrl = submission.fileUrl?.trim()
+  if (fileUrl) return fileUrl
 
-  const content = submission.content?.trim();
-  if (!content) return null;
+  const content = submission.content?.trim()
+  if (!content) return null
 
-  return `data:text/plain;charset=utf-8,${encodeURIComponent(content)}`;
+  return `data:text/plain;charset=utf-8,${encodeURIComponent(content)}`
 }
 
 function SubmissionPreview({
   submission,
 }: {
-  submission: AssignmentSubmission;
+  submission: AssignmentSubmission
 }) {
-  const textSubmission = submission.content?.trim() ?? "";
-  const fileUrl = submission.fileUrl?.trim() ?? "";
-  const hasTextSubmission = textSubmission.length > 0;
-  const hasFileSubmission = fileUrl.length > 0;
+  const textSubmission = submission.content?.trim() ?? ''
+  const fileUrl = submission.fileUrl?.trim() ?? ''
+  const hasTextSubmission = textSubmission.length > 0
+  const hasFileSubmission = fileUrl.length > 0
 
   return (
     <div className="space-y-4 rounded-lg border border-neutral-200 bg-muted p-4">
@@ -197,42 +197,42 @@ function SubmissionPreview({
         </div>
       ) : null}
     </div>
-  );
+  )
 }
 
 async function fetchAllActiveEnrollments(projectId: string, courseId: string) {
-  const all: CourseEnrollment[] = [];
-  const pageSize = 100;
-  let page = 1;
+  const all: CourseEnrollment[] = []
+  const pageSize = 100
+  let page = 1
 
   while (true) {
     const response = await fetchCourseEnrollments(projectId, courseId, {
       page,
       limit: pageSize,
-      status: "active",
-    });
+      status: 'active',
+    })
 
-    all.push(...response.enrollments);
+    all.push(...response.enrollments)
 
     if (
       !response.pagination?.hasMore ||
       page >= response.pagination.totalPages
     ) {
-      break;
+      break
     }
 
-    page += 1;
+    page += 1
   }
 
-  return all;
+  return all
 }
 
 function TableSkeletonRows({
   includeStatus = true,
   includeScore = false,
 }: {
-  includeStatus?: boolean;
-  includeScore?: boolean;
+  includeStatus?: boolean
+  includeScore?: boolean
 }) {
   return (
     <>
@@ -263,30 +263,30 @@ function TableSkeletonRows({
         </TableRow>
       ))}
     </>
-  );
+  )
 }
 
 export default function AssignmentSubmissionsDetailPage() {
-  const params = useParams();
-  const projectId = useProjectRouteId();
-  const courseId = typeof params?.courseId === "string" ? params.courseId : "";
-  const moduleId = typeof params?.moduleId === "string" ? params.moduleId : "";
-  const lessonId = typeof params?.lessonId === "string" ? params.lessonId : "";
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const params = useParams()
+  const projectId = useProjectRouteId()
+  const courseId = typeof params?.courseId === 'string' ? params.courseId : ''
+  const moduleId = typeof params?.moduleId === 'string' ? params.moduleId : ''
+  const lessonId = typeof params?.lessonId === 'string' ? params.lessonId : ''
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
 
-  const [activeTab, setActiveTab] = useState<AssignmentsDetailTab>("submitted");
-  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<AssignmentsDetailTab>('submitted')
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false)
   const [selectedSubmission, setSelectedSubmission] =
-    useState<AssignmentSubmission | null>(null);
-  const [gradeValue, setGradeValue] = useState("");
-  const [feedbackValue, setFeedbackValue] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+    useState<AssignmentSubmission | null>(null)
+  const [gradeValue, setGradeValue] = useState('')
+  const [feedbackValue, setFeedbackValue] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const { data: course, isLoading: isCourseLoading } = useCourse(
     projectId,
-    courseId
-  );
+    courseId,
+  )
 
   const {
     data: assignment,
@@ -295,10 +295,10 @@ export default function AssignmentSubmissionsDetailPage() {
     error: assignmentError,
     refetch: refetchAssignment,
   } = useQuery({
-    queryKey: ["course-assignment", projectId, courseId, moduleId, lessonId],
+    queryKey: ['course-assignment', projectId, courseId, moduleId, lessonId],
     enabled: Boolean(projectId && courseId && moduleId && lessonId),
     queryFn: () => getAssignment(projectId, courseId, moduleId, lessonId),
-  });
+  })
 
   const {
     data: submissionsData,
@@ -309,18 +309,18 @@ export default function AssignmentSubmissionsDetailPage() {
     refetch: refetchSubmissions,
   } = useQuery({
     queryKey: [
-      "course-assignment-submissions",
+      'course-assignment-submissions',
       projectId,
       courseId,
       moduleId,
       lessonId,
     ],
     enabled: Boolean(
-      projectId && courseId && moduleId && lessonId && assignment?.id
+      projectId && courseId && moduleId && lessonId && assignment?.id,
     ),
     queryFn: () =>
       listAssignmentSubmissions(projectId, courseId, moduleId, lessonId),
-  });
+  })
 
   const {
     data: enrollments = [],
@@ -329,79 +329,79 @@ export default function AssignmentSubmissionsDetailPage() {
     error: enrollmentsError,
     refetch: refetchEnrollments,
   } = useQuery<CourseEnrollment[], Error>({
-    queryKey: ["course-assignment-enrollments", projectId, courseId],
+    queryKey: ['course-assignment-enrollments', projectId, courseId],
     enabled: Boolean(projectId && courseId),
     queryFn: () => fetchAllActiveEnrollments(projectId, courseId),
-  });
+  })
 
   const submissions = useMemo(
     () => submissionsData?.submissions ?? [],
-    [submissionsData?.submissions]
-  );
+    [submissionsData?.submissions],
+  )
 
   const enrollmentByEndUserId = useMemo(
     () =>
       new Map(
-        enrollments.map((enrollment) => [enrollment.endUser.id, enrollment])
+        enrollments.map((enrollment) => [enrollment.endUser.id, enrollment]),
       ),
-    [enrollments]
-  );
+    [enrollments],
+  )
 
   const submittedEndUserIds = useMemo(
     () => new Set(submissions.map((submission) => submission.endUserId)),
-    [submissions]
-  );
+    [submissions],
+  )
 
   const notSubmittedEnrollments = useMemo(
     () =>
       enrollments.filter(
-        (enrollment) => !submittedEndUserIds.has(enrollment.endUser.id)
+        (enrollment) => !submittedEndUserIds.has(enrollment.endUser.id),
       ),
-    [enrollments, submittedEndUserIds]
-  );
-  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+    [enrollments, submittedEndUserIds],
+  )
+  const normalizedSearchQuery = searchQuery.trim().toLowerCase()
 
   const filteredSubmissions = useMemo(() => {
-    if (!normalizedSearchQuery) return submissions;
+    if (!normalizedSearchQuery) return submissions
 
     return submissions.filter((submission) => {
-      const enrollment = enrollmentByEndUserId.get(submission.endUserId);
+      const enrollment = enrollmentByEndUserId.get(submission.endUserId)
       const displayName =
         enrollment?.endUser?.managedUser?.name?.trim() ||
         submission.endUser?.email ||
         submission.endUser?.externalId ||
         enrollment?.endUser?.email ||
         enrollment?.endUser?.externalId ||
-        "Unnamed user";
+        'Unnamed user'
 
-      return displayName.toLowerCase().includes(normalizedSearchQuery);
-    });
-  }, [enrollmentByEndUserId, normalizedSearchQuery, submissions]);
+      return displayName.toLowerCase().includes(normalizedSearchQuery)
+    })
+  }, [enrollmentByEndUserId, normalizedSearchQuery, submissions])
 
   const filteredNotSubmittedEnrollments = useMemo(() => {
-    if (!normalizedSearchQuery) return notSubmittedEnrollments;
+    if (!normalizedSearchQuery) return notSubmittedEnrollments
 
     return notSubmittedEnrollments.filter((enrollment) =>
       getEnrollmentDisplayName(enrollment)
         .toLowerCase()
-        .includes(normalizedSearchQuery)
-    );
-  }, [normalizedSearchQuery, notSubmittedEnrollments]);
+        .includes(normalizedSearchQuery),
+    )
+  }, [normalizedSearchQuery, notSubmittedEnrollments])
 
   const moduleContext = useMemo(
     () => course?.modules.find((module) => module.id === moduleId),
-    [course, moduleId]
-  );
+    [course, moduleId],
+  )
   const lessonContext = useMemo(
     () => moduleContext?.lessons.find((lesson) => lesson.id === lessonId),
-    [moduleContext, lessonId]
-  );
+    [moduleContext, lessonId],
+  )
 
   const gradeMutation = useMutation({
     mutationFn: async (payload: {
-      submissionId: string;
-      grade: number;
-      feedback?: string;
+      submissionId: string
+      grade: number
+      feedback?: string
     }) =>
       gradeAssignmentSubmission(
         projectId,
@@ -412,90 +412,90 @@ export default function AssignmentSubmissionsDetailPage() {
         {
           grade: payload.grade,
           feedback: payload.feedback,
-        }
+        },
       ),
     onSuccess: () => {
       toast({
-        title: "Submission graded",
-        description: "The grade was saved successfully.",
-      });
+        title: 'Submission graded',
+        description: 'The grade was saved successfully.',
+      })
       queryClient.invalidateQueries({
         queryKey: [
-          "course-assignment-submissions",
+          'course-assignment-submissions',
           projectId,
           courseId,
           moduleId,
           lessonId,
         ],
-      });
+      })
       queryClient.invalidateQueries({
-        queryKey: ["course-assignments-directory", projectId, courseId],
-      });
-      setReviewDialogOpen(false);
-      setSelectedSubmission(null);
-      setGradeValue("");
-      setFeedbackValue("");
+        queryKey: ['course-assignments-directory', projectId, courseId],
+      })
+      setReviewDialogOpen(false)
+      setSelectedSubmission(null)
+      setGradeValue('')
+      setFeedbackValue('')
     },
     onError: (error: Error) => {
       toast({
-        title: "Unable to save grade",
-        description: error.message || "Please try again.",
-        variant: "destructive",
-      });
+        title: 'Unable to save grade',
+        description: error.message || 'Please try again.',
+        variant: 'destructive',
+      })
     },
-  });
+  })
 
   const openReviewDialog = (submission: AssignmentSubmission) => {
-    setSelectedSubmission(submission);
+    setSelectedSubmission(submission)
     setGradeValue(
       submission.grade === null || submission.grade === undefined
-        ? ""
-        : String(submission.grade)
-    );
-    setFeedbackValue(submission.feedback ?? "");
-    setReviewDialogOpen(true);
-  };
+        ? ''
+        : String(submission.grade),
+    )
+    setFeedbackValue(submission.feedback ?? '')
+    setReviewDialogOpen(true)
+  }
 
   const handleSaveGrade = async () => {
-    if (!selectedSubmission || !assignment) return;
+    if (!selectedSubmission || !assignment) return
 
-    const parsedGrade = Number(gradeValue);
+    const parsedGrade = Number(gradeValue)
     if (!Number.isFinite(parsedGrade)) {
       toast({
-        title: "Invalid grade",
-        description: "Enter a valid numeric grade.",
-        variant: "destructive",
-      });
-      return;
+        title: 'Invalid grade',
+        description: 'Enter a valid numeric grade.',
+        variant: 'destructive',
+      })
+      return
     }
 
     if (parsedGrade < 0 || parsedGrade > assignment.totalPoints) {
       toast({
-        title: "Grade out of range",
+        title: 'Grade out of range',
         description: `Grade must be between 0 and ${assignment.totalPoints}.`,
-        variant: "destructive",
-      });
-      return;
+        variant: 'destructive',
+      })
+      return
     }
 
     await gradeMutation.mutateAsync({
       submissionId: selectedSubmission.id,
       grade: parsedGrade,
       feedback: feedbackValue,
-    });
-  };
+    })
+  }
 
   const handleSendReminder = () => {
     toast({
-      title: "Coming soon",
-      description: "Email reminders will be available in a future update.",
-    });
-  };
+      title: 'Coming soon',
+      description: 'Email reminders will be available in a future update.',
+    })
+  }
 
   const isInitialLoading =
     isCourseLoading ||
     isAssignmentLoading ||
-    (Boolean(assignment?.id) && isSubmissionsLoading);
+    (Boolean(assignment?.id) && isSubmissionsLoading)
 
   return (
     <div className="space-y-8">
@@ -511,10 +511,10 @@ export default function AssignmentSubmissionsDetailPage() {
           </Link>
         </Button>
         <h2 className="text-3xl font-semibold font-literata tracking-wide">
-          {assignment?.title || lessonContext?.title || "Assignment"}
+          {assignment?.title || lessonContext?.title || 'Assignment'}
         </h2>
         <p className="text-lg font-stix text-foreground/80 mt-3 tracking-wide">
-          {moduleContext?.title || "Module"} • Review submissions and track
+          {moduleContext?.title || 'Module'} • Review submissions and track
           students who still need to submit.
         </p>
       </div>
@@ -557,15 +557,15 @@ export default function AssignmentSubmissionsDetailPage() {
                 {assignmentError?.message ||
                   submissionsError?.message ||
                   enrollmentsError?.message ||
-                  "Please try again in a moment."}
+                  'Please try again in a moment.'}
               </p>
             </div>
             <Button
               variant="outline"
               onClick={() => {
-                refetchAssignment();
-                refetchSubmissions();
-                refetchEnrollments();
+                refetchAssignment()
+                refetchSubmissions()
+                refetchEnrollments()
               }}
             >
               Retry
@@ -589,24 +589,24 @@ export default function AssignmentSubmissionsDetailPage() {
             <div className="inline-flex rounded-sm border border-neutral-200 bg-background p-1">
               <button
                 type="button"
-                onClick={() => setActiveTab("submitted")}
+                onClick={() => setActiveTab('submitted')}
                 className={cn(
-                  "rounded-sm px-3 py-2 text-sm font-medium transition-colors",
-                  activeTab === "submitted"
-                    ? "bg-muted text-foreground"
-                    : "text-foreground/65 hover:text-foreground"
+                  'rounded-sm px-3 py-2 text-sm font-medium transition-colors',
+                  activeTab === 'submitted'
+                    ? 'bg-muted text-foreground'
+                    : 'text-foreground/65 hover:text-foreground',
                 )}
               >
                 Submitted ({submissions.length})
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab("not-submitted")}
+                onClick={() => setActiveTab('not-submitted')}
                 className={cn(
-                  "rounded-sm px-3 py-2 text-sm font-medium transition-colors",
-                  activeTab === "not-submitted"
-                    ? "bg-muted text-foreground"
-                    : "text-foreground/65 hover:text-foreground"
+                  'rounded-sm px-3 py-2 text-sm font-medium transition-colors',
+                  activeTab === 'not-submitted'
+                    ? 'bg-muted text-foreground'
+                    : 'text-foreground/65 hover:text-foreground',
                 )}
               >
                 Not Submitted ({notSubmittedEnrollments.length})
@@ -631,18 +631,18 @@ export default function AssignmentSubmissionsDetailPage() {
             </div>
           </div>
 
-          {activeTab === "submitted" ? (
+          {activeTab === 'submitted' ? (
             filteredSubmissions.length === 0 ? (
               <div className="w-full bg-background rounded-sm border border-neutral-200 py-14 px-6 text-center">
                 <h3 className="text-xl font-semibold text-foreground mb-2">
                   {normalizedSearchQuery
-                    ? "No matching submissions"
-                    : "No submissions yet"}
+                    ? 'No matching submissions'
+                    : 'No submissions yet'}
                 </h3>
                 <p className="text-sm text-foreground/60">
                   {normalizedSearchQuery
-                    ? "Try a different student name."
-                    : "Student submissions will appear here as soon as they upload their work."}
+                    ? 'Try a different student name.'
+                    : 'Student submissions will appear here as soon as they upload their work.'}
                 </p>
               </div>
             ) : (
@@ -669,28 +669,28 @@ export default function AssignmentSubmissionsDetailPage() {
                   </TableHeader>
                   <TableBody>
                     {filteredSubmissions.map((submission) => {
-                      const viewHref = getSubmissionViewHref(submission);
+                      const viewHref = getSubmissionViewHref(submission)
                       const enrollment = enrollmentByEndUserId.get(
-                        submission.endUserId
-                      );
+                        submission.endUserId,
+                      )
                       const displayName =
                         enrollment?.endUser?.managedUser?.name?.trim() ||
                         submission.endUser?.email ||
                         submission.endUser?.externalId ||
                         enrollment?.endUser?.email ||
                         enrollment?.endUser?.externalId ||
-                        "Unnamed user";
+                        'Unnamed user'
 
                       const contact =
                         submission.endUser?.email ||
                         submission.endUser?.externalId ||
                         enrollment?.endUser?.email ||
                         enrollment?.endUser?.externalId ||
-                        "Not provided";
+                        'Not provided'
 
                       const isGraded =
                         submission.grade !== null &&
-                        submission.grade !== undefined;
+                        submission.grade !== undefined
 
                       return (
                         <TableRow
@@ -722,7 +722,9 @@ export default function AssignmentSubmissionsDetailPage() {
                             )}
                           </TableCell>
                           <TableCell className="text-sm font-medium text-foreground/80">
-                            {isGraded ? `${submission.grade}/${assignment.totalPoints}` : "—"}
+                            {isGraded
+                              ? `${submission.grade}/${assignment.totalPoints}`
+                              : '—'}
                           </TableCell>
                           <TableCell className="text-right pr-4">
                             <div className="flex justify-end gap-3">
@@ -733,13 +735,13 @@ export default function AssignmentSubmissionsDetailPage() {
                                 className="h-9 min-w-24 cursor-pointer px-3 hover:text-lime-600"
                               >
                                 <a
-                                  href={viewHref ?? "#"}
+                                  href={viewHref ?? '#'}
                                   target="_blank"
                                   rel="noreferrer"
                                   aria-disabled={!viewHref}
                                   onClick={(event) => {
                                     if (!viewHref) {
-                                      event.preventDefault();
+                                      event.preventDefault()
                                     }
                                   }}
                                 >
@@ -758,7 +760,7 @@ export default function AssignmentSubmissionsDetailPage() {
                             </div>
                           </TableCell>
                         </TableRow>
-                      );
+                      )
                     })}
                   </TableBody>
                 </Table>
@@ -789,13 +791,13 @@ export default function AssignmentSubmissionsDetailPage() {
             <div className="w-full bg-background rounded-sm border border-neutral-200 py-14 px-6 text-center">
               <h3 className="text-xl font-semibold text-foreground mb-2">
                 {normalizedSearchQuery
-                  ? "No matching students"
-                  : "Everyone has submitted"}
+                  ? 'No matching students'
+                  : 'Everyone has submitted'}
               </h3>
               <p className="text-sm text-foreground/60">
                 {normalizedSearchQuery
-                  ? "Try a different student name."
-                  : "There are no outstanding students for this assignment."}
+                  ? 'Try a different student name.'
+                  : 'There are no outstanding students for this assignment.'}
               </p>
             </div>
           ) : (
@@ -833,7 +835,7 @@ export default function AssignmentSubmissionsDetailPage() {
                       <TableCell className="text-foreground/70">
                         {formatLastActive(
                           enrollment.endUser?.delegatedUser?.lastSeenAt ??
-                            enrollment.enrolledAt
+                            enrollment.enrolledAt,
                         )}
                       </TableCell>
                       <TableCell className="text-right pr-4">
@@ -858,10 +860,10 @@ export default function AssignmentSubmissionsDetailPage() {
       <Dialog
         open={reviewDialogOpen}
         onOpenChange={(open) => {
-          if (gradeMutation.isPending) return;
-          setReviewDialogOpen(open);
+          if (gradeMutation.isPending) return
+          setReviewDialogOpen(open)
           if (!open) {
-            setSelectedSubmission(null);
+            setSelectedSubmission(null)
           }
         }}
       >
@@ -948,12 +950,12 @@ export default function AssignmentSubmissionsDetailPage() {
                   Saving...
                 </>
               ) : (
-                "Save Grade"
+                'Save Grade'
               )}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 }

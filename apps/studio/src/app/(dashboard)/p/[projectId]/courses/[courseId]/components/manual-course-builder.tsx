@@ -1,12 +1,12 @@
-"use client";
+'use client'
 
-import { useState, useCallback, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { Reorder, useDragControls, useMotionValue } from "framer-motion";
-import { RxDragHandleDots2 } from "react-icons/rx";
-import { CgAddR } from "react-icons/cg";
-import { IoMdAddCircleOutline } from "react-icons/io";
-import { BsThreeDotsVertical } from "react-icons/bs";
+import { useState, useCallback, useEffect } from 'react'
+import { useRouter, useParams } from 'next/navigation'
+import { Reorder, useDragControls, useMotionValue } from 'framer-motion'
+import { RxDragHandleDots2 } from 'react-icons/rx'
+import { CgAddR } from 'react-icons/cg'
+import { IoMdAddCircleOutline } from 'react-icons/io'
+import { BsThreeDotsVertical } from 'react-icons/bs'
 import {
   Video,
   FileText,
@@ -15,19 +15,19 @@ import {
   FileQuestion,
   FolderOpen,
   ClipboardList,
-} from "lucide-react";
-import { BsFileEarmarkPdfFill } from "react-icons/bs";
+} from 'lucide-react'
+import { BsFileEarmarkPdfFill } from 'react-icons/bs'
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-import { useProjectRouteId } from "@/lib/hooks/use-project-route-id";
+} from '@/components/ui/dropdown-menu'
+import { cn } from '@/lib/utils'
+import { useProjectRouteId } from '@/lib/hooks/use-project-route-id'
 import {
   createModule,
   updateModule,
@@ -40,160 +40,160 @@ import {
   type CourseModule,
   type CourseModuleLesson,
   type LessonPrimaryContentType,
-} from "@/lib/api";
-import { useQueryClient } from "@tanstack/react-query";
-import { FaVideo, FaYoutube } from "react-icons/fa";
-import { MdOutlineAssignment } from "react-icons/md";
-import { MdAssignment } from "react-icons/md";
-import { BsQuestionCircleFill } from "react-icons/bs";
-import { MdTypeSpecimen } from "react-icons/md";
-import { FaPenToSquare } from "react-icons/fa6";
+} from '@/lib/api'
+import { useQueryClient } from '@tanstack/react-query'
+import { FaVideo, FaYoutube } from 'react-icons/fa'
+import { MdOutlineAssignment } from 'react-icons/md'
+import { MdAssignment } from 'react-icons/md'
+import { BsQuestionCircleFill } from 'react-icons/bs'
+import { MdTypeSpecimen } from 'react-icons/md'
+import { FaPenToSquare } from 'react-icons/fa6'
 
 // Types for local state management
 type LocalModule = CourseModule & {
-  _isOptimistic?: boolean;
-};
+  _isOptimistic?: boolean
+}
 
 type LocalLesson = CourseModuleLesson & {
-  _isOptimistic?: boolean;
-};
+  _isOptimistic?: boolean
+}
 
 const toPrimaryLessonContentType = (
-  contentType: string | null | undefined
+  contentType: string | null | undefined,
 ): LessonPrimaryContentType => {
   switch (contentType?.toUpperCase()) {
-    case "VIDEO":
-    case "TEXT":
-    case "QUIZ":
-    case "MOCK_TEST":
-    case "ASSIGNMENT":
-    case "YOUTUBE":
-      return contentType.toUpperCase() as LessonPrimaryContentType;
+    case 'VIDEO':
+    case 'TEXT':
+    case 'QUIZ':
+    case 'MOCK_TEST':
+    case 'ASSIGNMENT':
+    case 'YOUTUBE':
+      return contentType.toUpperCase() as LessonPrimaryContentType
     default:
-      return "TEXT";
+      return 'TEXT'
   }
-};
+}
 
 // Props type
 type ManualCourseBuilderProps = {
-  modules: CourseModule[];
-};
+  modules: CourseModule[]
+}
 
 export function ManualCourseBuilder({
   modules: serverModules,
 }: ManualCourseBuilderProps) {
-  const router = useRouter();
-  const params = useParams();
-  const projectId = useProjectRouteId();
-  const courseId = typeof params?.courseId === "string" ? params.courseId : "";
-  const queryClient = useQueryClient();
+  const router = useRouter()
+  const params = useParams()
+  const projectId = useProjectRouteId()
+  const courseId = typeof params?.courseId === 'string' ? params.courseId : ''
+  const queryClient = useQueryClient()
 
   // Local state for optimistic updates
-  const [modules, setModules] = useState<LocalModule[]>(serverModules);
+  const [modules, setModules] = useState<LocalModule[]>(serverModules)
 
   // Sync with server data when it changes
   useEffect(() => {
-    setModules(serverModules);
-  }, [serverModules]);
+    setModules(serverModules)
+  }, [serverModules])
 
-  const [isAddingModule, setIsAddingModule] = useState(false);
-  const [newModuleTitle, setNewModuleTitle] = useState("");
+  const [isAddingModule, setIsAddingModule] = useState(false)
+  const [newModuleTitle, setNewModuleTitle] = useState('')
   const [addingLessonToModuleId, setAddingLessonToModuleId] = useState<
     string | null
-  >(null);
-  const [newLessonTitle, setNewLessonTitle] = useState("");
+  >(null)
+  const [newLessonTitle, setNewLessonTitle] = useState('')
 
   // Track which items are being processed
   const [processingModuleIds, setProcessingModuleIds] = useState<Set<string>>(
-    new Set()
-  );
+    new Set(),
+  )
   const [processingLessonIds, setProcessingLessonIds] = useState<Set<string>>(
-    new Set()
-  );
-  const [editingModuleId, setEditingModuleId] = useState<string | null>(null);
-  const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
-  const [isCreatingModule, setIsCreatingModule] = useState(false);
-  const [isReordering, setIsReordering] = useState(false);
+    new Set(),
+  )
+  const [editingModuleId, setEditingModuleId] = useState<string | null>(null)
+  const [editingLessonId, setEditingLessonId] = useState<string | null>(null)
+  const [isCreatingModule, setIsCreatingModule] = useState(false)
+  const [isReordering, setIsReordering] = useState(false)
 
   // Navigate to lesson editor
   const handleNavigateToLesson = useCallback(
     (lessonId: string) => {
-      router.push(`/p/${projectId}/courses/${courseId}/curriculum/${lessonId}`);
+      router.push(`/p/${projectId}/courses/${courseId}/curriculum/${lessonId}`)
     },
-    [router, projectId, courseId]
-  );
+    [router, projectId, courseId],
+  )
 
   // Module reorder handler
   const handleModuleReorder = useCallback(
     async (newOrder: LocalModule[]) => {
-      const oldModules = modules;
-      setModules(newOrder);
+      const oldModules = modules
+      setModules(newOrder)
 
       // Only call API if order actually changed
-      const orderChanged = newOrder.some((m, i) => m.id !== oldModules[i]?.id);
-      if (!orderChanged) return;
+      const orderChanged = newOrder.some((m, i) => m.id !== oldModules[i]?.id)
+      if (!orderChanged) return
 
-      setIsReordering(true);
+      setIsReordering(true)
       try {
         const moduleOrders = newOrder.map((m, idx) => ({
           id: m.id,
           order: idx + 1,
-        }));
-        await reorderModules(projectId, courseId, moduleOrders);
+        }))
+        await reorderModules(projectId, courseId, moduleOrders)
       } catch (error) {
-        console.error("Failed to reorder modules:", error);
+        console.error('Failed to reorder modules:', error)
         // Rollback
-        setModules(oldModules);
+        setModules(oldModules)
       } finally {
-        setIsReordering(false);
+        setIsReordering(false)
       }
     },
-    [modules, projectId, courseId]
-  );
+    [modules, projectId, courseId],
+  )
 
   // Lesson reorder handler
   const handleLessonReorder = useCallback(
     async (moduleId: string, newLessons: LocalLesson[]) => {
-      const module = modules.find((m) => m.id === moduleId);
-      if (!module) return;
+      const module = modules.find((m) => m.id === moduleId)
+      if (!module) return
 
-      const oldLessons = module.lessons;
+      const oldLessons = module.lessons
 
       // Optimistic update
       setModules((prev) =>
-        prev.map((m) => (m.id === moduleId ? { ...m, lessons: newLessons } : m))
-      );
+        prev.map((m) =>
+          m.id === moduleId ? { ...m, lessons: newLessons } : m,
+        ),
+      )
 
       // Only call API if order actually changed
-      const orderChanged = newLessons.some(
-        (l, i) => l.id !== oldLessons[i]?.id
-      );
-      if (!orderChanged) return;
+      const orderChanged = newLessons.some((l, i) => l.id !== oldLessons[i]?.id)
+      if (!orderChanged) return
 
       try {
         const lessonOrders = newLessons.map((l, idx) => ({
           id: l.id,
           order: idx + 1,
-        }));
-        await reorderLessons(projectId, courseId, moduleId, lessonOrders);
+        }))
+        await reorderLessons(projectId, courseId, moduleId, lessonOrders)
       } catch (error) {
-        console.error("Failed to reorder lessons:", error);
+        console.error('Failed to reorder lessons:', error)
         // Rollback
         setModules((prev) =>
           prev.map((m) =>
-            m.id === moduleId ? { ...m, lessons: oldLessons } : m
-          )
-        );
+            m.id === moduleId ? { ...m, lessons: oldLessons } : m,
+          ),
+        )
       }
     },
-    [modules, projectId, courseId]
-  );
+    [modules, projectId, courseId],
+  )
 
   // Module operations with optimistic updates
   const handleAddModule = useCallback(async () => {
-    if (!newModuleTitle.trim()) return;
+    if (!newModuleTitle.trim()) return
 
-    const tempId = `temp-${Date.now()}`;
+    const tempId = `temp-${Date.now()}`
     const optimisticModule: LocalModule = {
       id: tempId,
       title: newModuleTitle.trim(),
@@ -205,83 +205,83 @@ export function ManualCourseBuilder({
       lessons: [],
       _count: { lessons: 0 },
       _isOptimistic: true,
-    };
+    }
 
     // Optimistic update
-    setModules((prev) => [...prev, optimisticModule]);
-    setNewModuleTitle("");
-    setIsAddingModule(false);
-    setIsCreatingModule(true);
+    setModules((prev) => [...prev, optimisticModule])
+    setNewModuleTitle('')
+    setIsAddingModule(false)
+    setIsCreatingModule(true)
 
     try {
       const created = await createModule(projectId, courseId, {
         title: optimisticModule.title,
-      });
+      })
       // Replace temp with real module
       setModules((prev) =>
         prev.map((m) =>
-          m.id === tempId ? { ...created, _isOptimistic: false } : m
-        )
-      );
+          m.id === tempId ? { ...created, _isOptimistic: false } : m,
+        ),
+      )
     } catch (error) {
-      console.error("Failed to create module:", error);
+      console.error('Failed to create module:', error)
       // Rollback
-      setModules((prev) => prev.filter((m) => m.id !== tempId));
+      setModules((prev) => prev.filter((m) => m.id !== tempId))
     } finally {
-      setIsCreatingModule(false);
+      setIsCreatingModule(false)
     }
-  }, [newModuleTitle, modules.length, courseId, projectId]);
+  }, [newModuleTitle, modules.length, courseId, projectId])
 
   const handleCancelAddModule = useCallback(() => {
-    setNewModuleTitle("");
-    setIsAddingModule(false);
-  }, []);
+    setNewModuleTitle('')
+    setIsAddingModule(false)
+  }, [])
 
   const handleRenameModule = useCallback((moduleId: string) => {
-    setEditingModuleId(moduleId);
-  }, []);
+    setEditingModuleId(moduleId)
+  }, [])
 
   const handleSaveModuleRename = useCallback(
     async (moduleId: string, newTitle: string) => {
-      if (!newTitle.trim()) return;
+      if (!newTitle.trim()) return
 
-      const oldTitle = modules.find((m) => m.id === moduleId)?.title;
+      const oldTitle = modules.find((m) => m.id === moduleId)?.title
 
       // Optimistic update
       setModules((prev) =>
         prev.map((m) =>
-          m.id === moduleId ? { ...m, title: newTitle.trim() } : m
-        )
-      );
-      setEditingModuleId(null);
+          m.id === moduleId ? { ...m, title: newTitle.trim() } : m,
+        ),
+      )
+      setEditingModuleId(null)
 
       try {
         await updateModule(projectId, courseId, moduleId, {
           title: newTitle.trim(),
-        });
+        })
       } catch (error) {
-        console.error("Failed to rename module:", error);
+        console.error('Failed to rename module:', error)
         // Rollback
         setModules((prev) =>
           prev.map((m) =>
-            m.id === moduleId ? { ...m, title: oldTitle || m.title } : m
-          )
-        );
+            m.id === moduleId ? { ...m, title: oldTitle || m.title } : m,
+          ),
+        )
       }
     },
-    [projectId, courseId, modules]
-  );
+    [projectId, courseId, modules],
+  )
 
   const handleCancelModuleRename = useCallback(() => {
-    setEditingModuleId(null);
-  }, []);
+    setEditingModuleId(null)
+  }, [])
 
   const handleDuplicateModule = useCallback(
     async (moduleId: string) => {
-      const originalModule = modules.find((m) => m.id === moduleId);
-      if (!originalModule) return;
+      const originalModule = modules.find((m) => m.id === moduleId)
+      if (!originalModule) return
 
-      const tempId = `temp-dup-${Date.now()}`;
+      const tempId = `temp-dup-${Date.now()}`
       const duplicatedModule: LocalModule = {
         ...originalModule,
         id: tempId,
@@ -293,23 +293,23 @@ export function ManualCourseBuilder({
           title: `${l.title} (copy)`,
         })),
         _isOptimistic: true,
-      };
+      }
 
       // Optimistic update
       setModules((prev) => {
-        const idx = prev.findIndex((m) => m.id === moduleId);
-        const newModules = [...prev];
-        newModules.splice(idx + 1, 0, duplicatedModule);
-        return newModules;
-      });
-      setProcessingModuleIds((prev) => new Set(prev).add(tempId));
+        const idx = prev.findIndex((m) => m.id === moduleId)
+        const newModules = [...prev]
+        newModules.splice(idx + 1, 0, duplicatedModule)
+        return newModules
+      })
+      setProcessingModuleIds((prev) => new Set(prev).add(tempId))
 
       try {
         // Create the module
         const newModule = await createModule(projectId, courseId, {
           title: duplicatedModule.title,
           description: originalModule.description ?? undefined,
-        });
+        })
 
         // Create lessons (in parallel for speed)
         const lessonPromises = originalModule.lessons.map((lesson) =>
@@ -322,9 +322,9 @@ export function ManualCourseBuilder({
             fileUrl: lesson.fileUrl ?? undefined,
             isFree: lesson.isFree,
             duration: lesson.duration ?? undefined,
-          })
-        );
-        const createdLessons = await Promise.all(lessonPromises);
+          }),
+        )
+        const createdLessons = await Promise.all(lessonPromises)
 
         // Update with real data
         setModules((prev) =>
@@ -335,65 +335,65 @@ export function ManualCourseBuilder({
                   lessons: createdLessons,
                   _isOptimistic: false,
                 }
-              : m
-          )
-        );
+              : m,
+          ),
+        )
       } catch (error) {
-        console.error("Failed to duplicate module:", error);
+        console.error('Failed to duplicate module:', error)
         // Rollback
-        setModules((prev) => prev.filter((m) => m.id !== tempId));
+        setModules((prev) => prev.filter((m) => m.id !== tempId))
       } finally {
         setProcessingModuleIds((prev) => {
-          const next = new Set(prev);
-          next.delete(tempId);
-          return next;
-        });
+          const next = new Set(prev)
+          next.delete(tempId)
+          return next
+        })
       }
     },
-    [modules, projectId, courseId]
-  );
+    [modules, projectId, courseId],
+  )
 
   const handleDeleteModule = useCallback(
     async (moduleId: string) => {
-      const moduleToDelete = modules.find((m) => m.id === moduleId);
-      if (!moduleToDelete) return;
+      const moduleToDelete = modules.find((m) => m.id === moduleId)
+      if (!moduleToDelete) return
 
       // Optimistic update
-      setModules((prev) => prev.filter((m) => m.id !== moduleId));
+      setModules((prev) => prev.filter((m) => m.id !== moduleId))
 
       try {
-        await deleteModule(projectId, courseId, moduleId);
+        await deleteModule(projectId, courseId, moduleId)
       } catch (error) {
-        console.error("Failed to delete module:", error);
+        console.error('Failed to delete module:', error)
         // Rollback - add back at original position
         setModules((prev) => {
-          const newModules = [...prev];
-          const originalIdx = serverModules.findIndex((m) => m.id === moduleId);
-          newModules.splice(originalIdx, 0, moduleToDelete);
-          return newModules;
-        });
+          const newModules = [...prev]
+          const originalIdx = serverModules.findIndex((m) => m.id === moduleId)
+          newModules.splice(originalIdx, 0, moduleToDelete)
+          return newModules
+        })
       }
     },
-    [modules, projectId, courseId, serverModules]
-  );
+    [modules, projectId, courseId, serverModules],
+  )
 
   // Lesson operations with optimistic updates
   const handleStartAddLesson = useCallback((moduleId: string) => {
-    setAddingLessonToModuleId(moduleId);
-    setNewLessonTitle("");
-  }, []);
+    setAddingLessonToModuleId(moduleId)
+    setNewLessonTitle('')
+  }, [])
 
   const handleAddLesson = useCallback(
     async (moduleId: string) => {
-      if (!newLessonTitle.trim()) return;
+      if (!newLessonTitle.trim()) return
 
-      const tempId = `temp-lesson-${Date.now()}`;
-      const module = modules.find((m) => m.id === moduleId);
+      const tempId = `temp-lesson-${Date.now()}`
+      const module = modules.find((m) => m.id === moduleId)
       const optimisticLesson: LocalLesson = {
         id: tempId,
         title: newLessonTitle.trim(),
         description: null,
-        contentType: "TEXT",
+        contentType: 'TEXT',
         videoUrl: null,
         textContent: null,
         fileUrl: null,
@@ -401,24 +401,24 @@ export function ManualCourseBuilder({
         isFree: false,
         order: (module?.lessons.length ?? 0) + 1,
         _isOptimistic: true,
-      };
+      }
 
       // Optimistic update
       setModules((prev) =>
         prev.map((m) =>
           m.id === moduleId
             ? { ...m, lessons: [...m.lessons, optimisticLesson] }
-            : m
-        )
-      );
-      setNewLessonTitle("");
-      setAddingLessonToModuleId(null);
+            : m,
+        ),
+      )
+      setNewLessonTitle('')
+      setAddingLessonToModuleId(null)
 
       try {
         const created = await createLesson(projectId, courseId, moduleId, {
           title: optimisticLesson.title,
-          contentType: "TEXT",
-        });
+          contentType: 'TEXT',
+        })
         // Replace temp with real
         setModules((prev) =>
           prev.map((m) =>
@@ -426,14 +426,14 @@ export function ManualCourseBuilder({
               ? {
                   ...m,
                   lessons: m.lessons.map((l) =>
-                    l.id === tempId ? { ...created, _isOptimistic: false } : l
+                    l.id === tempId ? { ...created, _isOptimistic: false } : l,
                   ),
                 }
-              : m
-          )
-        );
+              : m,
+          ),
+        )
       } catch (error) {
-        console.error("Failed to create lesson:", error);
+        console.error('Failed to create lesson:', error)
         // Rollback
         setModules((prev) =>
           prev.map((m) =>
@@ -442,29 +442,29 @@ export function ManualCourseBuilder({
                   ...m,
                   lessons: m.lessons.filter((l) => l.id !== tempId),
                 }
-              : m
-          )
-        );
+              : m,
+          ),
+        )
       }
     },
-    [newLessonTitle, modules, projectId, courseId]
-  );
+    [newLessonTitle, modules, projectId, courseId],
+  )
 
   const handleCancelAddLesson = useCallback(() => {
-    setNewLessonTitle("");
-    setAddingLessonToModuleId(null);
-  }, []);
+    setNewLessonTitle('')
+    setAddingLessonToModuleId(null)
+  }, [])
 
   const handleRenameLesson = useCallback((lessonId: string) => {
-    setEditingLessonId(lessonId);
-  }, []);
+    setEditingLessonId(lessonId)
+  }, [])
 
   const handleSaveLessonRename = useCallback(
     async (moduleId: string, lessonId: string, newTitle: string) => {
-      if (!newTitle.trim()) return;
+      if (!newTitle.trim()) return
 
-      const module = modules.find((m) => m.id === moduleId);
-      const oldTitle = module?.lessons.find((l) => l.id === lessonId)?.title;
+      const module = modules.find((m) => m.id === moduleId)
+      const oldTitle = module?.lessons.find((l) => l.id === lessonId)?.title
 
       // Optimistic update
       setModules((prev) =>
@@ -473,20 +473,20 @@ export function ManualCourseBuilder({
             ? {
                 ...m,
                 lessons: m.lessons.map((l) =>
-                  l.id === lessonId ? { ...l, title: newTitle.trim() } : l
+                  l.id === lessonId ? { ...l, title: newTitle.trim() } : l,
                 ),
               }
-            : m
-        )
-      );
-      setEditingLessonId(null);
+            : m,
+        ),
+      )
+      setEditingLessonId(null)
 
       try {
         await updateLesson(projectId, courseId, moduleId, lessonId, {
           title: newTitle.trim(),
-        });
+        })
       } catch (error) {
-        console.error("Failed to rename lesson:", error);
+        console.error('Failed to rename lesson:', error)
         // Rollback
         setModules((prev) =>
           prev.map((m) =>
@@ -494,47 +494,49 @@ export function ManualCourseBuilder({
               ? {
                   ...m,
                   lessons: m.lessons.map((l) =>
-                    l.id === lessonId ? { ...l, title: oldTitle || l.title } : l
+                    l.id === lessonId
+                      ? { ...l, title: oldTitle || l.title }
+                      : l,
                   ),
                 }
-              : m
-          )
-        );
+              : m,
+          ),
+        )
       }
     },
-    [projectId, courseId, modules]
-  );
+    [projectId, courseId, modules],
+  )
 
   const handleCancelLessonRename = useCallback(() => {
-    setEditingLessonId(null);
-  }, []);
+    setEditingLessonId(null)
+  }, [])
 
   const handleDuplicateLesson = useCallback(
     async (moduleId: string, lessonId: string) => {
-      const module = modules.find((m) => m.id === moduleId);
-      const originalLesson = module?.lessons.find((l) => l.id === lessonId);
-      if (!originalLesson) return;
+      const module = modules.find((m) => m.id === moduleId)
+      const originalLesson = module?.lessons.find((l) => l.id === lessonId)
+      if (!originalLesson) return
 
-      const tempId = `temp-dup-lesson-${Date.now()}`;
+      const tempId = `temp-dup-lesson-${Date.now()}`
       const duplicatedLesson: LocalLesson = {
         ...originalLesson,
         id: tempId,
         title: `${originalLesson.title} (copy)`,
         order: (module?.lessons.length ?? 0) + 1,
         _isOptimistic: true,
-      };
+      }
 
       // Optimistic update
       setModules((prev) =>
         prev.map((m) => {
-          if (m.id !== moduleId) return m;
-          const idx = m.lessons.findIndex((l) => l.id === lessonId);
-          const newLessons = [...m.lessons];
-          newLessons.splice(idx + 1, 0, duplicatedLesson);
-          return { ...m, lessons: newLessons };
-        })
-      );
-      setProcessingLessonIds((prev) => new Set(prev).add(tempId));
+          if (m.id !== moduleId) return m
+          const idx = m.lessons.findIndex((l) => l.id === lessonId)
+          const newLessons = [...m.lessons]
+          newLessons.splice(idx + 1, 0, duplicatedLesson)
+          return { ...m, lessons: newLessons }
+        }),
+      )
+      setProcessingLessonIds((prev) => new Set(prev).add(tempId))
 
       try {
         const created = await createLesson(projectId, courseId, moduleId, {
@@ -546,7 +548,7 @@ export function ManualCourseBuilder({
           fileUrl: originalLesson.fileUrl ?? undefined,
           isFree: originalLesson.isFree,
           duration: originalLesson.duration ?? undefined,
-        });
+        })
         // Replace temp with real
         setModules((prev) =>
           prev.map((m) =>
@@ -554,14 +556,14 @@ export function ManualCourseBuilder({
               ? {
                   ...m,
                   lessons: m.lessons.map((l) =>
-                    l.id === tempId ? { ...created, _isOptimistic: false } : l
+                    l.id === tempId ? { ...created, _isOptimistic: false } : l,
                   ),
                 }
-              : m
-          )
-        );
+              : m,
+          ),
+        )
       } catch (error) {
-        console.error("Failed to duplicate lesson:", error);
+        console.error('Failed to duplicate lesson:', error)
         // Rollback
         setModules((prev) =>
           prev.map((m) =>
@@ -570,25 +572,25 @@ export function ManualCourseBuilder({
                   ...m,
                   lessons: m.lessons.filter((l) => l.id !== tempId),
                 }
-              : m
-          )
-        );
+              : m,
+          ),
+        )
       } finally {
         setProcessingLessonIds((prev) => {
-          const next = new Set(prev);
-          next.delete(tempId);
-          return next;
-        });
+          const next = new Set(prev)
+          next.delete(tempId)
+          return next
+        })
       }
     },
-    [modules, projectId, courseId]
-  );
+    [modules, projectId, courseId],
+  )
 
   const handleDeleteLesson = useCallback(
     async (moduleId: string, lessonId: string) => {
-      const module = modules.find((m) => m.id === moduleId);
-      const lessonToDelete = module?.lessons.find((l) => l.id === lessonId);
-      if (!lessonToDelete) return;
+      const module = modules.find((m) => m.id === moduleId)
+      const lessonToDelete = module?.lessons.find((l) => l.id === lessonId)
+      if (!lessonToDelete) return
 
       // Optimistic update
       setModules((prev) =>
@@ -598,30 +600,30 @@ export function ManualCourseBuilder({
                 ...m,
                 lessons: m.lessons.filter((l) => l.id !== lessonId),
               }
-            : m
-        )
-      );
+            : m,
+        ),
+      )
 
       try {
-        await deleteLesson(projectId, courseId, moduleId, lessonId);
+        await deleteLesson(projectId, courseId, moduleId, lessonId)
       } catch (error) {
-        console.error("Failed to delete lesson:", error);
+        console.error('Failed to delete lesson:', error)
         // Rollback
-        const originalModule = serverModules.find((m) => m.id === moduleId);
+        const originalModule = serverModules.find((m) => m.id === moduleId)
         const originalIdx =
-          originalModule?.lessons.findIndex((l) => l.id === lessonId) ?? 0;
+          originalModule?.lessons.findIndex((l) => l.id === lessonId) ?? 0
         setModules((prev) =>
           prev.map((m) => {
-            if (m.id !== moduleId) return m;
-            const newLessons = [...m.lessons];
-            newLessons.splice(originalIdx, 0, lessonToDelete);
-            return { ...m, lessons: newLessons };
-          })
-        );
+            if (m.id !== moduleId) return m
+            const newLessons = [...m.lessons]
+            newLessons.splice(originalIdx, 0, lessonToDelete)
+            return { ...m, lessons: newLessons }
+          }),
+        )
       }
     },
-    [modules, projectId, courseId, serverModules]
-  );
+    [modules, projectId, courseId, serverModules],
+  )
 
   return (
     <div className="space-y-6">
@@ -639,8 +641,8 @@ export function ManualCourseBuilder({
                   value={newModuleTitle}
                   onChange={(e) => setNewModuleTitle(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") handleAddModule();
-                    if (e.key === "Escape") handleCancelAddModule();
+                    if (e.key === 'Enter') handleAddModule()
+                    if (e.key === 'Escape') handleCancelAddModule()
                   }}
                   disabled={isCreatingModule}
                   className="flex-1 h-13 active:border-muted-foreground/70 rounded-sm border-muted-foreground/60 shadow-none bg-white text-lg"
@@ -666,7 +668,7 @@ export function ManualCourseBuilder({
                       Saving...
                     </>
                   ) : (
-                    "Save"
+                    'Save'
                   )}
                 </Button>
               </div>
@@ -705,7 +707,7 @@ export function ManualCourseBuilder({
                 moduleIndex={moduleIndex}
                 isAddingLesson={addingLessonToModuleId === module.id}
                 newLessonTitle={
-                  addingLessonToModuleId === module.id ? newLessonTitle : ""
+                  addingLessonToModuleId === module.id ? newLessonTitle : ''
                 }
                 onNewLessonTitleChange={setNewLessonTitle}
                 onStartAddLesson={() => handleStartAddLesson(module.id)}
@@ -756,8 +758,8 @@ export function ManualCourseBuilder({
                   value={newModuleTitle}
                   onChange={(e) => setNewModuleTitle(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") handleAddModule();
-                    if (e.key === "Escape") handleCancelAddModule();
+                    if (e.key === 'Enter') handleAddModule()
+                    if (e.key === 'Escape') handleCancelAddModule()
                   }}
                   disabled={isCreatingModule}
                   className="flex-1 h-13 shadow-none rounded-sm border-muted-foreground/60 bg-white text-lg"
@@ -783,7 +785,7 @@ export function ManualCourseBuilder({
                       Saving...
                     </>
                   ) : (
-                    "Save"
+                    'Save'
                   )}
                 </Button>
               </div>
@@ -806,7 +808,7 @@ export function ManualCourseBuilder({
         </>
       )}
     </div>
-  );
+  )
 }
 
 // Module Row Component with Reorder.Item
@@ -837,45 +839,45 @@ function ModuleRow({
   editingLessonId,
   isReordering,
 }: {
-  module: LocalModule;
-  moduleIndex: number;
-  isAddingLesson: boolean;
-  newLessonTitle: string;
-  onNewLessonTitleChange: (title: string) => void;
-  onStartAddLesson: () => void;
-  onAddLesson: () => void;
-  onCancelAddLesson: () => void;
-  onRename: () => void;
-  onSaveRename: (title: string) => void;
-  onCancelRename: () => void;
-  onDuplicate: () => void;
-  onDelete: () => void;
-  onNavigateToLesson: (lessonId: string) => void;
-  onRenameLesson: (lessonId: string) => void;
-  onSaveLessonRename: (lessonId: string, title: string) => void;
-  onCancelLessonRename: (lessonId: string) => void;
-  onDuplicateLesson: (lessonId: string) => void;
-  onDeleteLesson: (lessonId: string) => void;
-  onLessonReorder: (newLessons: LocalLesson[]) => void;
-  isProcessing: boolean;
-  processingLessonIds: Set<string>;
-  isEditing: boolean;
-  editingLessonId: string | null;
-  isReordering: boolean;
+  module: LocalModule
+  moduleIndex: number
+  isAddingLesson: boolean
+  newLessonTitle: string
+  onNewLessonTitleChange: (title: string) => void
+  onStartAddLesson: () => void
+  onAddLesson: () => void
+  onCancelAddLesson: () => void
+  onRename: () => void
+  onSaveRename: (title: string) => void
+  onCancelRename: () => void
+  onDuplicate: () => void
+  onDelete: () => void
+  onNavigateToLesson: (lessonId: string) => void
+  onRenameLesson: (lessonId: string) => void
+  onSaveLessonRename: (lessonId: string, title: string) => void
+  onCancelLessonRename: (lessonId: string) => void
+  onDuplicateLesson: (lessonId: string) => void
+  onDeleteLesson: (lessonId: string) => void
+  onLessonReorder: (newLessons: LocalLesson[]) => void
+  isProcessing: boolean
+  processingLessonIds: Set<string>
+  isEditing: boolean
+  editingLessonId: string | null
+  isReordering: boolean
 }) {
-  const [editTitle, setEditTitle] = useState(module.title);
-  const [isAddingLessonLoading, setIsAddingLessonLoading] = useState(false);
-  const y = useMotionValue(0);
-  const dragControls = useDragControls();
+  const [editTitle, setEditTitle] = useState(module.title)
+  const [isAddingLessonLoading, setIsAddingLessonLoading] = useState(false)
+  const y = useMotionValue(0)
+  const dragControls = useDragControls()
 
   const handleAddLessonWithLoading = async () => {
-    setIsAddingLessonLoading(true);
+    setIsAddingLessonLoading(true)
     try {
-      await onAddLesson();
+      await onAddLesson()
     } finally {
-      setIsAddingLessonLoading(false);
+      setIsAddingLessonLoading(false)
     }
-  };
+  }
 
   return (
     <Reorder.Item
@@ -885,13 +887,13 @@ function ModuleRow({
       dragListener={false}
       dragControls={dragControls}
       className={cn(
-        "rounded-md border border-neutral-300 bg-white overflow-hidden",
-        isProcessing && "opacity-60",
-        isReordering && "cursor-grabbing"
+        'rounded-md border border-neutral-300 bg-white overflow-hidden',
+        isProcessing && 'opacity-60',
+        isReordering && 'cursor-grabbing',
       )}
       whileDrag={{
         scale: 1.02,
-        boxShadow: "0 8px 20px rgba(0,0,0,0.12)",
+        boxShadow: '0 8px 20px rgba(0,0,0,0.12)',
         zIndex: 50,
       }}
     >
@@ -900,7 +902,7 @@ function ModuleRow({
         {/* Module Reorder column - spans full height */}
         <div
           className="flex items-start justify-center py-5 px-1.5 bg-neutral-200/60 border-r border-slate-200 cursor-grab active:cursor-grabbing select-none"
-          style={{ touchAction: "none" }}
+          style={{ touchAction: 'none' }}
           onPointerDown={(e) => dragControls.start(e)}
         >
           <RxDragHandleDots2 className="size-6 text-foreground/85 hover:text-foreground" />
@@ -917,8 +919,8 @@ function ModuleRow({
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") onSaveRename(editTitle);
-                    if (e.key === "Escape") onCancelRename();
+                    if (e.key === 'Enter') onSaveRename(editTitle)
+                    if (e.key === 'Escape') onCancelRename()
                   }}
                   className="flex-1 h-13 rounded-sm border-muted-foreground/60 shadow-none bg-white text-lg"
                 />
@@ -946,8 +948,8 @@ function ModuleRow({
                     Module {moduleIndex + 1}: {module.title}
                   </p>
                   <p className="text-sm text-foreground/50 mt-0.5">
-                    {module.lessons.length}{" "}
-                    {module.lessons.length === 1 ? "lesson" : "lessons"}
+                    {module.lessons.length}{' '}
+                    {module.lessons.length === 1 ? 'lesson' : 'lessons'}
                   </p>
                 </div>
 
@@ -1033,8 +1035,8 @@ function ModuleRow({
                     value={newLessonTitle}
                     onChange={(e) => onNewLessonTitleChange(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") handleAddLessonWithLoading();
-                      if (e.key === "Escape") onCancelAddLesson();
+                      if (e.key === 'Enter') handleAddLessonWithLoading()
+                      if (e.key === 'Escape') onCancelAddLesson()
                     }}
                     disabled={isAddingLessonLoading}
                     className="flex-1 h-12 rounded-sm border-muted-foreground/60 shadow-none bg-white text-sm"
@@ -1060,7 +1062,7 @@ function ModuleRow({
                         Saving...
                       </>
                     ) : (
-                      "Save"
+                      'Save'
                     )}
                   </Button>
                 </div>
@@ -1081,65 +1083,65 @@ function ModuleRow({
         </div>
       </div>
     </Reorder.Item>
-  );
+  )
 }
 
 // Helper to get content status display
 function getContentStatusDisplay(lesson: LocalLesson) {
-  const contentType = lesson.contentType?.toUpperCase();
+  const contentType = lesson.contentType?.toUpperCase()
 
   // Check for actual content based on content type
-  if (contentType === "VIDEO" && lesson.videoUrl) {
-    return { icon: FaVideo, text: "video", color: "text-lime-800/70" };
+  if (contentType === 'VIDEO' && lesson.videoUrl) {
+    return { icon: FaVideo, text: 'video', color: 'text-lime-800/70' }
   }
-  if (contentType === "TEXT" && lesson.textContent) {
+  if (contentType === 'TEXT' && lesson.textContent) {
     return {
       icon: MdTypeSpecimen,
-      text: "text",
-      color: "text-lime-800/70",
-    };
+      text: 'text',
+      color: 'text-lime-800/70',
+    }
   }
-  if (contentType === "FILE" && lesson.fileUrl) {
+  if (contentType === 'FILE' && lesson.fileUrl) {
     return {
       icon: BsFileEarmarkPdfFill,
-      text: "pdf",
-      color: "text-lime-800/70",
-    };
+      text: 'pdf',
+      color: 'text-lime-800/70',
+    }
   }
-  if (contentType === "QUIZ") {
+  if (contentType === 'QUIZ') {
     return {
       icon: BsQuestionCircleFill,
-      text: "quiz",
-      color: "text-lime-800/70",
-    };
+      text: 'quiz',
+      color: 'text-lime-800/70',
+    }
   }
-  if (contentType === "MOCK_TEST") {
+  if (contentType === 'MOCK_TEST') {
     return {
       icon: FaPenToSquare,
-      text: "mock test",
-      color: "text-lime-800/70",
-    };
+      text: 'mock test',
+      color: 'text-lime-800/70',
+    }
   }
-  if (contentType === "ASSIGNMENT") {
+  if (contentType === 'ASSIGNMENT') {
     return {
       icon: MdAssignment,
-      text: "assignment",
-      color: "text-lime-800/70",
-    };
+      text: 'assignment',
+      color: 'text-lime-800/70',
+    }
   }
-  if (contentType === "YOUTUBE") {
+  if (contentType === 'YOUTUBE') {
     return {
       icon: FaYoutube,
-      text: "YouTube video",
-      color: "text-lime-800/70",
-    };
+      text: 'YouTube video',
+      color: 'text-lime-800/70',
+    }
   }
-  if (contentType === "RESOURCES") {
-    return { icon: FolderOpen, text: "resources", color: "text-lime-800/70" };
+  if (contentType === 'RESOURCES') {
+    return { icon: FolderOpen, text: 'resources', color: 'text-lime-800/70' }
   }
 
   // Default: no content regardless of contentType
-  return { icon: Circle, text: "Empty", color: "text-foreground/40" };
+  return { icon: Circle, text: 'Empty', color: 'text-foreground/40' }
 }
 
 // Lesson Row Component with Reorder.Item
@@ -1155,22 +1157,22 @@ function LessonRow({
   isProcessing,
   isEditing,
 }: {
-  lesson: LocalLesson;
-  lessonIndex: number;
-  onNavigate: () => void;
-  onRename: () => void;
-  onSaveRename: (title: string) => void;
-  onCancelRename: () => void;
-  onDuplicate: () => void;
-  onDelete: () => void;
-  isProcessing: boolean;
-  isEditing: boolean;
+  lesson: LocalLesson
+  lessonIndex: number
+  onNavigate: () => void
+  onRename: () => void
+  onSaveRename: (title: string) => void
+  onCancelRename: () => void
+  onDuplicate: () => void
+  onDelete: () => void
+  isProcessing: boolean
+  isEditing: boolean
 }) {
-  const [editTitle, setEditTitle] = useState(lesson.title);
-  const contentStatus = getContentStatusDisplay(lesson);
-  const ContentIcon = contentStatus.icon;
-  const y = useMotionValue(0);
-  const dragControls = useDragControls();
+  const [editTitle, setEditTitle] = useState(lesson.title)
+  const contentStatus = getContentStatusDisplay(lesson)
+  const ContentIcon = contentStatus.icon
+  const y = useMotionValue(0)
+  const dragControls = useDragControls()
 
   return (
     <Reorder.Item
@@ -1180,21 +1182,21 @@ function LessonRow({
       dragListener={false}
       dragControls={dragControls}
       className={cn(
-        "group flex items-center gap-4 px-3 py-4 bg-white",
-        "hover:bg-neutral-50 transition-colors",
-        isProcessing && "opacity-60"
+        'group flex items-center gap-4 px-3 py-4 bg-white',
+        'hover:bg-neutral-50 transition-colors',
+        isProcessing && 'opacity-60',
       )}
       whileDrag={{
         scale: 1.01,
-        backgroundColor: "#f8fafc",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+        backgroundColor: '#f8fafc',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
         zIndex: 50,
       }}
     >
       {/* Lesson reorder handle - inline */}
       <div
         className="cursor-grab active:cursor-grabbing p-1 -m-1 select-none"
-        style={{ touchAction: "none" }}
+        style={{ touchAction: 'none' }}
         onPointerDown={(e) => dragControls.start(e)}
       >
         <RxDragHandleDots2 className="size-6 text-foreground/70 hover:text-foreground/60" />
@@ -1207,8 +1209,8 @@ function LessonRow({
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") onSaveRename(editTitle);
-              if (e.key === "Escape") onCancelRename();
+              if (e.key === 'Enter') onSaveRename(editTitle)
+              if (e.key === 'Escape') onCancelRename()
             }}
             className="flex-1 h-12 rounded-sm border-muted-foreground/60 shadow-none bg-white text-sm"
           />
@@ -1242,8 +1244,8 @@ function LessonRow({
             </button>
             <p
               className={cn(
-                "flex items-center gap-1 text-xs mt-1",
-                contentStatus.color
+                'flex items-center gap-1 text-xs mt-1',
+                contentStatus.color,
               )}
             >
               <ContentIcon className="size-3.5" />
@@ -1290,5 +1292,5 @@ function LessonRow({
         </>
       )}
     </Reorder.Item>
-  );
+  )
 }

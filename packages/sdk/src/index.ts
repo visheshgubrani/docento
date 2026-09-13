@@ -41,11 +41,7 @@ export class DocentoApiError extends Error {
   readonly requestId: string | null
   readonly details: ApiError['details']
 
-  constructor(
-    status: number,
-    error: ApiError,
-    requestId: string | null,
-  ) {
+  constructor(status: number, error: ApiError, requestId: string | null) {
     super(error.message)
     this.name = 'DocentoApiError'
     this.code = error.code
@@ -109,7 +105,8 @@ export class DocentoClient {
     const response = await this.fetchImpl(this.buildUrl(path, options.query), {
       method: options.method ?? 'GET',
       headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      body:
+        options.body === undefined ? undefined : JSON.stringify(options.body),
       signal: options.signal,
     })
 

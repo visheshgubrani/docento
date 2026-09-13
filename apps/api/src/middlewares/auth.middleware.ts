@@ -19,7 +19,7 @@ const getSessionCached = async (req: Request) => {
   const session = await auth.api.getSession({
     headers: fromNodeHeaders(req.headers),
   })
-    ; (req as any).__cachedSession = session ?? null
+  ;(req as any).__cachedSession = session ?? null
   return session
 }
 
@@ -29,7 +29,7 @@ interface EndUserJwtPayload extends jwt.JwtPayload {
 }
 
 const PROJECT_ACCESS_CACHE_TTL_MS = Number(
-  process.env.PROJECT_ACCESS_CACHE_TTL_MS ?? '30000'
+  process.env.PROJECT_ACCESS_CACHE_TTL_MS ?? '30000',
 )
 
 type ProjectAccessCacheEntry = {
@@ -60,7 +60,7 @@ const getCachedProjectAccess = (key: string) => {
 const setCachedProjectAccess = (
   key: string,
   project: Project,
-  membership?: ProjectMember
+  membership?: ProjectMember,
 ) => {
   if (PROJECT_ACCESS_CACHE_TTL_MS <= 0) return
 
@@ -108,12 +108,12 @@ const isPublishableKey = (key: string | undefined): boolean =>
 const publishableReadOnlyError = (method: string) =>
   new ApiError(
     403,
-    `Publishable keys are read-only; ${method} is not permitted with one. Use a secret key from a server, or a learner session.`
+    `Publishable keys are read-only; ${method} is not permitted with one. Use a secret key from a server, or a learner session.`,
   )
 
 const resolveApiKey = async (
   providedKey: string,
-  allowPublishable: boolean
+  allowPublishable: boolean,
 ) => {
   const key = providedKey.trim()
   if (!key) return null
@@ -149,7 +149,7 @@ const resolveApiKey = async (
 
 const resolveApiKeyFromRequest = async (
   req: Request,
-  allowPublishable: boolean
+  allowPublishable: boolean,
 ) => {
   const providedKey = extractApiKey(req)
   if (!providedKey) {
@@ -164,7 +164,7 @@ const resolveApiKeyFromRequest = async (
 export const authMiddleware = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const session = await auth.api.getSession({
@@ -188,7 +188,7 @@ export const authMiddleware = async (
 export const requireAuth = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const session = await auth.api.getSession({
@@ -212,7 +212,7 @@ export const requireAuth = async (
     // ...to fetch the most up-to-date user data from our database.
     if (!userFromDb) {
       return next(
-        new ApiError(401, 'Unauthorized: User for this session not found.')
+        new ApiError(401, 'Unauthorized: User for this session not found.'),
       )
     }
 
@@ -232,12 +232,12 @@ export const requireAuth = async (
 export const requireApiKey = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { key, project, apiKeyAuth } = await resolveApiKeyFromRequest(
       req,
-      true
+      true,
     )
 
     if (!key || !project || !apiKeyAuth) {
@@ -263,7 +263,7 @@ export const requireApiKey = async (
 export const requireSecretApiKey = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const providedKey = extractApiKey(req)
@@ -272,8 +272,8 @@ export const requireSecretApiKey = async (
       return next(
         new ApiError(
           401,
-          'Unauthorized: Secret API key is required for this endpoint.'
-        )
+          'Unauthorized: Secret API key is required for this endpoint.',
+        ),
       )
     }
 
@@ -281,8 +281,8 @@ export const requireSecretApiKey = async (
       return next(
         new ApiError(
           401,
-          'Unauthorized: Publishable keys cannot be used for this endpoint.'
-        )
+          'Unauthorized: Publishable keys cannot be used for this endpoint.',
+        ),
       )
     }
 
@@ -304,7 +304,7 @@ export const requireSecretApiKey = async (
 export const verifyManagedUser = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     // ✅ Check BOTH cookie and Authorization header
@@ -314,13 +314,13 @@ export const verifyManagedUser = async (
 
     if (!token) {
       return next(
-        new ApiError(401, 'Unauthorized: Token is missing. Please login.')
+        new ApiError(401, 'Unauthorized: Token is missing. Please login.'),
       )
     }
 
     const payload = jwt.verify(
       token,
-      process.env.JWT_SECRET!
+      process.env.JWT_SECRET!,
     ) as EndUserJwtPayload
 
     const endUser = await prisma.endUser.findUnique({
@@ -335,8 +335,8 @@ export const verifyManagedUser = async (
       return next(
         new ApiError(
           401,
-          'Unauthorized: User not found or is not a managed user.'
-        )
+          'Unauthorized: User not found or is not a managed user.',
+        ),
       )
     }
 
@@ -344,14 +344,14 @@ export const verifyManagedUser = async (
       return next(
         new ApiError(
           403,
-          'Forbidden: This account has been banned. Please contact support.'
-        )
+          'Forbidden: This account has been banned. Please contact support.',
+        ),
       )
     }
 
     if (endUser.projectId !== payload.projectId) {
       return next(
-        new ApiError(401, 'Unauthorized: Invalid token (project mismatch).')
+        new ApiError(401, 'Unauthorized: Invalid token (project mismatch).'),
       )
     }
 
@@ -375,13 +375,13 @@ export const verifyManagedUser = async (
 export const authorizeProjectAccess = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const mwStart = process.hrtime.bigint()
   const recordTiming = () => {
     if ((req as any).__mwTimings) {
       const ms = Number(process.hrtime.bigint() - mwStart) / 1_000_000
-        ; (req as any).__mwTimings.push({ name: 'authProjectAccess', ms })
+      ;(req as any).__mwTimings.push({ name: 'authProjectAccess', ms })
     }
   }
   try {
@@ -471,7 +471,7 @@ export const authorizeProjectAccess = async (
         // Or strict blocking. Strict is fine for this middleware.
         recordTiming()
         return next(
-          new ApiError(400, 'Project ID is required in URL parameters.')
+          new ApiError(400, 'Project ID is required in URL parameters.'),
         )
       }
 
@@ -505,9 +505,7 @@ export const authorizeProjectAccess = async (
       if (projectWithAccess) {
         const { members, ...project } = projectWithAccess
         const membership =
-          projectWithAccess.ownerId === session.user.id
-            ? undefined
-            : members[0]
+          projectWithAccess.ownerId === session.user.id ? undefined : members[0]
 
         setCachedProjectAccess(cacheKey, project, membership)
 
@@ -536,7 +534,7 @@ export const authorizeProjectAccess = async (
 export const authorizeProjectMember = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { projectId } = req.params
@@ -587,7 +585,9 @@ export const authorizeProjectMember = async (
       return next()
     }
 
-    return next(new ApiError(403, 'Forbidden: You do not have access to this project'))
+    return next(
+      new ApiError(403, 'Forbidden: You do not have access to this project'),
+    )
   } catch (error) {
     console.error('[AUTHORIZE_PROJECT_MEMBER_ERROR]', error)
     return next(new ApiError(500, 'Internal Server Error'))
@@ -602,7 +602,7 @@ export const authorizeProjectMember = async (
 export const requireProjectOwner = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const project = req.project
   const user = req.user
@@ -614,12 +614,22 @@ export const requireProjectOwner = async (
 
   // If there's a membership record, user is NOT the owner
   if (membership) {
-    return next(new ApiError(403, 'Forbidden: Only project owners can perform this action'))
+    return next(
+      new ApiError(
+        403,
+        'Forbidden: Only project owners can perform this action',
+      ),
+    )
   }
 
   // Double-check ownership
   if (project.ownerId !== user.id) {
-    return next(new ApiError(403, 'Forbidden: Only project owners can perform this action'))
+    return next(
+      new ApiError(
+        403,
+        'Forbidden: Only project owners can perform this action',
+      ),
+    )
   }
 
   next()
@@ -628,7 +638,7 @@ export const requireProjectOwner = async (
 export const authorizeLessonAccess = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { lessonId } = req.params
@@ -680,8 +690,8 @@ export const authorizeLessonAccess = async (
       return next(
         new ApiError(
           403,
-          'Forbidden: You are not enrolled in this course or your access has expired.'
-        )
+          'Forbidden: You are not enrolled in this course or your access has expired.',
+        ),
       )
     }
 
@@ -696,7 +706,7 @@ export const authorizeLessonAccess = async (
 export const handleDelegatedUser = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const project = req.project
@@ -710,8 +720,8 @@ export const handleDelegatedUser = async (
       return next(
         new ApiError(
           403,
-          'Forbidden: This project is not configured for delegated authentication.'
-        )
+          'Forbidden: This project is not configured for delegated authentication.',
+        ),
       )
     }
 

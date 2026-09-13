@@ -1,6 +1,6 @@
-import type { Metadata, Viewport } from "next";
-import { ThemeProvider } from "@/components/theme-provider";
-import { siteConfig } from "@/config/site";
+import type { Metadata, Viewport } from 'next'
+import { ThemeProvider } from '@/components/theme-provider'
+import { siteConfig } from '@/config/site'
 import {
   fontSans,
   fontDisplay,
@@ -8,23 +8,27 @@ import {
   fontCinzel,
   fontScript,
   fontBaskerville,
-} from "@/lib/fonts";
-import "./globals.css";
+} from '@/lib/fonts'
+import './globals.css'
 
 export const viewport: Viewport = {
-  colorScheme: "dark light",
-};
+  colorScheme: 'dark light',
+}
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://acme-learning.com"),
+  metadataBase: new URL('https://acme-learning.com'),
   title: {
     default: siteConfig.name,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
-};
+}
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html
       lang="en"
@@ -35,5 +39,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
-  );
+  )
 }
