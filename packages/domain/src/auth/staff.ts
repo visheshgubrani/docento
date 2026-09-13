@@ -75,6 +75,21 @@ export const staffAuth = betterAuth({
         },
       },
       allowUserToCreateOrganization: true,
+
+      /**
+       * The plugin's own default is `member`, which this domain does not have.
+       *
+       * `can()` refuses any role that is not `owner` or `admin`, so a
+       * membership created with the default would be stored, then deny its
+       * holder everything with "Unrecognised staff role" — a failure a long way
+       * from its cause. The database also carries a CHECK constraint, so the
+       * two agree: this makes the plugin insert a role that is valid, and the
+       * constraint catches the paths that do not go through the plugin.
+       *
+       * `admin` rather than `owner` because creating a workspace makes you an
+       * owner explicitly, and a member added some other way is not one.
+       */
+      defaultRole: 'admin',
     }),
   ],
 })

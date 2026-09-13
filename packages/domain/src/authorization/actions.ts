@@ -11,8 +11,6 @@ export const ACTIONS = [
   'workspace:delete',
   'member:read',
   'member:manage',
-  'billing:read',
-  'billing:manage',
   'serviceKey:read',
   'serviceKey:manage',
 
@@ -33,6 +31,18 @@ export const ACTIONS = [
   'course:copy',
   'enrollment:read',
   'enrollment:manage',
+  /**
+   * Creating the enrolment, as distinct from managing someone else's.
+   *
+   * Enrolling in a course is the one write a learner performs on their own
+   * behalf before they have any progress to point at, so it is not expressible
+   * as `learner:*` — there is no learner-owned resource yet to check against.
+   * It is granted to a learner acting in their own academy, and to staff
+   * enrolling someone else.
+   */
+  'enrollment:create',
+  /// Reading a published release: the learner-facing view of a course.
+  'release:read',
 
   // Assessment and credentials
   'submission:read',
@@ -40,17 +50,31 @@ export const ACTIONS = [
   'certificate:read',
   'certificate:issue',
   'certificate:revoke',
+  /**
+   * Public verification of an issued certificate.
+   *
+   * The only action besides `catalog:read` that an unauthenticated visitor may
+   * perform. It is deliberately an action rather than an unguarded route: the
+   * public view returns a minimal projection, and that projection is a decision
+   * `can()` should be seen making.
+   */
+  'certificate:verify',
 
   // Media and AI
   'media:read',
   'media:upload',
   'media:delete',
+  /// Serving the bytes. Separate from `media:read` because entitlement is
+  /// re-checked when a file is fetched, not when a URL is handed out.
+  'media:serve',
   'ai:generate',
 
   // Learner self-service
   'learner:profile:read',
   'learner:profile:update',
   'learner:enroll',
+  'enrollment:create',
+  'release:read',
   'learner:progress:write',
   'learner:attempt:write',
   'learner:submission:write',
@@ -66,7 +90,6 @@ export type Action = (typeof ACTIONS)[number]
 /** Actions that require a real staff session and can never be performed with a key. */
 export const SESSION_ONLY_ACTIONS: readonly Action[] = [
   'workspace:delete',
-  'billing:manage',
   'serviceKey:manage',
   'member:manage',
 ]
@@ -76,6 +99,8 @@ export const LEARNER_SELF_ACTIONS: readonly Action[] = [
   'learner:profile:read',
   'learner:profile:update',
   'learner:enroll',
+  'enrollment:create',
+  'release:read',
   'learner:progress:write',
   'learner:attempt:write',
   'learner:submission:write',
@@ -84,13 +109,14 @@ export const LEARNER_SELF_ACTIONS: readonly Action[] = [
   'course:read',
   'catalog:read',
   'certificate:read',
+  'media:serve',
 ]
 
 /**
  * Actions an instructor assignment can grant.
  *
- * Note what is absent: billing, credential issuance, member management, and
- * service keys. Teaching a course is not the same as running the business, and
+ * Note what is absent: credential issuance, member management, and service
+ * keys. Teaching a course is not the same as running the business, and
  * the two must not be conflated by an assignment.
  */
 export const INSTRUCTOR_ACTIONS: readonly Action[] = [
@@ -117,7 +143,6 @@ export const GRADER_ACTIONS: readonly Action[] = [
 /** Actions an admin may not perform, even though they are not the owner. */
 export const OWNER_ONLY_ACTIONS: readonly Action[] = [
   'workspace:delete',
-  'billing:manage',
   'serviceKey:manage',
   'member:manage',
 ]

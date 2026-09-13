@@ -11,10 +11,9 @@
 //   4. Authorization  — roles and explicit assignments
 //   5. Content        — draft curriculum + published releases (ADR 0005)
 //   6. Learning       — enrollment, progress, assessment, certificates
-//   7. Commerce       — offers, orders, grants, enrollments   (ADR 0009)
-//   8. Media          — provider-neutral assets               (ADR 0008)
-//   9. AI             — connections, jobs, usage
-//  10. Webhooks       — endpoints, outbound delivery, inbound dedupe
+//   7. Media          — provider-neutral assets               (ADR 0008)
+//   8. AI             — connections, jobs, usage
+//   9. Webhooks       — endpoints, outbound delivery, inbound dedupe
 
 generator client {
   provider = "prisma-client-js"
@@ -48,7 +47,6 @@ model Workspace {
   serviceKeys        ServiceKey[]
   staffAssignments   StaffAssignment[]
   aiConnections      AiProviderConnection[]
-  paymentConnections PaymentConnection[]
   webhookEndpoints   WebhookEndpoint[]
   mediaAssets        MediaAsset[]
   aiJobs             AiJob[]
@@ -83,8 +81,6 @@ model Academy {
   learnerSessions LearnerSession[]
   learnerAccounts LearnerAccount[]
   learnerVerifications LearnerVerification[]
-  offers          Offer[]
-  orders          Order[]
   accessGrants    AccessGrant[]
   enrollments     Enrollment[]
   certificates    Certificate[]
@@ -168,7 +164,6 @@ model StaffSession {
   /// Written by Better Auth's organization plugin to record which workspace the
   /// staff session is currently acting in.
   activeOrganizationId String?
-  activeWorkspaceId String?
 
   user StaffUser @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -215,7 +210,8 @@ model Member {
   id          String   @id @default(cuid())
   workspaceId String
   userId      String
-  /// owner | admin — Better Auth organization roles
+  /// owner | admin — constrained in the migration. Anything else is refused by
+  /// `can()` anyway, so allowing it to be stored only defers the failure.
   role        String   @default("admin")
   createdAt   DateTime @default(now())
 
@@ -273,7 +269,6 @@ model Learner {
   sessions    LearnerSession[]
   accounts    LearnerAccount[]
   enrollments Enrollment[]
-  orders      Order[]
   accessGrants AccessGrant[]
   attempts    QuizAttempt[]
   submissions AssignmentSubmission[]
@@ -431,7 +426,6 @@ model Course {
 
   modules   Module[]
   releases  CourseRelease[]
-  offers    Offer[]
   enrollments Enrollment[]
   accessGrants AccessGrant[]
   certificates Certificate[]
@@ -750,117 +744,22 @@ model Certificate {
   @@map("certificate")
 }
 
-// ===========================================================================
-// 7. Commerce
-// ===========================================================================
-
-/// What is for sale, at what price, on what terms. Mutable: this is the current
-/// price. Historical amounts live on the Order.
-model Offer {
-  id          String  @id @default(cuid())
-  academyId   String
-  courseId    String
-  /// Integer minor units. Never floating point.
-  amountMinor Int
-  currency    String  @default("USD")
-  isActive    Boolean @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  academy Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
-  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  orders  Order[]
-
-  @@unique([courseId, currency])
-  @@index([academyId])
-  @@map("offer")
-}
-
-/// Financial history. Price, discount, and currency are snapshotted here so a
-/// later change to an Offer never changes what an order meant.
-model Order {
-  id               String   @id @default(cuid())
-  academyId        String
-  learnerId        String
-  offerId          String?
-  courseId         String
-  /// Amounts in integer minor units, snapshotted at purchase.
-  subtotalMinor    Int
-  discountMinor    Int      @default(0)
-  totalMinor       Int
-  currency         String
-  couponCode       String?
-  /// PENDING | PAID | FAILED | CANCELLED | REFUNDED | PARTIALLY_REFUNDED
-  status           String   @default("PENDING")
-  /// Client-supplied key that makes checkout retry-safe.
-  idempotencyKey   String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  academy Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
-  learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
-  offer   Offer?  @relation(fields: [offerId], references: [id], onDelete: SetNull)
-
-  payments Payment[]
-  grants   AccessGrant[]
-
-  @@unique([academyId, idempotencyKey])
-  @@index([academyId, status])
-  @@index([learnerId])
-  @@map("order")
-}
-
-model Payment {
-  id           String   @id @default(cuid())
-  orderId      String
-  /// stripe | razorpay
-  provider     String
-  /// Provider-side reference, unique per connection.
-  providerRef  String
-  amountMinor  Int
-  currency     String
-  status       String
-  /// Raw provider payload, retained for reconciliation and audit.
-  raw          Json?
-  confirmedAt  DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  refunds Refund[]
-
-  @@unique([provider, providerRef])
-  @@index([orderId])
-  @@map("payment")
-}
-
-model Refund {
-  id          String   @id @default(cuid())
-  paymentId   String
-  amountMinor Int
-  currency    String
-  /// true when this refund covers the whole payment.
-  isFull      Boolean  @default(false)
-  reason      String?
-  createdAt   DateTime @default(now())
-
-  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-
-  @@index([paymentId])
-  @@map("refund")
-}
-
-/// Why a learner may access a course. Independent grants compose: revoking the
-/// grant from a refund must not disturb an instructor's grant, and must never
-/// erase learning history.
+/// Why a learner may access a course.
+///
+/// Independent grants compose: revoking one must never disturb another, and it
+/// must never erase learning history. This separation is the seam that lets
+/// payments be added later without any of it reaching grading, progress, or
+/// certificates — see docs/adr/0012-payments-are-an-app.md.
 model AccessGrant {
   id         String    @id @default(cuid())
   academyId  String
   courseId   String
   learnerId  String
-  /// PURCHASE | MANUAL | COUPON | IMPORT | SEAT
+  /// FREE | MANUAL | COUPON | IMPORT | SEAT
   source     String
-  /// The order, invitation, or actor that produced this grant.
+  /// Whatever produced this grant: an invitation, an import batch, or the
+  /// operator who granted it by hand. Opaque on purpose, so the shape of a
+  /// source is not something the domain has to know about.
   sourceId   String?
   grantedAt  DateTime  @default(now())
   expiresAt  DateTime?
@@ -870,34 +769,14 @@ model AccessGrant {
   academy Academy @relation(fields: [academyId], references: [id], onDelete: Cascade)
   course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
   learner Learner @relation(fields: [learnerId], references: [id], onDelete: Cascade)
-  order   Order?  @relation(fields: [sourceId], references: [id], onDelete: SetNull)
 
   @@index([academyId, courseId, learnerId])
   @@index([learnerId])
   @@map("access_grant")
 }
 
-model PaymentConnection {
-  id              String   @id @default(cuid())
-  workspaceId     String
-  /// stripe | razorpay
-  provider        String
-  mode            String   @default("TEST")
-  /// Encrypted with ENCRYPTION_KEY. Never returned by the API.
-  credentials     String
-  webhookSecret   String?
-  isDefault       Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  @@unique([workspaceId, provider, mode])
-  @@map("payment_connection")
-}
-
 // ===========================================================================
-// 8. Media
+// 7. Media
 // ===========================================================================
 
 /// Workspace-owned media, referenced by lessons in any academy. The provider is
@@ -908,25 +787,33 @@ model MediaAsset {
   workspaceId     String
   /// local | s3 | openvod | external
   provider        String
+  /// Which configured connection produced this asset, recorded once and never
+  /// rewritten. Two workspaces sharing one S3 bucket produce the same
+  /// provider-side ids, so uniqueness below is per connection.
+  connectionId    String?
   providerAssetId String?
   /// PROCESSING | READY | FAILED | DELETED
   status          String   @default("PROCESSING")
+  /// Where the bytes live, relative to the provider root. Not a public URL:
+  /// every download is served by the API so entitlement is checked at request
+  /// time rather than at the moment a link was minted.
+  storageKey      String?
   title           String?
   originalFilename String?
   mimeType        String?
   sizeBytes       BigInt?
   durationSeconds Int?
-  playbackUrl     String?
   thumbnailUrl    String?
-  /// References from courses; an asset is only removable when this reaches zero.
-  referenceCount  Int      @default(0)
+  /// Set when an asset is superseded or deleted. Removal is a soft delete plus
+  /// a sweep, because a decrement counter is a race across replicas.
+  deletedAt       DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   workspace Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   captions  MediaCaption[]
 
-  @@unique([provider, providerAssetId])
+  @@unique([connectionId, providerAssetId])
   @@index([workspaceId, status])
   @@map("media_asset")
 }
@@ -949,7 +836,7 @@ model MediaCaption {
 }
 
 // ===========================================================================
-// 9. AI
+// 8. AI
 // ===========================================================================
 
 /// A configured provider. Capabilities are recorded per model because an
@@ -1031,7 +918,7 @@ model AiUsage {
 }
 
 // ===========================================================================
-// 10. Webhooks
+// 9. Webhooks
 // ===========================================================================
 
 model WebhookEndpoint {

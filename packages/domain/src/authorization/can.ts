@@ -42,8 +42,19 @@ export type Decision = { allowed: true } | { allowed: false; reason: string }
 const allow = (): Decision => ({ allowed: true })
 const deny = (reason: string): Decision => ({ allowed: false, reason })
 
-/** Actions any unauthenticated visitor may perform. */
-const PUBLIC_ACTIONS: readonly Action[] = ['catalog:read']
+/**
+ * Actions any unauthenticated visitor may perform.
+ *
+ * Both are reads of data that belongs to nobody: published catalogue entries,
+ * and a certificate's public verification view. Everything else requires a
+ * principal, and the tests assert that exhaustively rather than by example.
+ *
+ * Note this is *permission to ask*. What the response may contain is the
+ * route's decision — the verification projection carries no learner email and
+ * no academy-internal identifiers, because "anyone may verify" is not the same
+ * as "anyone may enumerate".
+ */
+const PUBLIC_ACTIONS: readonly Action[] = ['catalog:read', 'certificate:verify']
 
 /**
  * Which parts of a resource must be identified before an action can be decided.
@@ -74,8 +85,6 @@ export const REQUIRED_RESOURCE_FIELDS: Record<
   'workspace:delete': ['workspaceId'],
   'member:read': ['workspaceId'],
   'member:manage': ['workspaceId'],
-  'billing:read': ['workspaceId'],
-  'billing:manage': ['workspaceId'],
   'serviceKey:read': ['workspaceId'],
   'serviceKey:manage': ['workspaceId'],
 
@@ -98,6 +107,18 @@ export const REQUIRED_RESOURCE_FIELDS: Record<
   'enrollment:read': ['workspaceId', 'academyId'],
   'enrollment:manage': ['workspaceId', 'academyId'],
 
+  /**
+   * Enrolling needs the course as well as the academy.
+   *
+   * Without `courseId` this is a permission to enrol in *something*, and a
+   * caller that forgot which course would still pass the check. Named here so
+   * that omission is a refusal rather than a silent grant.
+   */
+  'enrollment:create': ['academyId', 'courseId'],
+
+  // A published release belongs to an academy and identifies a course.
+  'release:read': ['academyId', 'courseId'],
+
   'submission:read': ['workspaceId', 'academyId'],
   'submission:grade': ['workspaceId', 'academyId'],
 
@@ -105,9 +126,22 @@ export const REQUIRED_RESOURCE_FIELDS: Record<
   'certificate:issue': ['workspaceId', 'academyId'],
   'certificate:revoke': ['workspaceId', 'academyId'],
 
+  /**
+   * Verification requires nothing.
+   *
+   * Same reasoning as `catalog:read`, and the only other empty entry: the
+   * whole point is that someone with no account can check a certificate. What
+   * the response may contain is the route's decision, not containment's — the
+   * public projection carries no learner email and no academy-internal ids.
+   */
+  'certificate:verify': [],
+
   'media:read': ['workspaceId'],
   'media:upload': ['workspaceId'],
   'media:delete': ['workspaceId'],
+  /// Served in the context of an academy, because entitlement is a learner's
+  /// enrolment in that academy — not staff membership of the workspace.
+  'media:serve': ['academyId'],
   'ai:generate': ['workspaceId'],
 
   // Learner self-service: both the academy and the learner must be named, or a
@@ -180,10 +214,20 @@ export function can(
       return deny('The resource belongs to a different academy.')
     }
 
-    if (action.startsWith('learner:')) {
-      if (resource.learnerId !== principal.learnerId) {
-        return deny('The resource belongs to a different learner.')
-      }
+    /**
+     * Actions a learner may only take on their own record.
+     *
+     * `startsWith('learner:')` covers most of them, but `enrollment:create` is
+     * named for the resource it touches rather than for the self-service
+     * namespace, so it is listed. If this list and `LEARNER_SELF_ACTIONS` ever
+     * disagree, the effect is a learner acting on another learner's enrolment,
+     * which is why the exception is written out rather than inferred.
+     */
+    const ownRecordOnly =
+      action.startsWith('learner:') || action === 'enrollment:create'
+
+    if (ownRecordOnly && resource.learnerId !== principal.learnerId) {
+      return deny('The resource belongs to a different learner.')
     }
 
     if ((LEARNER_SELF_ACTIONS as readonly Action[]).includes(action)) {
