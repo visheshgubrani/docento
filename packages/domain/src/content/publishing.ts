@@ -23,19 +23,19 @@
  * for authoring convenience from silently becoming learner-visible.
  */
 
-import { prisma } from '../db.js'
-import type { Principal } from '../authorization/principal.js'
+import { prisma } from '../db'
+import type { Principal } from '../authorization/principal'
 import type {
   GradingSnapshot,
   QuestionMarking,
   QuizMarking,
-} from '../assessment/grading.js'
+} from '../assessment/grading'
 import {
   ConflictError,
   DomainRuleError,
   assertCan,
   assertFound,
-} from '../shared/errors.js'
+} from '../shared/errors'
 
 /** A quiz question as a release stores it. */
 export type SnapshotQuestion = {

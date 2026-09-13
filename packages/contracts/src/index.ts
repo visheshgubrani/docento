@@ -28,11 +28,11 @@
  * shapes of a document.
  */
 
-export * from './envelope.js'
-export * from './schemas.js'
-export * from './operations.js'
-export { buildOpenApiDocument } from './openapi.js'
-export type { OpenApiDocumentOptions } from './openapi.js'
+export * from './envelope'
+export * from './schemas'
+export * from './operations'
+export { buildOpenApiDocument } from './openapi'
+export type { OpenApiDocumentOptions } from './openapi'
 
 /**
  * Header that makes a retryable mutation safe to retry.

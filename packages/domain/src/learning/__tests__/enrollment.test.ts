@@ -1,15 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
-import { prisma } from '../../db.js'
-import type { Principal } from '../../authorization/principal.js'
-import { ForbiddenError, NotFoundError } from '../../shared/errors.js'
-import { createAcademy, createWorkspace } from '../../tenancy/academies.js'
-import {
-  createCourse,
-  createLesson,
-  createModule,
-} from '../../content/drafts.js'
-import { publishCourse } from '../../content/publishing.js'
+import { prisma } from '../../db'
+import type { Principal } from '../../authorization/principal'
+import { ForbiddenError, NotFoundError } from '../../shared/errors'
+import { createAcademy, createWorkspace } from '../../tenancy/academies'
+import { createCourse, createLesson, createModule } from '../../content/drafts'
+import { publishCourse } from '../../content/publishing'
 import {
   completeLesson,
   enroll,
@@ -20,14 +16,14 @@ import {
   listLearnerCourses,
   recordProgress,
   revokeAccess,
-} from '../enrollment.js'
+} from '../enrollment'
 import {
   getCertificate,
   issueCertificate,
   listLearnerCertificates,
   revokeCertificate,
   verifyCertificate,
-} from '../certificates.js'
+} from '../certificates'
 
 /**
  * The learner half of the free loop.

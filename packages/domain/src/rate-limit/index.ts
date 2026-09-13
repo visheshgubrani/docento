@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 
-import { prisma } from '../db.js'
+import { prisma } from '../db'
 
 /**
  * Shared rate limiting.

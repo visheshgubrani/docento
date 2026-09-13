@@ -2,9 +2,9 @@ import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 
 import { env } from '@docento/config'
-import { AcademyScopeError, academyDatabaseHooks } from './academy-scope.js'
-import { createAcademyScopedPrisma } from './academy-prisma.js'
-import { createAuthRateLimitHook } from './rate-limit-hook.js'
+import { AcademyScopeError, academyDatabaseHooks } from './academy-scope'
+import { createAcademyScopedPrisma } from './academy-prisma'
+import { createAuthRateLimitHook } from './rate-limit-hook'
 
 /**
  * The learner authentication realm.

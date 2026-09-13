@@ -25,9 +25,9 @@
  * configuration. "Anyone may verify" is not "anyone may enumerate".
  */
 
-import { prisma } from '../db.js'
-import type { Principal } from '../authorization/principal.js'
-import { ConflictError, assertCan, assertFound } from '../shared/errors.js'
+import { prisma } from '../db'
+import type { Principal } from '../authorization/principal'
+import { ConflictError, assertCan, assertFound } from '../shared/errors'
 
 export type CertificateSummary = {
   id: string

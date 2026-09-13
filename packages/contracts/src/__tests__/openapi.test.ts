@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { OPERATIONS, OPERATION_NAMES } from '../operations.js'
-import { buildOpenApiDocument } from '../openapi.js'
+import { OPERATIONS, OPERATION_NAMES } from '../operations'
+import { buildOpenApiDocument } from '../openapi'
 
 /**
  * The OpenAPI document is generated, so these tests are about whether the

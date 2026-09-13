@@ -30,16 +30,19 @@
  * of the two lookups was attempted.
  */
 
-import { prisma } from '../db.js'
-import { NotFoundError } from '../shared/errors.js'
+import { prisma } from '../db'
+import { NotFoundError } from '../shared/errors'
 
 export type ResolvedAcademy = {
   id: string
   workspaceId: string
   slug: string
   name: string
+  logo: string | null
   /** MANAGED | DELEGATED | HYBRID */
   authMode: string
+  branding: unknown
+  createdAt: Date
 }
 
 export type AcademyResolutionFailure = {
@@ -77,7 +80,18 @@ const RESOLVED_ACADEMY_FIELDS = {
   workspaceId: true,
   slug: true,
   name: true,
+  logo: true,
   authMode: true,
+  /**
+   * Branding and creation date are selected because the resolve *endpoint*
+   * returns the academy summary the contract promises.
+   *
+   * An earlier version omitted them and the route fabricated a `createdAt`,
+   * which is the kind of thing that reads as harmless and means a client
+   * receives a date that is not when anything happened.
+   */
+  branding: true,
+  createdAt: true,
 } as const
 
 /**

@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 
-import { prisma } from '../../db.js'
-import { RATE_LIMIT_RULES, resetRateLimits } from '../../rate-limit/index.js'
-import { getLearnerAuth } from '../learner.js'
-import { staffAuth } from '../staff.js'
+import { prisma } from '../../db'
+import { RATE_LIMIT_RULES, resetRateLimits } from '../../rate-limit/index'
+import { getLearnerAuth } from '../learner'
+import { staffAuth } from '../staff'
 
 /**
  * The shared limiter must actually be attached to the authentication endpoints.

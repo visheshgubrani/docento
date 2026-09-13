@@ -7,7 +7,7 @@ import {
   IMPLEMENTED_OPERATIONS,
   STREAMING_OPERATIONS,
   UNIMPLEMENTED_OPERATIONS,
-} from '../client.js'
+} from '../client'
 
 /**
  * The registry and the client must describe the same API.

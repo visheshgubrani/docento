@@ -10,7 +10,7 @@ import {
   parsePath,
   pathParams,
   toRoutePattern,
-} from '../index.js'
+} from '../index'
 
 /**
  * The registry is the API's description of itself. These tests assert the
@@ -107,6 +107,7 @@ describe('the public surface', () => {
     // An unauthenticated write would be the most consequential mistake this
     // registry could contain, so the list is asserted rather than reviewed.
     expect([...PUBLIC_OPERATIONS].sort()).toEqual([
+      'academy.resolve',
       'catalog.academy',
       'catalog.course',
       'catalog.courses',

@@ -25,21 +25,18 @@ export {
   UNIMPLEMENTED_OPERATIONS,
   IDEMPOTENCY_HEADER,
   OPERATION_NAMES,
-} from './client.js'
-export type { OperationName, OperationOutput } from './client.js'
+} from './client'
+export type { OperationName, OperationOutput } from './client'
 
-export {
-  DocentoApiError,
-  DocentoTransportError,
-  DocentoClient,
-} from './http.js'
-export type { DocentoClientOptions } from './http.js'
+export { DocentoApiError, DocentoTransportError, DocentoClient } from './http'
+export type { DocentoClientOptions } from './http'
 
 // Re-exported so a consumer needs one dependency rather than two. The shapes
 // are the API's, and a client that defined its own would be a second
 // description of the same thing.
 export type {
   AcademySummary,
+  CatalogCourse,
   Certificate,
   CourseSummary,
   EnrollmentSummary,

@@ -19,14 +19,14 @@
 
 import { createHash, randomBytes } from 'node:crypto'
 
-import { prisma } from '../db.js'
-import type { Principal } from '../authorization/principal.js'
+import { prisma } from '../db'
+import type { Principal } from '../authorization/principal'
 import {
   ConflictError,
   DomainRuleError,
   assertCan,
   assertFound,
-} from '../shared/errors.js'
+} from '../shared/errors'
 
 export type WorkspaceMembership = {
   id: string

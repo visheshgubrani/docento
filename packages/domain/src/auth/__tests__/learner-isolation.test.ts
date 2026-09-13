@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 
-import { prisma } from '../../db.js'
-import { AcademyScopeError } from '../academy-scope.js'
-import { getLearnerAuth } from '../learner.js'
-import { staffAuth } from '../staff.js'
+import { prisma } from '../../db'
+import { AcademyScopeError } from '../academy-scope'
+import { getLearnerAuth } from '../learner'
+import { staffAuth } from '../staff'
 
 /**
  * The learner realm isolation spike.

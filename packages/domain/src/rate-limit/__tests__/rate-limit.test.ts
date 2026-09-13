@@ -1,13 +1,13 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 
-import { prisma } from '../../db.js'
+import { prisma } from '../../db'
 import {
   consumeRateLimit,
   peekRateLimit,
   pruneRateLimits,
   resetRateLimits,
   type RateLimitRule,
-} from '../index.js'
+} from '../index'
 
 const rule: RateLimitRule = {
   name: 'test-rule',

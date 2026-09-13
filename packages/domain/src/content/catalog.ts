@@ -19,14 +19,14 @@
  * shapes here cannot express them.
  */
 
-import { prisma } from '../db.js'
-import { NotFoundError } from '../shared/errors.js'
-import type { ReleaseSnapshot } from '../content/publishing.js'
+import { prisma } from '../db'
+import { NotFoundError } from '../shared/errors'
+import type { ReleaseSnapshot } from '../content/publishing'
 import {
   type AcademyAuthMode,
   type AcademyBranding,
   readAcademyIdentity,
-} from '../tenancy/academies.js'
+} from '../tenancy/academies'
 
 export type CatalogCourse = {
   id: string

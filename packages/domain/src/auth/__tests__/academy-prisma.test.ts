@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 
-import { prisma } from '../../db.js'
-import { AcademyScopeError } from '../academy-scope.js'
-import { createAcademyScopedPrisma } from '../academy-prisma.js'
+import { prisma } from '../../db'
+import { AcademyScopeError } from '../academy-scope'
+import { createAcademyScopedPrisma } from '../academy-prisma'
 
 /**
  * Contracts of the academy-scoped database client.

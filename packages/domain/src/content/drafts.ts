@@ -24,15 +24,15 @@
  * completion denominator without erasing the historical record.
  */
 
-import { prisma } from '../db.js'
-import type { Principal } from '../authorization/principal.js'
+import { prisma } from '../db'
+import type { Principal } from '../authorization/principal'
 import {
   ConflictError,
   DomainRuleError,
   assertCan,
   assertFound,
-} from '../shared/errors.js'
-import { SLUG_PATTERN } from '../tenancy/resolve-academy.js'
+} from '../shared/errors'
+import { SLUG_PATTERN } from '../tenancy/resolve-academy'
 
 /**
  * A course's lifecycle.

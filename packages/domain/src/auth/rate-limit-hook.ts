@@ -4,7 +4,7 @@ import {
   RATE_LIMIT_RULES,
   consumeRateLimit,
   type RateLimitRule,
-} from '../rate-limit/index.js'
+} from '../rate-limit/index'
 
 /**
  * Apply the shared rate limiter to authentication endpoints.

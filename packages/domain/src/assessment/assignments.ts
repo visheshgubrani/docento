@@ -18,16 +18,16 @@
  * something the learner can no longer see.
  */
 
-import { prisma } from '../db.js'
-import type { Principal } from '../authorization/principal.js'
+import { prisma } from '../db'
+import type { Principal } from '../authorization/principal'
 import {
   ConflictError,
   DomainRuleError,
   NotFoundError,
   assertCan,
   assertFound,
-} from '../shared/errors.js'
-import { hasAccess } from '../learning/enrollment.js'
+} from '../shared/errors'
+import { hasAccess } from '../learning/enrollment'
 
 export type AssignmentSummary = {
   id: string

@@ -11,8 +11,8 @@ import {
   REQUEST_ID_HEADER,
   apiFailureSchema,
   apiResponseSchema,
-} from './envelope.js'
-import { OPERATIONS, OPERATION_NAMES } from './operations.js'
+} from './envelope'
+import { OPERATIONS, OPERATION_NAMES } from './operations'
 
 /**
  * The OpenAPI document, generated from the operation registry.

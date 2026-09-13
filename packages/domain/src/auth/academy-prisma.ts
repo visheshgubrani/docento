@@ -1,10 +1,7 @@
 import type { PrismaClient } from '@prisma/client'
 
-import { prisma } from '../db.js'
-import {
-  ACADEMY_SCOPED_MODEL_NAMES,
-  AcademyScopeError,
-} from './academy-scope.js'
+import { prisma } from '../db'
+import { ACADEMY_SCOPED_MODEL_NAMES, AcademyScopeError } from './academy-scope'
 
 /**
  * Academy scoping enforced at the database client, below Better Auth.

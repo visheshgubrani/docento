@@ -8362,6 +8362,269 @@
         }
       }
     },
+    "/academy/resolve": {
+      "get": {
+        "summary": "Resolve the academy this request is about",
+        "operationId": "academy.resolve",
+        "tags": [
+          "academy"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "Optional caller-chosen request id, echoed back and logged. Pass your own tracing id to correlate a support report with the server logs."
+            },
+            "required": false,
+            "description": "Optional caller-chosen request id, echoed back and logged. Pass your own tracing id to correlate a support report with the server logs.",
+            "name": "x-request-id",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "academy": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 64
+                            },
+                            "workspaceId": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 64
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "slug": {
+                              "type": "string"
+                            },
+                            "logo": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "authMode": {
+                              "type": "string",
+                              "enum": [
+                                "MANAGED",
+                                "DELEGATED",
+                                "HYBRID"
+                              ]
+                            },
+                            "branding": {
+                              "type": [
+                                "object",
+                                "null"
+                              ],
+                              "properties": {
+                                "displayName": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 120
+                                },
+                                "logoUrl": {
+                                  "type": "string",
+                                  "format": "uri"
+                                },
+                                "faviconUrl": {
+                                  "type": "string",
+                                  "format": "uri"
+                                },
+                                "primaryColor": {
+                                  "type": "string",
+                                  "pattern": "^#[0-9a-fA-F]{6}$"
+                                },
+                                "accentColor": {
+                                  "type": "string",
+                                  "pattern": "^#[0-9a-fA-F]{6}$"
+                                },
+                                "supportEmail": {
+                                  "type": "string",
+                                  "format": "email"
+                                },
+                                "legal": {
+                                  "type": "object",
+                                  "properties": {
+                                    "termsUrl": {
+                                      "type": "string",
+                                      "format": "uri"
+                                    },
+                                    "privacyUrl": {
+                                      "type": "string",
+                                      "format": "uri"
+                                    },
+                                    "refundPolicyUrl": {
+                                      "type": "string",
+                                      "format": "uri"
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "createdAt": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "format": "date-time"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "workspaceId",
+                            "name",
+                            "slug",
+                            "logo",
+                            "authMode",
+                            "branding",
+                            "createdAt"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "academy"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "requestId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. `error.code` is one of: validation_failed, unauthorized, forbidden, not_found, conflict, stale_revision, rate_limited, payment_required, provider_not_configured, provider_error, idempotency_replay, internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "validation_failed",
+                            "unauthorized",
+                            "forbidden",
+                            "not_found",
+                            "conflict",
+                            "stale_revision",
+                            "rate_limited",
+                            "payment_required",
+                            "provider_not_configured",
+                            "provider_error",
+                            "idempotency_replay",
+                            "internal_error"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "message"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "requestId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/catalog/academies/{academyId}": {
       "get": {
         "summary": "An academy’s public profile",
@@ -9255,6 +9518,199 @@
                       },
                       "required": [
                         "certificate"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "requestId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Failure. `error.code` is one of: validation_failed, unauthorized, forbidden, not_found, conflict, stale_revision, rate_limited, payment_required, provider_not_configured, provider_error, idempotency_replay, internal_error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "validation_failed",
+                            "unauthorized",
+                            "forbidden",
+                            "not_found",
+                            "conflict",
+                            "stale_revision",
+                            "rate_limited",
+                            "payment_required",
+                            "provider_not_configured",
+                            "provider_error",
+                            "idempotency_replay",
+                            "internal_error"
+                          ]
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "path": {
+                                "type": "string"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "path",
+                              "message"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "requestId": {
+                          "type": "string"
+                        },
+                        "nextCursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "requestId"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "error",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/learn/session": {
+      "get": {
+        "summary": "The signed-in learner, for the application’s session gate",
+        "operationId": "learner.session",
+        "tags": [
+          "learner"
+        ],
+        "security": [
+          {
+            "learnerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "Optional caller-chosen request id, echoed back and logged. Pass your own tracing id to correlate a support report with the server logs."
+            },
+            "required": false,
+            "description": "Optional caller-chosen request id, echoed back and logged. Pass your own tracing id to correlate a support report with the server logs.",
+            "name": "x-request-id",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "session": {
+                          "type": "object",
+                          "properties": {
+                            "learnerId": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 64
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "email": {
+                              "type": "string",
+                              "format": "email"
+                            },
+                            "academyId": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 64
+                            }
+                          },
+                          "required": [
+                            "learnerId",
+                            "name",
+                            "email",
+                            "academyId"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "session"
                       ]
                     },
                     "meta": {
@@ -11035,6 +11491,74 @@
                                 ]
                               }
                             },
+                            "attempts": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 64
+                                  },
+                                  "quizId": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 64
+                                  },
+                                  "learnerId": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 64
+                                  },
+                                  "attemptNumber": {
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0
+                                  },
+                                  "score": {
+                                    "type": "number"
+                                  },
+                                  "totalPoints": {
+                                    "type": "integer"
+                                  },
+                                  "passed": {
+                                    "type": "boolean"
+                                  },
+                                  "startedAt": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "format": "date-time"
+                                  },
+                                  "submittedAt": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "format": "date-time"
+                                  },
+                                  "timeSpentSeconds": {
+                                    "type": [
+                                      "integer",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "quizId",
+                                  "learnerId",
+                                  "attemptNumber",
+                                  "score",
+                                  "totalPoints",
+                                  "passed",
+                                  "startedAt",
+                                  "submittedAt",
+                                  "timeSpentSeconds"
+                                ]
+                              }
+                            },
                             "attemptsRemaining": {
                               "type": [
                                 "integer",
@@ -11088,6 +11612,7 @@
                             "isMockTest",
                             "sections",
                             "questions",
+                            "attempts",
                             "attemptsRemaining",
                             "bestScore",
                             "hasPassed",

@@ -19,10 +19,10 @@
  * without erasing the record.
  */
 
-import { prisma } from '../db.js'
-import type { Principal } from '../authorization/principal.js'
-import { NotFoundError, assertCan, assertFound } from '../shared/errors.js'
-import { type ReleaseSnapshot } from '../content/publishing.js'
+import { prisma } from '../db'
+import type { Principal } from '../authorization/principal'
+import { NotFoundError, assertCan, assertFound } from '../shared/errors'
+import { type ReleaseSnapshot } from '../content/publishing'
 
 export type EnrollmentSummary = {
   id: string
@@ -1046,4 +1046,44 @@ export function stripAnswerKeys(snapshot: ReleaseSnapshot): LearnerModule[] {
       assignment: lesson.assignment,
     })),
   }))
+}
+
+/**
+ * A learner's own profile.
+ *
+ * `learner:profile:read` rather than a staff read, so the caller must be the
+ * learner — which is what makes this safe to serve to the application's session
+ * gate without a second authorization decision there.
+ */
+export async function getLearnerProfile(
+  principal: Principal,
+  input: { academyId: string; learnerId: string },
+): Promise<{
+  id: string
+  academyId: string
+  name: string
+  email: string
+  image: string | null
+  createdAt: Date
+}> {
+  assertCan(principal, 'learner:profile:read', {
+    academyId: input.academyId,
+    learnerId: input.learnerId,
+  })
+
+  const learner = await prisma.learner.findFirst({
+    where: { id: input.learnerId, academyId: input.academyId },
+    select: {
+      id: true,
+      academyId: true,
+      name: true,
+      email: true,
+      image: true,
+      createdAt: true,
+    },
+  })
+
+  assertFound('learner', learner, input.learnerId)
+
+  return learner
 }

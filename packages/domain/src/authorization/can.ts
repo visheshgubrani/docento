@@ -5,8 +5,8 @@ import {
   OWNER_ONLY_ACTIONS,
   SESSION_ONLY_ACTIONS,
   type Action,
-} from './actions.js'
-import type { Principal, StaffAssignment } from './principal.js'
+} from './actions'
+import type { Principal, StaffAssignment } from './principal'
 
 /**
  * The single authorization decision point.

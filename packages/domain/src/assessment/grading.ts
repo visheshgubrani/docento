@@ -1,4 +1,4 @@
-import { DomainRuleError } from '../shared/errors.js'
+import { DomainRuleError } from '../shared/errors'
 
 /**
  * Quiz grading.

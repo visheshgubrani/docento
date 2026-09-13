@@ -6,7 +6,7 @@ import {
   OPERATION_NAMES,
 } from '@docento/contracts'
 
-import { DocentoClient } from './http.js'
+import { DocentoClient } from './http'
 
 /**
  * The typed client.
@@ -509,6 +509,16 @@ export class DocentoApi extends DocentoClient {
   // Public catalogue
   // -------------------------------------------------------------------------
 
+  /**
+   * Which academy this request is about, by host or slug.
+   *
+   * No credential: a visitor browsing before signing in still needs to know
+   * whose catalogue they are looking at.
+   */
+  resolveAcademy() {
+    return this.call('academy.resolve', {}, describe('resolveAcademy'))
+  }
+
   getCatalogAcademy(academyId: string) {
     return this.call(
       'catalog.academy',
@@ -548,6 +558,16 @@ export class DocentoApi extends DocentoClient {
   // -------------------------------------------------------------------------
   // Learner
   // -------------------------------------------------------------------------
+
+  /**
+   * Who the caller is.
+   *
+   * The session gate calls this rather than validating a cookie: the cookie is
+   * opaque and the session row belongs to the API.
+   */
+  getLearnerSession() {
+    return this.call('learner.session', {}, describe('getLearnerSession'))
+  }
 
   listLearnerCourses() {
     return this.call('learner.courses', {}, describe('listLearnerCourses'))
@@ -762,10 +782,12 @@ export const IMPLEMENTED_OPERATIONS = {
   'assignment.upsert': 'upsertAssignment',
   'assignment.submissions': 'listSubmissions',
   'submission.grade': 'gradeSubmission',
+  'academy.resolve': 'resolveAcademy',
   'catalog.academy': 'getCatalogAcademy',
   'catalog.courses': 'listCatalogCourses',
   'catalog.course': 'getCatalogCourse',
   'certificate.verify': 'verifyCertificate',
+  'learner.session': 'getLearnerSession',
   'learner.courses': 'listLearnerCourses',
   'learner.enroll': 'enrollInCourse',
   'learner.course': 'getLearnerCourse',

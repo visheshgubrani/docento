@@ -26,15 +26,15 @@
  * outside it — a case that has a defined answer rather than an accident.
  */
 
-import { prisma } from '../db.js'
-import type { Principal } from '../authorization/principal.js'
+import { prisma } from '../db'
+import type { Principal } from '../authorization/principal'
 import {
   ConflictError,
   DomainRuleError,
   NotFoundError,
   assertCan,
   assertFound,
-} from '../shared/errors.js'
+} from '../shared/errors'
 import {
   type GradingSnapshot,
   type QuestionType,
@@ -42,8 +42,8 @@ import {
   asQuestionType,
   gradeFromSnapshot,
   scoreAttempt,
-} from '../assessment/grading.js'
-import { hasAccess } from '../learning/enrollment.js'
+} from '../assessment/grading'
+import { hasAccess } from '../learning/enrollment'
 
 export type AttemptSummary = {
   id: string

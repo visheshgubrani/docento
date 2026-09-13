@@ -335,6 +335,29 @@ export const questionTypeSchema = z.enum([
   'INTEGER',
 ])
 
+export const quizAttemptSummarySchema = z.object({
+  id: idSchema,
+  /**
+   * The quiz is named, and the quiz names its attempts.
+   *
+   * That is a cycle in the *type* sense, and it is not recursive in the document
+   * because the nesting stops here: `publicQuizSchema` includes attempts, and an
+   * attempt does not include a quiz. The OpenAPI generator expands what is
+   * reachable, so this is two levels and was the version that fit.
+   */
+  quizId: idSchema,
+  learnerId: idSchema,
+  attemptNumber: z.number().int().positive(),
+  score: z.number(),
+  totalPoints: z.number().int(),
+  passed: z.boolean(),
+  startedAt: dateSchema,
+  submittedAt: dateSchema.nullable(),
+  timeSpentSeconds: z.number().int().nullable(),
+})
+
+export type QuizAttemptSummary = z.infer<typeof quizAttemptSummarySchema>
+
 /**
  * A quiz as a learner may see it.
  *
@@ -368,18 +391,19 @@ export const publicQuizSchema = z.object({
     }),
   ),
   /**
-   * No attempt list here, deliberately.
+   * The learner's own completed attempts.
    *
-   * An attempt summary contains the quiz id, and the quiz contains its attempts
-   * — a cycle. Expressed with `z.lazy` it type-checks, but the generated OpenAPI
-   * document expands it recursively and grew past half a megabyte, which is
-   * unusable both as a reviewable file and as input to a client generator.
+   * Summaries, and the cycle that made this a problem is gone: an attempt
+   * summary names the quiz, and the quiz named its attempts, so `z.lazy` was
+   * needed to type-check and the generated OpenAPI document expanded it
+   * recursively past half a megabyte — unusable as a reviewable file and as
+   * input to a client generator.
    *
-   * The cycle is also unnecessary: a caller reading a quiz wants to know whether
-   * an attempt is open and how many remain, both of which are here, and the
-   * history is its own endpoint. The shape is smaller and the operation is the
-   * same.
+   * The fix was to stop the attempt summary naming its quiz. Every attempt here
+   * is reached through the quiz that returned it, so the back-reference bought
+   * nothing and cost the document.
    */
+  attempts: z.array(quizAttemptSummarySchema),
   attemptsRemaining: z.number().int().nullable(),
   bestScore: z.number(),
   hasPassed: z.boolean(),
@@ -393,28 +417,6 @@ export const publicQuizSchema = z.object({
 })
 
 export type PublicQuiz = z.infer<typeof publicQuizSchema>
-
-export const quizAttemptSummarySchema = z.object({
-  id: idSchema,
-  /**
-   * The learner is named because a gradebook lists attempts by many learners.
-   *
-   * The quiz is not, because every attempt here is reached through a lesson or
-   * a course that already identifies it — and including it created the cycle
-   * above.
-   */
-  quizId: idSchema,
-  learnerId: idSchema,
-  attemptNumber: z.number().int().positive(),
-  score: z.number(),
-  totalPoints: z.number().int(),
-  passed: z.boolean(),
-  startedAt: dateSchema,
-  submittedAt: dateSchema.nullable(),
-  timeSpentSeconds: z.number().int().nullable(),
-})
-
-export type QuizAttemptSummary = z.infer<typeof quizAttemptSummarySchema>
 
 /**
  * A graded attempt.

@@ -1,16 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
-import { prisma } from '../../db.js'
-import type { Principal } from '../../authorization/principal.js'
-import { ConflictError, ForbiddenError } from '../../shared/errors.js'
-import { createAcademy, createWorkspace } from '../../tenancy/academies.js'
-import {
-  createCourse,
-  createLesson,
-  createModule,
-} from '../../content/drafts.js'
-import { publishCourse } from '../../content/publishing.js'
-import { enroll, getCourseProgress } from '../../learning/enrollment.js'
+import { prisma } from '../../db'
+import type { Principal } from '../../authorization/principal'
+import { ConflictError, ForbiddenError } from '../../shared/errors'
+import { createAcademy, createWorkspace } from '../../tenancy/academies'
+import { createCourse, createLesson, createModule } from '../../content/drafts'
+import { publishCourse } from '../../content/publishing'
+import { enroll, getCourseProgress } from '../../learning/enrollment'
 import {
   getQuizForLearner,
   listAttempts,
@@ -19,13 +15,13 @@ import {
   upsertQuestion,
   upsertQuiz,
   upsertSection,
-} from '../attempts.js'
+} from '../attempts'
 import {
   gradeSubmission,
   listSubmissions,
   submitAssignment,
   upsertAssignment,
-} from '../assignments.js'
+} from '../assignments'
 
 /**
  * The assessment half of the loop.

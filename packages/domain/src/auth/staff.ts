@@ -2,10 +2,10 @@ import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { organization } from 'better-auth/plugins'
 
-import { createAuthRateLimitHook } from './rate-limit-hook.js'
+import { createAuthRateLimitHook } from './rate-limit-hook'
 
 import { env } from '@docento/config'
-import { prisma } from '../db.js'
+import { prisma } from '../db'
 
 /**
  * The staff authentication realm.

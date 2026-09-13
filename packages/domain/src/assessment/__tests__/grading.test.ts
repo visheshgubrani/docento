@@ -7,7 +7,7 @@ import {
   gradeAnswer,
   gradeFromSnapshot,
   scoreAttempt,
-} from '../grading.js'
+} from '../grading'
 
 /**
  * The grading rules, stated as a table.

@@ -1,11 +1,11 @@
-import { type Action } from '../authorization/actions.js'
+import { type Action } from '../authorization/actions'
 import {
   can,
   canViaAssignment,
   type Decision,
   type Resource,
-} from '../authorization/can.js'
-import type { Principal, StaffAssignment } from '../authorization/principal.js'
+} from '../authorization/can'
+import type { Principal, StaffAssignment } from '../authorization/principal'
 
 /**
  * The guard every domain operation starts with.

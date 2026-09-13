@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
-import { prisma } from '../../db.js'
-import type { Principal } from '../../authorization/principal.js'
-import { ForbiddenError, NotFoundError } from '../../shared/errors.js'
+import { prisma } from '../../db'
+import type { Principal } from '../../authorization/principal'
+import { ForbiddenError, NotFoundError } from '../../shared/errors'
 import {
   archiveCourse,
   createCourse,
@@ -12,14 +12,14 @@ import {
   reorderLessons,
   reorderModules,
   updateCourse,
-} from '../drafts.js'
+} from '../drafts'
 import {
   buildReleaseSnapshot,
   getRelease,
   gradingSnapshotFrom,
   publishCourse,
-} from '../publishing.js'
-import { createAcademy, createWorkspace } from '../../tenancy/academies.js'
+} from '../publishing'
+import { createAcademy, createWorkspace } from '../../tenancy/academies'
 
 /**
  * Publishing is the piece of this milestone with no legacy precedent: the

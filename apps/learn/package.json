@@ -14,7 +14,10 @@
   "dependencies": {
     "@base-ui/react": "^1.1.0",
     "@clipmux/player": "^0.1.2",
+    "@docento/contracts": "workspace:*",
+    "@docento/sdk": "workspace:*",
     "@react-pdf/renderer": "^4.3.2",
+    "better-auth": "catalog:",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "isomorphic-dompurify": "^4.2.0",

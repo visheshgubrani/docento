@@ -20,7 +20,9 @@ import {
   getCourse,
   getCourseForLearner,
   getCourseProgress,
+  getLearnerProfile,
   getPublicAcademy,
+  readAcademyIdentity,
   getPublicCourse,
   getPublicOutline,
   getQuizForLearner,
@@ -589,6 +591,21 @@ export function createRoutes(): Hono {
   // Public catalogue
   // -------------------------------------------------------------------------
 
+  /**
+   * Which academy this request is about.
+   *
+   * Reads the academy the wrapper already resolved from the host or a slug, and
+   * answers a not-found when nothing resolved. The resolution itself is not
+   * repeated here — it happened once, at the top of the wrapper, and asking
+   * twice would be two answers to one question.
+   */
+  routes.get(
+    '/academy/resolve',
+    operation('academy.resolve', async ({ academy }) => ({
+      academy: toPublicAcademyShape(requireAcademy(academy)),
+    })),
+  )
+
   routes.get(
     '/catalog/academies/:academyId',
     operation('catalog.academy', async ({ input }) => ({
@@ -644,6 +661,32 @@ export function createRoutes(): Hono {
   // -------------------------------------------------------------------------
   // Learner
   // -------------------------------------------------------------------------
+
+  /**
+   * Who the caller is.
+   *
+   * The principal was resolved from the session at the top of the wrapper, so
+   * this does not re-validate anything — it reports what was already decided.
+   * Re-reading the session here would be a second check, and the second check is
+   * the one that disagrees.
+   */
+  routes.get(
+    '/learn/session',
+    operation('learner.session', async ({ principal }) => {
+      const { learnerId, academyId } = requireLearner(principal)
+
+      const learner = await getLearnerProfile(principal, { academyId, learnerId })
+
+      return {
+        session: {
+          learnerId: learner.id,
+          name: learner.name,
+          email: learner.email,
+          academyId: learner.academyId,
+        },
+      }
+    }),
+  )
 
   routes.get(
     '/learn/courses',
@@ -963,6 +1006,22 @@ export function createRoutes(): Hono {
   )
 
   return routes
+}
+
+/**
+ * The academy an operation resolved, in the shape the contract promises.
+ *
+ * `readAcademyIdentity` is applied because the row's `authMode` and `branding`
+ * are a `String` and a `Json` column — the same narrowing the staff read and the
+ * catalogue read use, rather than a third answer to what a valid value is.
+ */
+function toPublicAcademyShape(academy: ResolvedAcademy) {
+  const identity = readAcademyIdentity({
+    authMode: academy.authMode,
+    branding: academy.branding,
+  })
+
+  return { ...academy, ...identity }
 }
 
 export { requireAcademy, requireLearner, requireWorkspace }

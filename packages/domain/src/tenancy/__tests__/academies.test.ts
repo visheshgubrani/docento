@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
-import { prisma } from '../../db.js'
+import { prisma } from '../../db'
 import {
   type AcademySummary,
   addAcademyDomain,
@@ -13,16 +13,16 @@ import {
   revokePublishableKey,
   updateAcademy,
   verifyAcademyDomain,
-} from '../academies.js'
+} from '../academies'
 import {
   RESERVED_SLUGS,
   normaliseHostname,
   normaliseSlug,
   resolveAcademy,
   validateSlug,
-} from '../resolve-academy.js'
-import { ForbiddenError, NotFoundError } from '../../shared/errors.js'
-import type { Principal } from '../../authorization/principal.js'
+} from '../resolve-academy'
+import { ForbiddenError, NotFoundError } from '../../shared/errors'
+import type { Principal } from '../../authorization/principal'
 
 /**
  * Academy resolution decides which tenant a request is about, so these tests

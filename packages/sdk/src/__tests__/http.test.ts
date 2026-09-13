@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { DocentoApi, DocentoApiError, DocentoTransportError } from '../index.js'
+import { DocentoApi, DocentoApiError, DocentoTransportError } from '../index'
 
 /**
  * The transport's job is to turn HTTP into something a caller can branch on.

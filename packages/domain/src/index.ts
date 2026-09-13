@@ -9,24 +9,24 @@
  */
 
 // Database
-export { prisma } from './db.js'
-export type { PrismaClient } from './db.js'
+export { prisma } from './db'
+export type { PrismaClient } from './db'
 
 // Authentication realms
 export {
   STAFF_AUTH_BASE_PATH,
   STAFF_COOKIE_PREFIX,
   staffAuth,
-} from './auth/staff.js'
-export type { StaffAuth } from './auth/staff.js'
+} from './auth/staff'
+export type { StaffAuth } from './auth/staff'
 
 export {
   LEARNER_AUTH_BASE_PATH,
   LEARNER_COOKIE_PREFIX,
   clearLearnerAuthCache,
   getLearnerAuth,
-} from './auth/learner.js'
-export type { LearnerAuth } from './auth/learner.js'
+} from './auth/learner'
+export type { LearnerAuth } from './auth/learner'
 
 export {
   ACADEMY_SCOPED_MODEL_NAMES,
@@ -34,15 +34,15 @@ export {
   LEARNER_REALM_MODELS,
   academyDatabaseHooks,
   scopeData,
-} from './auth/academy-scope.js'
+} from './auth/academy-scope'
 
-export { createAcademyScopedPrisma } from './auth/academy-prisma.js'
+export { createAcademyScopedPrisma } from './auth/academy-prisma'
 
 // Authorization
-export { can, canViaAssignment } from './authorization/can.js'
-export type { Decision, Resource } from './authorization/can.js'
-export { ACTIONS } from './authorization/actions.js'
-export type { Action } from './authorization/actions.js'
+export { can, canViaAssignment } from './authorization/can'
+export type { Decision, Resource } from './authorization/can'
+export { ACTIONS } from './authorization/actions'
+export type { Action } from './authorization/actions'
 export type {
   AnonymousPrincipal,
   AssignmentRole,
@@ -52,7 +52,7 @@ export type {
   StaffAssignment,
   StaffPrincipal,
   StaffRole,
-} from './authorization/principal.js'
+} from './authorization/principal'
 
 // Rate limiting
 export {
@@ -61,8 +61,8 @@ export {
   peekRateLimit,
   pruneRateLimits,
   resetRateLimits,
-} from './rate-limit/index.js'
-export type { RateLimitResult, RateLimitRule } from './rate-limit/index.js'
+} from './rate-limit/index'
+export type { RateLimitResult, RateLimitRule } from './rate-limit/index'
 
 // Assessment
 //
@@ -74,7 +74,7 @@ export {
   gradeAnswer,
   gradeFromSnapshot,
   scoreAttempt,
-} from './assessment/grading.js'
+} from './assessment/grading'
 export type {
   AttemptScore,
   GradedAnswer,
@@ -84,7 +84,7 @@ export type {
   QuizMarking,
   SnapshotQuestion,
   SubmittedAnswer,
-} from './assessment/grading.js'
+} from './assessment/grading'
 export {
   ForbiddenAccess,
   getQuizForLearner,
@@ -94,23 +94,23 @@ export {
   upsertQuestion,
   upsertQuiz,
   upsertSection,
-} from './assessment/attempts.js'
+} from './assessment/attempts'
 export type {
   AttemptResult,
   AttemptSummary,
   LearnerQuizView,
-} from './assessment/attempts.js'
+} from './assessment/attempts'
 export {
   getAssignmentForLearner,
   gradeSubmission,
   listSubmissions,
   submitAssignment,
   upsertAssignment,
-} from './assessment/assignments.js'
+} from './assessment/assignments'
 export type {
   AssignmentSummary,
   SubmissionSummary,
-} from './assessment/assignments.js'
+} from './assessment/assignments'
 
 // Tenancy
 //
@@ -124,13 +124,13 @@ export {
   normaliseSlug,
   resolveAcademy,
   validateSlug,
-} from './tenancy/resolve-academy.js'
+} from './tenancy/resolve-academy'
 export type {
   AcademyResolution,
   AcademyResolutionFailure,
   ResolveAcademyInput,
   ResolvedAcademy,
-} from './tenancy/resolve-academy.js'
+} from './tenancy/resolve-academy'
 export {
   addAcademyDomain,
   createAcademy,
@@ -145,13 +145,13 @@ export {
   updateAcademy,
   updateWorkspace,
   verifyAcademyDomain,
-} from './tenancy/academies.js'
-export { ACADEMY_AUTH_MODES, readAcademyIdentity } from './tenancy/academies.js'
+} from './tenancy/academies'
+export { ACADEMY_AUTH_MODES, readAcademyIdentity } from './tenancy/academies'
 export type {
   AcademyAuthMode,
   AcademySummary,
   WorkspaceSummary,
-} from './tenancy/academies.js'
+} from './tenancy/academies'
 export {
   createServiceKey,
   hashKey,
@@ -160,11 +160,11 @@ export {
   resolveServiceKey,
   revokeServiceKey,
   touchServiceKey,
-} from './tenancy/service-keys.js'
+} from './tenancy/service-keys'
 export type {
   ServiceKeySummary,
   WorkspaceMembership,
-} from './tenancy/service-keys.js'
+} from './tenancy/service-keys'
 
 // Content
 export {
@@ -182,45 +182,46 @@ export {
   updateCourse,
   updateLesson,
   updateModule,
-} from './content/drafts.js'
+} from './content/drafts'
 export type {
   CourseSummary,
   LessonContentType,
   LessonSummary,
   ModuleSummary,
-} from './content/drafts.js'
+} from './content/drafts'
 export {
   buildReleaseSnapshot,
   getRelease,
   gradingSnapshotFrom,
   publishCourse,
-} from './content/publishing.js'
+} from './content/publishing'
 export type {
   ReleaseSnapshot,
   ReleaseSummary,
   SnapshotLesson,
   SnapshotModule,
   SnapshotQuiz,
-} from './content/publishing.js'
+} from './content/publishing'
 export {
   getPublicAcademy,
   getPublicCourse,
   getPublicOutline,
   listDraftModules,
   listPublicCourses,
-} from './content/catalog.js'
+} from './content/catalog'
 export type {
   CatalogCourse,
   PublicAcademy,
   PublicOutlineLesson,
   PublicOutlineModule,
-} from './content/catalog.js'
+} from './content/catalog'
 
 // Learning
 export {
   completeLesson,
   enroll,
   getCourseForLearner,
+  getLearnerProfile,
   getCourseProgress,
   grantAccess,
   hasAccess,
@@ -228,14 +229,14 @@ export {
   listEnrollments,
   recordProgress,
   revokeAccess,
-} from './learning/enrollment.js'
+} from './learning/enrollment'
 export type {
   CourseProgress,
   EnrollmentSummary,
   LearnerLesson,
   LearnerModule,
   LessonProgressSummary,
-} from './learning/enrollment.js'
+} from './learning/enrollment'
 export {
   generateVerificationId,
   getCertificate,
@@ -243,12 +244,12 @@ export {
   listLearnerCertificates,
   revokeCertificate,
   verifyCertificate,
-} from './learning/certificates.js'
+} from './learning/certificates'
 export type {
   CertificateSummary,
   CompletionEvidence,
   PublicCertificateView,
-} from './learning/certificates.js'
+} from './learning/certificates'
 
 // Errors
 //
@@ -262,4 +263,4 @@ export {
   NotFoundError,
   assertCan,
   assertFound,
-} from './shared/errors.js'
+} from './shared/errors'

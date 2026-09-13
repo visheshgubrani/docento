@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
-import { ACTIONS, type Action } from '../actions.js'
+import { ACTIONS, type Action } from '../actions'
 import {
   REQUIRED_RESOURCE_FIELDS,
   can,
   canViaAssignment,
   type Resource,
-} from '../can.js'
-import type { Principal, StaffAssignment } from '../principal.js'
+} from '../can'
+import type { Principal, StaffAssignment } from '../principal'
 
 const WS = 'workspace-1'
 const OTHER_WS = 'workspace-2'

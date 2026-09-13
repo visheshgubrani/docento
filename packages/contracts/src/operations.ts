@@ -20,8 +20,8 @@ import {
   slugSchema,
   submissionSummarySchema,
   workspaceSummarySchema,
-} from './schemas.js'
-import { paginationQuerySchema } from './envelope.js'
+} from './schemas'
+import { paginationQuerySchema } from './envelope'
 
 /**
  * The operation registry.
@@ -678,6 +678,27 @@ export const OPERATIONS = {
   },
 
   // --- Public catalogue ---------------------------------------------------
+  /**
+   * Which academy this request is about.
+   *
+   * Its own operation rather than a reuse of the catalogue read, because the two
+   * are different questions and a page that only needs to know *which* academy
+   * should not have to fetch one. It also has to exist for the frontends: the
+   * resolution rules live with the `AcademyDomain` table, and a frontend that
+   * answered this from its own database would be a second query path — which is
+   * where a tenant filter gets forgotten.
+   *
+   * `404` when nothing resolves, which is the fail-closed answer rather than a
+   * default.
+   */
+  'academy.resolve': {
+    method: 'GET',
+    path: '/academy/resolve',
+    response: z.object({ academy: academySummarySchema }),
+    action: 'public',
+    summary: 'Resolve the academy this request is about',
+  },
+
   'catalog.academy': {
     method: 'GET',
     path: '/catalog/academies/{academyId}',
@@ -733,6 +754,31 @@ export const OPERATIONS = {
   },
 
   // --- Learner: enrolment and progress -----------------------------------
+  /**
+   * Who the caller is, for the application's own session gate.
+   *
+   * The frontend must not validate a session itself — the cookie is opaque and
+   * the session row is the API's, so a second implementation of that check would
+   * be a second answer that disagrees the first time a session is revoked.
+   *
+   * Deliberately minimal: a name, an email and the academy. A page that needs
+   * more asks for it through an operation that has a reason to return it.
+   */
+  'learner.session': {
+    method: 'GET',
+    path: '/learn/session',
+    response: z.object({
+      session: z.object({
+        learnerId: id,
+        name: z.string(),
+        email: z.string().email(),
+        academyId: id,
+      }),
+    }),
+    action: 'learner:profile:read',
+    summary: 'The signed-in learner, for the application’s session gate',
+  },
+
   'learner.courses': {
     method: 'GET',
     path: '/learn/courses',

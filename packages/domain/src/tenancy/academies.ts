@@ -8,15 +8,15 @@
  * workspace is checked against the principal rather than assumed from the URL.
  */
 
-import { prisma } from '../db.js'
-import type { Principal } from '../authorization/principal.js'
+import { prisma } from '../db'
+import type { Principal } from '../authorization/principal'
 import {
   ConflictError,
   DomainRuleError,
   assertCan,
   assertFound,
-} from '../shared/errors.js'
-import { normaliseHostname, validateSlug } from './resolve-academy.js'
+} from '../shared/errors'
+import { normaliseHostname, validateSlug } from './resolve-academy'
 
 export type WorkspaceSummary = {
   id: string

@@ -5,8 +5,8 @@ import {
   type QuestionType,
   type QuizMarking,
   gradeAnswer,
-} from '../grading.js'
-import { legacyGradeAnswer } from './legacy-reference.js'
+} from '../grading'
+import { legacyGradeAnswer } from './legacy-reference'
 
 /**
  * Parity with the implementation this replaces.
