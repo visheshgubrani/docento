@@ -21,8 +21,17 @@ describe('the generated document', () => {
     expect(document.openapi).toBe('3.1.0')
   })
 
-  it('declares the server it was built for', () => {
-    expect(document.servers).toEqual([{ url: 'https://api.example.com' }])
+  it('declares the server it was built for, with the mount', () => {
+    /**
+     * The mount is part of the server URL, not of each path.
+     *
+     * Asserted here rather than left implicit because getting it wrong is
+     * invisible: the document stays internally consistent and every integrator
+     * gets a `404` from an origin that is otherwise correct.
+     */
+    expect(document.servers).toEqual([
+      { url: 'https://api.example.com/api/v1' },
+    ])
   })
 
   it('documents every operation in the registry', () => {

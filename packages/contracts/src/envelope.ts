@@ -138,4 +138,25 @@ export const REQUEST_ID_HEADER = 'x-request-id'
  */
 export const WORKSPACE_HEADER = 'x-workspace-id'
 
+/**
+ * Where the JSON API is mounted.
+ *
+ * ## Why this is a constant and not a convention
+ *
+ * Every path in the operation registry is written *relative to this mount* —
+ * `/workspaces/{workspaceId}` rather than `/api/v1/workspaces/{workspaceId}` —
+ * so the registry reads as a list of resources rather than a list of URLs.
+ * Something has to put the prefix back, and for a while nothing did: the SDK
+ * built `baseUrl + path`, so a client pointed at the API's origin requested
+ * `/staff/session` and got a 404 from a router that serves `/api/v1/staff/session`.
+ * The frontends proxy `/api/v1/*` to the API, which made the omission look like
+ * a proxy misconfiguration rather than a missing prefix.
+ *
+ * It lives here because three things have to agree about it: the router that
+ * mounts, the `rewrites()` in both applications, and the client that builds
+ * URLs. Two of those are in AGPL packages and one is Apache-2.0, so a comment
+ * would not have kept them together.
+ */
+export const API_MOUNT = '/api/v1'
+
 export const requestIdSchema = z.string().min(1).max(128)

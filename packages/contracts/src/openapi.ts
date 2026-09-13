@@ -6,6 +6,7 @@ import {
 import { z } from 'zod'
 
 import {
+  API_MOUNT,
   ERROR_CODES,
   IDEMPOTENCY_HEADER,
   REQUEST_ID_HEADER,
@@ -159,7 +160,19 @@ export function buildOpenApiDocument(
         name: 'AGPL-3.0-only for the application, Apache-2.0 for this SDK',
       },
     },
-    servers: [{ url: options.apiUrl }],
+    /**
+     * The server URL carries the mount, because every path above is relative to
+     * it.
+     *
+     * A document that said the server was `https://api.example.com` while its
+     * paths were `/staff/session` would send an integrator to
+     * `https://api.example.com/staff/session` and answer `404` from a router
+     * that serves `/api/v1/staff/session`. The same omission existed in the SDK
+     * and produced the same 404, which is why `API_MOUNT` lives in this package:
+     * the document, the client and the router are three descriptions of one
+     * prefix, and this is the second of them.
+     */
+    servers: [{ url: `${options.apiUrl}${API_MOUNT}` }],
   })
 
   return document as unknown as Record<string, unknown>

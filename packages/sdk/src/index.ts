@@ -59,6 +59,7 @@ export type {
   WorkspaceSummary,
 } from '@docento/contracts'
 export {
+  API_MOUNT,
   ERROR_CODES,
   apiErrorSchema,
   apiFailureSchema,

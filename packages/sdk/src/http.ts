@@ -4,6 +4,7 @@ import {
   type OperationInput,
   type OperationName,
   type OperationOutput,
+  API_MOUNT,
   OPERATIONS,
   REQUEST_ID_HEADER,
   WORKSPACE_HEADER,
@@ -35,7 +36,10 @@ import {
  */
 
 export type DocentoClientOptions = {
-  /** API origin, without a trailing slash. `https://api.example.com` */
+  /**
+   * The API's origin, without a trailing slash and without the mount:
+   * `https://api.example.com`. The client appends `API_MOUNT` itself.
+   */
   baseUrl: string
   /**
    * A publishable key (`pk_…`) for public reads, or a service key (`sk_…`) for
@@ -205,7 +209,14 @@ export class DocentoClient {
       }
     }
 
-    const url = `${this.baseUrl}${path}${query.size > 0 ? `?${query.toString()}` : ''}`
+    /**
+     * The registry's paths are relative to the API mount, so the mount is
+     * restored here — once, for every call. A client that expected callers to
+     * include it would put the prefix in a configuration value, and a
+     * deployment that got it slightly wrong would produce 404s that look like a
+     * proxy problem.
+     */
+    const url = `${this.baseUrl}${API_MOUNT}${path}${query.size > 0 ? `?${query.toString()}` : ''}`
 
     const headers: Record<string, string> = { Accept: 'application/json' }
 

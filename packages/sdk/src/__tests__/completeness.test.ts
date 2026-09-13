@@ -100,11 +100,24 @@ describe('the client implements the registry', () => {
       // @ts-expect-error the idempotency key is required.
       void api.requestCertificate('c')
       // @ts-expect-error the idempotency key is required.
-      void api.beginUpload('w', {
-        filename: 'f',
-        mimeType: 'text/plain',
-        sizeBytes: 1,
-      })
+      void api.createModule('w', 'a', 'c', { title: 't' })
+      // @ts-expect-error the idempotency key is required.
+      void api.startQuizAttempt('l')
+      // @ts-expect-error the idempotency key is required.
+      void api.completeLesson('l')
+
+      /**
+       * `media.create` is deliberately *not* here.
+       *
+       * A previous version of this block called `api.beginUpload`, which does
+       * not exist on the client — so the `@ts-expect-error` above it was
+       * satisfied by the wrong error (an unknown property, not a missing key)
+       * and asserted nothing. The operation it was reaching for is
+       * `createMedia`, and it takes no key on purpose: a retried create is a
+       * second asset row pointing at the same upload, which the operator can
+       * delete, whereas refusing the retry would leave a client that lost the
+       * response with no way to find out whether its upload address exists.
+       */
     }
 
     expect(typeof keysAreRequired).toBe('function')
@@ -141,7 +154,7 @@ describe('the client implements the registry', () => {
       'a-key-that-is-long-enough',
     )
     expect(seen[0]?.url).toBe(
-      'https://api.example.com/learn/courses/course-1/enrollment',
+      'https://api.example.com/api/v1/learn/courses/course-1/enrollment',
     )
   })
 })
