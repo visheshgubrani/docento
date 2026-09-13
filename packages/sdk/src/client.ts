@@ -455,6 +455,44 @@ export class DocentoApi extends DocentoClient {
   // Quiz authoring
   // -------------------------------------------------------------------------
 
+  /**
+   * Read a lesson's quiz, including its answer keys.
+   *
+   * The write counterpart of this is `upsertQuiz`, and the pair is what makes an
+   * editor possible: `upsertQuestion` needs a `quizId`, and before this read
+   * existed there was no way to recover one after a page reload — the write
+   * answered with it once and nothing returned it again.
+   *
+   * `quiz` is `null` when the lesson has no quiz yet, which is the state an
+   * author is in when they arrive to write one.
+   */
+  getQuiz(
+    workspaceId: string,
+    academyId: string,
+    courseId: string,
+    lessonId: string,
+  ) {
+    return this.call(
+      'quiz.get',
+      { params: { workspaceId, academyId, courseId, lessonId } },
+      describe('getQuiz'),
+    )
+  }
+
+  deleteQuestion(
+    workspaceId: string,
+    academyId: string,
+    courseId: string,
+    quizId: string,
+    questionId: string,
+  ) {
+    return this.call(
+      'quiz.question.delete',
+      { params: { workspaceId, academyId, courseId, quizId, questionId } },
+      describe('deleteQuestion'),
+    )
+  }
+
   upsertQuiz(
     workspaceId: string,
     academyId: string,
@@ -541,6 +579,27 @@ export class DocentoApi extends DocentoClient {
   // -------------------------------------------------------------------------
   // Assignments and grading
   // -------------------------------------------------------------------------
+
+  /**
+   * Read a lesson's assignment, to edit it.
+   *
+   * `assignment` is `null` when the lesson has none yet. The write counterpart
+   * is keyed by `lessonId`, so unlike the quiz this read is not what makes the
+   * editor possible — it is what makes it show the author what they already
+   * wrote instead of resetting it on the next save.
+   */
+  getAssignment(
+    workspaceId: string,
+    academyId: string,
+    courseId: string,
+    lessonId: string,
+  ) {
+    return this.call(
+      'assignment.get',
+      { params: { workspaceId, academyId, courseId, lessonId } },
+      describe('getAssignment'),
+    )
+  }
 
   upsertAssignment(
     workspaceId: string,
@@ -864,10 +923,13 @@ export const IMPLEMENTED_OPERATIONS = {
   'lesson.update': 'updateLesson',
   'lesson.reorder': 'reorderLessons',
   'lesson.delete': 'deleteLesson',
+  'quiz.get': 'getQuiz',
   'quiz.upsert': 'upsertQuiz',
   'quiz.section.upsert': 'upsertQuizSection',
   'quiz.question.upsert': 'upsertQuestion',
+  'quiz.question.delete': 'deleteQuestion',
   'quiz.gradebook': 'getQuizGradebook',
+  'assignment.get': 'getAssignment',
   'assignment.upsert': 'upsertAssignment',
   'assignment.submissions': 'listSubmissions',
   'submission.grade': 'gradeSubmission',

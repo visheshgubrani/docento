@@ -87,6 +87,8 @@ export type {
 } from './assessment/grading'
 export {
   ForbiddenAccess,
+  deleteQuestion,
+  getQuizForAuthor,
   getQuizForLearner,
   listAttempts,
   startAttempt,
@@ -98,9 +100,12 @@ export {
 export type {
   AttemptResult,
   AttemptSummary,
+  AuthorQuestionSummary,
+  AuthorQuizSummary,
   LearnerQuizView,
 } from './assessment/attempts'
 export {
+  getAssignmentForAuthor,
   getAssignmentForLearner,
   gradeSubmission,
   listSubmissions,
@@ -109,6 +114,7 @@ export {
 } from './assessment/assignments'
 export type {
   AssignmentSummary,
+  AuthorAssignmentSummary,
   SubmissionSummary,
 } from './assessment/assignments'
 

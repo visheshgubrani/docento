@@ -151,6 +151,90 @@ export async function upsertAssignment(
 }
 
 /**
+ * The assignment as its author sees it.
+ *
+ * Distinct from `AssignmentSummary` because of `dueAt`: this type crosses the
+ * wire, so the date is an ISO string, and because the counts below answer the
+ * author's question rather than the learner's.
+ */
+export type AuthorAssignmentSummary = {
+  id: string
+  lessonId: string
+  title: string
+  instructions: string | null
+  dueAt: string | null
+  totalPoints: number
+  submissionCount: number
+  gradedCount: number
+}
+
+/**
+ * Read a lesson's assignment, to edit it.
+ *
+ * `null` when there is none, for the same reason `getQuizForAuthor` returns
+ * `null`: arriving to write the brief is the ordinary case, and a `404` would
+ * make it an error the UI has to tell apart from "this lesson is not yours".
+ *
+ * The counts come back with the brief because the question an author asks
+ * immediately after changing it is whether anybody has already answered.
+ */
+export async function getAssignmentForAuthor(
+  principal: Principal,
+  input: {
+    workspaceId: string
+    academyId: string
+    courseId: string
+    lessonId: string
+  },
+): Promise<AuthorAssignmentSummary | null> {
+  assertCan(principal, 'course:read', {
+    workspaceId: input.workspaceId,
+    academyId: input.academyId,
+    courseId: input.courseId,
+  })
+
+  const lesson = await prisma.lesson.findFirst({
+    where: {
+      id: input.lessonId,
+      module: {
+        courseId: input.courseId,
+        course: { academyId: input.academyId },
+      },
+    },
+    select: { id: true },
+  })
+
+  assertFound('lesson', lesson, input.lessonId)
+
+  const assignment = await prisma.assignment.findUnique({
+    where: { lessonId: input.lessonId },
+    select: {
+      ...ASSIGNMENT_FIELDS,
+      _count: { select: { submissions: true } },
+    },
+  })
+
+  if (!assignment) return null
+
+  /**
+   * A second query rather than a filtered count, because `_count` cannot
+   * express "submissions whose grade is set" on this relation.
+   */
+  const gradedCount = await prisma.assignmentSubmission.count({
+    where: { assignmentId: assignment.id, grade: { not: null } },
+  })
+
+  const { _count, ...rest } = assignment
+
+  return {
+    ...rest,
+    dueAt: rest.dueAt?.toISOString() ?? null,
+    submissionCount: _count.submissions,
+    gradedCount,
+  }
+}
+
+/**
  * The assignment as a learner sees it, with their own submission.
  *
  * Refuses when access has lapsed, so a learner who lost access cannot read the

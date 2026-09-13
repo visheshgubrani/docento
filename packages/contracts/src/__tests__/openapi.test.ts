@@ -155,19 +155,30 @@ describe('the generated document', () => {
     expect(JSON.stringify(first)).toBe(JSON.stringify(second))
   })
 
-  it('never puts an answer key in a response, including in generated clients', () => {
+  it('puts an answer key in exactly one response, the author’s own read', () => {
     /**
      * The distinction that matters, and the first version of this test got it
      * wrong by asserting on the whole document.
      *
      * `correctAnswer` legitimately appears in a *request*: an author sending a
      * question necessarily sends its key, and a route that could not accept one
-     * could not be used to author a quiz. What must never appear is the key in a
-     * *response*, because that is what every generated client would then model
-     * as receivable — and what an integrator would reasonably display.
+     * could not be used to author a quiz. What must never appear is the key on a
+     * response a *learner* can receive, because that is what every generated
+     * client would then model as receivable — and what an integrator would
+     * reasonably display.
      *
-     * So this walks each operation's success response only.
+     * There is now one deliberate exception. `quiz.get` returns the key so an
+     * author can see and edit what they wrote; without it a question editor can
+     * only append and blind-overwrite, and a quiz cannot be reopened after a
+     * page reload. It is workspace-scoped and requires `course:read`.
+     *
+     * The exception is named here rather than expressed as a general relaxation,
+     * so that adding a second one is an edit to this line — which is the point
+     * at which somebody should have to think about it.
      */
+    const AUTHORING_READ =
+      'GET /workspaces/{workspaceId}/academies/{academyId}/courses/{courseId}/lessons/{lessonId}/quiz'
+
     const responseSchemas: Record<string, unknown> = {}
 
     for (const [path, methods] of Object.entries(paths)) {
@@ -175,19 +186,46 @@ describe('the generated document', () => {
         const responses = (operation as { responses?: Record<string, unknown> })
           .responses
 
-        if (responses?.['200']) {
-          responseSchemas[`${method.toUpperCase()} ${path}`] = responses['200']
+        const key = `${method.toUpperCase()} ${path}`
+
+        if (responses?.['200'] && key !== AUTHORING_READ) {
+          responseSchemas[key] = responses['200']
         }
       }
     }
 
-    // Every operation documents a success response, so this is not vacuous.
-    expect(Object.keys(responseSchemas).length).toBe(OPERATION_NAMES.length)
+    // Every other operation still documents a success response, so this is not
+    // vacuous by having excluded too much.
+    expect(Object.keys(responseSchemas).length).toBe(OPERATION_NAMES.length - 1)
 
-    const serialised = JSON.stringify(responseSchemas)
+    expect(JSON.stringify(responseSchemas)).not.toContain('correctAnswer')
+    expect(JSON.stringify(responseSchemas)).not.toContain('correctAnswers')
 
-    expect(serialised).not.toContain('correctAnswer')
-    expect(serialised).not.toContain('correctAnswers')
+    /**
+     * And the exception is real.
+     *
+     * Asserted so it cannot become a name that matches nothing: if the read were
+     * renamed or dropped, this fails rather than silently leaving the guard
+     * covering a path that no longer exists.
+     */
+    const authoringRead = paths[
+      '/workspaces/{workspaceId}/academies/{academyId}/courses/{courseId}/lessons/{lessonId}/quiz'
+    ]?.get
+
+    expect(JSON.stringify(authoringRead)).toContain('correctAnswer')
+
+    /**
+     * The learner-facing paths, checked as a group.
+     *
+     * Their own quiz read returns the same quiz, so this is the boundary that
+     * would fail first if the author projection were ever reused for a learner.
+     */
+    const learnerPaths = Object.entries(paths).filter(([path]) =>
+      path.startsWith('/learn/'),
+    )
+
+    expect(learnerPaths.length).toBeGreaterThan(0)
+    expect(JSON.stringify(learnerPaths)).not.toContain('correctAnswer')
   })
 
   it('does allow an author to send a key when writing a question', () => {

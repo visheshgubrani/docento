@@ -2,6 +2,8 @@ import { z } from 'zod'
 
 import {
   academySummarySchema,
+  authorAssignmentSchema,
+  authorQuizSchema,
   brandingSchema,
   catalogCourseSchema,
   courseSummarySchema,
@@ -678,6 +680,49 @@ export const OPERATIONS = {
     summary: 'Add or edit a quiz question',
   },
 
+  /**
+   * The author's read of a quiz.
+   *
+   * Why this had to exist before a question editor could: every quiz write is
+   * keyed by an id the client cannot recover. `quiz.upsert` answers with
+   * `{ quizId }`, but nothing read a quiz back — `learner.quiz` returns the
+   * learner projection, which by design has no answer key and is reached under
+   * `/learn/...`. So an editor could create a quiz and add questions to it, and
+   * a page reload lost the `quizId` and with it the ability to add a second
+   * question. It could also never show an author what they had written.
+   *
+   * A `null` quiz rather than a `404`, because "this lesson has no quiz yet" is
+   * the state an author is in when they arrive to write one.
+   */
+  'quiz.get': {
+    method: 'GET',
+    path: '/workspaces/{workspaceId}/academies/{academyId}/courses/{courseId}/lessons/{lessonId}/quiz',
+    params: z.object({
+      workspaceId: id,
+      academyId: id,
+      courseId: id,
+      lessonId: id,
+    }),
+    response: z.object({ quiz: authorQuizSchema.nullable() }),
+    action: 'course:read',
+    summary: 'Read a lesson’s quiz, including its answer keys, to edit it',
+  },
+
+  'quiz.question.delete': {
+    method: 'DELETE',
+    path: '/workspaces/{workspaceId}/academies/{academyId}/courses/{courseId}/quizzes/{quizId}/questions/{questionId}',
+    params: z.object({
+      workspaceId: id,
+      academyId: id,
+      courseId: id,
+      quizId: id,
+      questionId: id,
+    }),
+    response: okSchema,
+    action: 'course:update',
+    summary: 'Remove a question from a quiz',
+  },
+
   'quiz.gradebook': {
     method: 'GET',
     path: '/workspaces/{workspaceId}/academies/{academyId}/courses/{courseId}/lessons/{lessonId}/quiz/attempts',
@@ -713,6 +758,32 @@ export const OPERATIONS = {
     response: z.object({ assignmentId: id }),
     action: 'course:update',
     summary: 'Create or edit a lesson’s assignment',
+  },
+
+  /**
+   * The author's read of an assignment.
+   *
+   * Milder than `quiz.get` and the same shape of problem: `assignment.upsert`
+   * is keyed by `lessonId`, so an editor needs no id it cannot recover — but
+   * without a read it still cannot show an author the brief, the due date or the
+   * points they set, and an edit form that only writes resets what it did not
+   * read.
+   *
+   * `null` when the lesson has no assignment yet, for the same reason as
+   * `quiz.get`.
+   */
+  'assignment.get': {
+    method: 'GET',
+    path: '/workspaces/{workspaceId}/academies/{academyId}/courses/{courseId}/lessons/{lessonId}/assignment',
+    params: z.object({
+      workspaceId: id,
+      academyId: id,
+      courseId: id,
+      lessonId: id,
+    }),
+    response: z.object({ assignment: authorAssignmentSchema.nullable() }),
+    action: 'course:read',
+    summary: 'Read a lesson’s assignment, to edit it',
   },
 
   'assignment.submissions': {

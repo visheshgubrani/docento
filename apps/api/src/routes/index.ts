@@ -33,6 +33,9 @@ import {
   readAcademyIdentity,
   getPublicCourse,
   getPublicOutline,
+  deleteQuestion,
+  getAssignmentForAuthor,
+  getQuizForAuthor,
   getQuizForLearner,
   getRelease,
   getWorkspace,
@@ -532,6 +535,28 @@ export function createRoutes(): Hono {
   // Quiz authoring
   // -------------------------------------------------------------------------
 
+  /**
+   * The author's read of a quiz.
+   *
+   * A `null` quiz rather than a `404`, because "no quiz here yet" is the state
+   * an author arrives in, and the code the API would send for a missing quiz is
+   * the same one it sends for a lesson that is not theirs. The editor cannot
+   * tell those apart, so the absence is data rather than an error.
+   */
+  routes.get(
+    '/workspaces/:workspaceId/academies/:academyId/courses/:courseId/lessons/:lessonId/quiz',
+    operation('quiz.get', async ({ principal, input }) => {
+      const quiz = await getQuizForAuthor(principal, {
+        workspaceId: param(input, 'workspaceId'),
+        academyId: param(input, 'academyId'),
+        courseId: param(input, 'courseId'),
+        lessonId: param(input, 'lessonId'),
+      })
+
+      return { quiz }
+    }),
+  )
+
   routes.put(
     '/workspaces/:workspaceId/academies/:academyId/courses/:courseId/lessons/:lessonId/quiz',
     operation('quiz.upsert', async ({ principal, input }) => {
@@ -544,6 +569,19 @@ export function createRoutes(): Hono {
       })
 
       return { quizId: quiz.id, lessonId: quiz.lessonId }
+    }),
+  )
+
+  routes.delete(
+    '/workspaces/:workspaceId/academies/:academyId/courses/:courseId/quizzes/:quizId/questions/:questionId',
+    operation('quiz.question.delete', async ({ principal, input }) => {
+      return deleteQuestion(principal, {
+        workspaceId: param(input, 'workspaceId'),
+        academyId: param(input, 'academyId'),
+        courseId: param(input, 'courseId'),
+        quizId: param(input, 'quizId'),
+        questionId: param(input, 'questionId'),
+      })
     }),
   )
 
@@ -625,6 +663,27 @@ export function createRoutes(): Hono {
   // -------------------------------------------------------------------------
   // Assignments and grading
   // -------------------------------------------------------------------------
+
+  /**
+   * The author's read of an assignment.
+   *
+   * `null` when the lesson has no assignment yet, for the same reason
+   * `quiz.get` returns a null quiz: writing the brief is the ordinary case, and
+   * a `404` would share a code with "this lesson is not yours".
+   */
+  routes.get(
+    '/workspaces/:workspaceId/academies/:academyId/courses/:courseId/lessons/:lessonId/assignment',
+    operation('assignment.get', async ({ principal, input }) => {
+      const assignment = await getAssignmentForAuthor(principal, {
+        workspaceId: param(input, 'workspaceId'),
+        academyId: param(input, 'academyId'),
+        courseId: param(input, 'courseId'),
+        lessonId: param(input, 'lessonId'),
+      })
+
+      return { assignment }
+    }),
+  )
 
   routes.put(
     '/workspaces/:workspaceId/academies/:academyId/courses/:courseId/lessons/:lessonId/assignment',

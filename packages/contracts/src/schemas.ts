@@ -538,6 +538,99 @@ export const submissionSummarySchema = z.object({
 export type SubmissionSummary = z.infer<typeof submissionSummarySchema>
 
 // ---------------------------------------------------------------------------
+// Authoring: what the person who wrote the quiz is allowed to see
+// ---------------------------------------------------------------------------
+
+/**
+ * A question, as its author sees it.
+ *
+ * The counterpart to the learner's projection, and the difference is the whole
+ * reason this exists: `correctAnswer` is here. An author editing a question has
+ * to see the key they wrote — without it a question editor can only append and
+ * blind-overwrite, and a quiz cannot be reviewed after it is saved.
+ *
+ * Kept as its own schema rather than an `extend` of a shared one, so the two
+ * can never drift into agreement. The learner shape deliberately has no field
+ * that could hold a key; this one is deliberately the only place a key is
+ * returned, behind `course:read` on a workspace-scoped route.
+ */
+export const authorQuizQuestionSchema = z.object({
+  id: idSchema,
+  prompt: z.string(),
+  questionType: questionTypeSchema,
+  options: z.array(z.string()),
+  correctAnswer: z.string(),
+  correctAnswers: z.array(z.string()),
+  explanation: z.string().nullable(),
+  points: z.number().int(),
+  negativePoints: z.number(),
+  partialMarking: z.boolean(),
+  sectionId: idSchema.nullable(),
+  position: z.number().int(),
+  /** MANUAL | AI_GENERATED | IMPORTED */
+  source: z.string(),
+  /** DRAFT | APPROVED — AI output is reviewed before it can be published. */
+  reviewStatus: z.string(),
+})
+
+export type AuthorQuizQuestion = z.infer<typeof authorQuizQuestionSchema>
+
+export const authorQuizSectionSchema = z.object({
+  id: idSchema,
+  title: z.string(),
+  position: z.number().int(),
+})
+
+export type AuthorQuizSection = z.infer<typeof authorQuizSectionSchema>
+
+/**
+ * A quiz, as its author sees it.
+ *
+ * Every field `quiz.upsert` accepts is returned, because an edit form has to
+ * start from what is stored: a settings panel that could only write would
+ * silently reset whatever it did not read back.
+ */
+export const authorQuizSchema = z.object({
+  id: idSchema,
+  lessonId: idSchema,
+  title: z.string(),
+  description: z.string().nullable(),
+  passingPercent: z.number().int().min(0).max(100),
+  maxAttempts: z.number().int().nullable(),
+  timeLimitMinutes: z.number().int().nullable(),
+  /** ISO strings, as everywhere else these cross the wire. */
+  opensAt: z.string().nullable(),
+  closesAt: z.string().nullable(),
+  isMockTest: z.boolean(),
+  negativeMarking: z.boolean(),
+  defaultNegativeMark: z.number().nullable(),
+  sections: z.array(authorQuizSectionSchema),
+  questions: z.array(authorQuizQuestionSchema),
+})
+
+export type AuthorQuiz = z.infer<typeof authorQuizSchema>
+
+export const authorAssignmentSchema = z.object({
+  id: idSchema,
+  lessonId: idSchema,
+  title: z.string(),
+  instructions: z.string().nullable(),
+  dueAt: z.string().nullable(),
+  totalPoints: z.number().int(),
+  /**
+   * How many learners have submitted.
+   *
+   * Returned with the assignment rather than left to a second call, because the
+   * question an author asks immediately after editing the brief is whether
+   * anybody has already answered it.
+   */
+  submissionCount: z.number().int(),
+  gradedCount: z.number().int(),
+})
+
+export type AuthorAssignment = z.infer<typeof authorAssignmentSchema>
+
+// ---------------------------------------------------------------------------
 // Certificates
 // ---------------------------------------------------------------------------
 

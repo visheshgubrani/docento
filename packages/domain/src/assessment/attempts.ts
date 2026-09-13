@@ -1158,3 +1158,218 @@ export async function upsertSection(
     select: { id: true },
   })
 }
+
+/** A question as its author sees it, which is to say with its answer key. */
+export type AuthorQuestionSummary = {
+  id: string
+  prompt: string
+  /**
+   * Narrowed from the column's `string`.
+   *
+   * The schema stores a string and a migration could introduce a value this
+   * build does not know; the contract's enum would then reject the whole quiz
+   * response, and the author would see a failed page rather than the one
+   * question they cannot edit. `asQuestionType` is the same narrowing the
+   * grading path uses, so an unrecognised value behaves the same in both.
+   */
+  questionType: QuestionType
+  options: string[]
+  correctAnswer: string
+  correctAnswers: string[]
+  explanation: string | null
+  points: number
+  negativePoints: number
+  partialMarking: boolean
+  sectionId: string | null
+  position: number
+  source: string
+  reviewStatus: string
+}
+
+export type AuthorQuizSummary = {
+  id: string
+  lessonId: string
+  title: string
+  description: string | null
+  passingPercent: number
+  maxAttempts: number | null
+  timeLimitMinutes: number | null
+  opensAt: string | null
+  closesAt: string | null
+  isMockTest: boolean
+  negativeMarking: boolean
+  defaultNegativeMark: number | null
+  sections: { id: string; title: string; position: number }[]
+  questions: AuthorQuestionSummary[]
+}
+
+/**
+ * Read a lesson's quiz as its author, including the answer keys.
+ *
+ * ## Why this is not `getQuizForLearner`
+ *
+ * The learner read returns a projection with no field that could hold a key —
+ * a deliberate shape, so a key cannot leak through it. That projection is also
+ * reached under `/learn/...` by a learner principal, so it is the wrong thing
+ * for an editor on both counts.
+ *
+ * ## Why it returns `null` rather than throwing
+ *
+ * "This lesson has no quiz yet" is the state an author is in when they arrive
+ * to write one. A `404` would make the ordinary case an error the UI has to
+ * recognise by code, and the code is shared with "this lesson is not yours",
+ * which must not be conflated with it.
+ *
+ * ## Why every field is returned
+ *
+ * An edit form that can only write resets whatever it did not read back: an
+ * author changing the passing mark would silently clear the time limit. So the
+ * read returns everything `upsertQuiz` accepts.
+ */
+export async function getQuizForAuthor(
+  principal: Principal,
+  input: {
+    workspaceId: string
+    academyId: string
+    courseId: string
+    lessonId: string
+  },
+): Promise<AuthorQuizSummary | null> {
+  assertCan(principal, 'course:read', {
+    workspaceId: input.workspaceId,
+    academyId: input.academyId,
+    courseId: input.courseId,
+  })
+
+  /**
+   * The lesson is looked up through the course before the quiz is looked up
+   * through the lesson, so naming a lesson from another course is a not-found
+   * rather than a read.
+   */
+  const lesson = await prisma.lesson.findFirst({
+    where: {
+      id: input.lessonId,
+      module: {
+        courseId: input.courseId,
+        course: { academyId: input.academyId },
+      },
+    },
+    select: { id: true },
+  })
+
+  assertFound('lesson', lesson, input.lessonId)
+
+  const quiz = await prisma.quiz.findUnique({
+    where: { lessonId: input.lessonId },
+    select: {
+      id: true,
+      lessonId: true,
+      title: true,
+      description: true,
+      passingPercent: true,
+      maxAttempts: true,
+      timeLimitMinutes: true,
+      opensAt: true,
+      closesAt: true,
+      isMockTest: true,
+      negativeMarking: true,
+      defaultNegativeMark: true,
+      sections: {
+        orderBy: { position: 'asc' },
+        select: { id: true, title: true, position: true },
+      },
+      questions: {
+        orderBy: { position: 'asc' },
+        select: {
+          id: true,
+          prompt: true,
+          questionType: true,
+          options: true,
+          correctAnswer: true,
+          correctAnswers: true,
+          explanation: true,
+          points: true,
+          negativePoints: true,
+          partialMarking: true,
+          sectionId: true,
+          position: true,
+          source: true,
+          reviewStatus: true,
+        },
+      },
+    },
+  })
+
+  if (!quiz) return null
+
+  return {
+    ...quiz,
+    /**
+     * ISO strings, as the rest of the API sends dates. The learner read does the
+     * same conversion, and a form that receives a `Date` here would be the one
+     * place the wire format differs.
+     */
+    opensAt: quiz.opensAt?.toISOString() ?? null,
+    closesAt: quiz.closesAt?.toISOString() ?? null,
+    questions: quiz.questions.map((question) => ({
+      ...question,
+      questionType: asQuestionType(question.questionType),
+      options: asStringArray(question.options),
+    })),
+  }
+}
+
+/**
+ * Remove a question from a quiz.
+ *
+ * ## Why this refuses once anybody has answered
+ *
+ * `QuizAnswer.questionId` cascades. Deleting a question an attempt already
+ * answered would therefore delete those answer rows — the attempt keeps its
+ * score and its grading snapshot, so the *result* survives, but the per-question
+ * breakdown a learner can review would lose entries, and a gradebook would show
+ * a submission with fewer questions than it was graded against.
+ *
+ * A conflict rather than a rule error, because nothing about the request is
+ * malformed: it is the state of the world that says no. The message tells the
+ * author what to do instead, since "delete" is not the only way to stop asking a
+ * question.
+ */
+export async function deleteQuestion(
+  principal: Principal,
+  input: {
+    workspaceId: string
+    academyId: string
+    courseId: string
+    quizId: string
+    questionId: string
+  },
+): Promise<{ ok: true }> {
+  assertCan(principal, 'course:update', {
+    workspaceId: input.workspaceId,
+    academyId: input.academyId,
+    courseId: input.courseId,
+  })
+
+  const question = await prisma.question.findFirst({
+    where: {
+      id: input.questionId,
+      quizId: input.quizId,
+      quiz: { lesson: { module: { courseId: input.courseId } } },
+    },
+    select: { id: true, _count: { select: { answers: true } } },
+  })
+
+  assertFound('question', question, input.questionId)
+
+  if (question._count.answers > 0) {
+    throw new ConflictError(
+      'question_answered',
+      'Learners have already answered this question, so deleting it would remove their answers from a graded attempt. Edit it instead, or write a new question and leave this one out of the next release.',
+    )
+  }
+
+  await prisma.question.delete({ where: { id: question.id } })
+
+  return { ok: true }
+}
