@@ -43,10 +43,15 @@ export function isNotFound(error: unknown): boolean {
  * The message from a failure, for a page that has to say something.
  *
  * `DocentoApiError`'s message is written for a person. Anything else is a bug
- * whose text should not reach a learner, so it is replaced rather than shown.
+ * whose text should not reach a learner, so it is replaced rather than shown —
+ * but it is logged, because a failure reported nowhere is a failure nobody can
+ * diagnose. The one that prompted this left nothing in the API's log, nothing in
+ * the network tab, and only the sentence below on screen.
  */
 export function messageFor(error: unknown): string {
   if (error instanceof DocentoApiError) return error.message
+
+  console.error(error)
 
   return 'Something went wrong. Please try again.'
 }

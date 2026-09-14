@@ -31,6 +31,47 @@ const clientWith = (
     fetch: handler as unknown as typeof globalThis.fetch,
   })
 
+/**
+ * The base URL, including the empty one.
+ *
+ * `''` is not a missing value: it names the origin the code is already running
+ * in, which is how both applications in this repository issue browser calls —
+ * a relative `/api/v1/…` path that the application's own `rewrites()` proxies to
+ * the API. A falsy check here rejected it, so every browser-side write in both
+ * applications threw before a request was sent: no request in the API's log,
+ * nothing in the network tab, and a generic sentence shown to the operator.
+ */
+describe('the base URL', () => {
+  it('accepts the empty string, which means the current origin', async () => {
+    const seen: string[] = []
+
+    const api = new DocentoApi({
+      baseUrl: '',
+      credentials: 'include',
+      fetch: ((url: string) => {
+        seen.push(url)
+
+        return jsonResponse({
+          success: true,
+          data: { status: 'ok', version: '0.0.0-test' },
+          meta: { requestId: 'r1' },
+        })
+      }) as unknown as typeof globalThis.fetch,
+    })
+
+    await api.health()
+
+    // No scheme and no host: the request stays on whatever origin issued it.
+    expect(seen[0]).toBe('/api/v1/health')
+  })
+
+  it('still refuses a base URL that was never supplied', () => {
+    expect(
+      () => new DocentoApi({ baseUrl: undefined as unknown as string }),
+    ).toThrow(/baseUrl is required/)
+  })
+})
+
 describe('unwrapping the envelope', () => {
   it('returns data, not the envelope', async () => {
     const api = clientWith(() =>

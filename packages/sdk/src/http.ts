@@ -39,6 +39,12 @@ export type DocentoClientOptions = {
   /**
    * The API's origin, without a trailing slash and without the mount:
    * `https://api.example.com`. The client appends `API_MOUNT` itself.
+   *
+   * The empty string is a value rather than an omission: it names the origin
+   * this code is already running in, so every request is issued as a relative
+   * `/api/v1/…` path. That is what a browser wants when the application proxies
+   * the API mount to the API — the cookie is first-party and there is no CORS.
+   * It requires a runtime with a document origin to resolve against.
    */
   baseUrl: string
   /**
@@ -158,9 +164,24 @@ export class DocentoClient {
   private readonly onResponse?: DocentoClientOptions['onResponse']
 
   constructor(options: DocentoClientOptions) {
-    if (!options.baseUrl) {
+    /**
+     * A base URL is required — but `''` is a value, not an omission.
+     *
+     * An empty base URL means "the origin this code is already running in", and
+     * it is how a browser in this repository's applications reaches the API:
+     * the request goes to the application's own origin and is rewritten to the
+     * API, so the session cookie is first-party. The falsy check this replaces
+     * rejected it, which made every browser-side write in both applications
+     * throw before a request was sent — no request in the API's log, nothing in
+     * the network tab, and only a generic sentence shown to the operator.
+     *
+     * It only works in a runtime that resolves a relative URL against a
+     * document origin, which is to say a browser. A server-side caller still
+     * passes an absolute origin.
+     */
+    if (typeof options.baseUrl !== 'string') {
       throw new Error(
-        'A baseUrl is required. Pass the API origin, e.g. http://localhost:4000',
+        'A baseUrl is required. Pass the API origin, e.g. http://localhost:4000, or the empty string for the origin this code is running in.',
       )
     }
 

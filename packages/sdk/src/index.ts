@@ -15,6 +15,11 @@
  * // A learner's own data, with their session.
  * const mine = new DocentoApi({ baseUrl, learnerToken, credentials: 'include' })
  * const { courses: enrolled } = await mine.listLearnerCourses()
+ *
+ * // In a browser talking to its own origin through a rewrite, the base URL is
+ * // the empty string: requests stay on the page's origin, so the session cookie
+ * // is first-party.
+ * const sameOrigin = new DocentoApi({ baseUrl: '', credentials: 'include' })
  * ```
  */
 
