@@ -124,6 +124,49 @@ jobs:
         run: pnpm db:generate
       - run: pnpm build
 
+  # The marketing site, driven in a real browser.
+  #
+  # A separate job because it is a separate application with a separate
+  # dependency — a Chromium download — and because the interesting assertions are
+  # ones only a browser can make: that the page is readable without JavaScript,
+  # that the keyboard can reach every control, that no viewport overflows
+  # sideways, and that no serious accessibility violation has appeared.
+  #
+  # No Postgres and no API. That is the point of the job: if this ever needs a
+  # database to pass, the marketing page has grown a dependency it should not
+  # have, and this is where that would be noticed.
+  www-e2e:
+    name: Marketing site (browser)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build the marketing site
+        run: pnpm --filter @docento/www build
+
+      - name: Install Chromium
+        run: pnpm --filter @docento/www exec playwright install --with-deps chromium
+
+      - name: Browser suite
+        run: pnpm --filter @docento/www test:e2e
+
+      - name: Upload the report
+        # Only when something failed, and never as a reason for the job to fail.
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: www-playwright-report
+          path: |
+            apps/www/playwright-report
+            apps/www/test-results
+          retention-days: 7
+
   # The container story, built rather than asserted.
   #
   # A Dockerfile is the one part of this repository nothing else exercises: the

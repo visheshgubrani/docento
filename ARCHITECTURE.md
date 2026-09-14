@@ -25,6 +25,11 @@ Three audiences, all first-class:
 The commercial model is hosting, managed infrastructure, and support. There is
 no proprietary edition — everything in this repository is the whole product.
 
+`apps/www` is the one surface with no tenancy in it at all: a static marketing
+site that builds and serves without Postgres, authentication or the API. It shares
+`packages/ui` with the applications, which is what keeps the marketing page and the
+product looking like one product rather than two.
+
 ---
 
 ## The core model
@@ -74,11 +79,13 @@ apps/
   worker/    Durable jobs, outbox delivery, provider reconciliation.
   studio/    Staff and creator application.
   learn/     Multi-tenant learner application.
+  www/       Marketing site. Static, with no database, session or API call.
   docs/      Documentation site.
 packages/
   domain/         Business rules, authorization, transactions, Prisma schema.
   contracts/      Apache-2.0. Zod schemas; the public API's source of truth.
   sdk/            Apache-2.0. Typed client, generated from contracts.
+  ui/             Shared design system: semantic tokens, typefaces, primitives.
   integrations/   AI, media, storage, payments, email, jobs.
   config/         Base configuration and validated environment.
 docs/adr/     Architecture decision records.

@@ -71,7 +71,10 @@ WORKDIR /app
 #
 # Every workspace package's manifest is required, not just the ones a target
 # needs: a frozen install validates the lockfile against the workspace as a
-# whole, and a missing manifest is a lockfile that does not match.
+# whole, and a missing manifest is a lockfile that does not match. `apps/www`
+# and `packages/ui` are copied for that reason alone — the marketing site has no
+# target here, because a documentation-free marketing page is not part of a
+# self-hosted install.
 #
 # Only the four services are installed, though, and that is not an optimisation.
 # `apps/docs` generates its MDX index in a `postinstall`, from a config file and
@@ -98,11 +101,13 @@ COPY apps/docs/package.json apps/docs/
 COPY apps/learn/package.json apps/learn/
 COPY apps/studio/package.json apps/studio/
 COPY apps/worker/package.json apps/worker/
+COPY apps/www/package.json apps/www/
 COPY packages/config/package.json packages/config/
 COPY packages/contracts/package.json packages/contracts/
 COPY packages/domain/package.json packages/domain/
 COPY packages/integrations/package.json packages/integrations/
 COPY packages/sdk/package.json packages/sdk/
+COPY packages/ui/package.json packages/ui/
 
 RUN --mount=type=cache,target=/pnpm/store \
     pnpm install --frozen-lockfile \

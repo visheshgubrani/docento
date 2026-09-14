@@ -24,6 +24,20 @@ a learner following a course never sees a half-finished edit, and a quiz already
 in progress is never regraded by a later change. See
 [ADR 5](../../docs/adr/0005-immutable-published-releases.md).
 
+## What it is built from
+
+`@docento/ui` — the shared design system: semantic tokens, the typefaces, and the
+primitives. This application no longer carries its own copies of any of them, and
+`src/app/globals.css` is three imports plus a single override (its headings use the
+interface face rather than the editorial serif the marketing site sets them in).
+
+The consequence worth knowing when editing CSS: a class is generated from the
+sources Tailwind is told about, and the design system declares its own — so a
+utility used only inside a primitive still exists here. That is why
+`@docento/ui/styles/base.css` has `@source` lines in it.
+
+`apps/learn` has not been migrated yet and still carries its own set.
+
 ## What it talks to
 
 Only the public HTTP API (`apps/api`), through `@docento/sdk` — the same surface

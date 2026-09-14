@@ -57,8 +57,12 @@ const nextConfig: NextConfig = {
    * That is deliberate: there is no build step between a change in
    * `packages/contracts` and this application seeing it, which is what makes a
    * contract change impossible to forget to rebuild.
+   *
+   * `@docento/ui` is here for the same reason, and it is what lets this
+   * application stop carrying its own copy of every primitive: a change to a
+   * button in the design system reaches these screens without a publish step.
    */
-  transpilePackages: ['@docento/contracts', '@docento/sdk'],
+  transpilePackages: ['@docento/contracts', '@docento/sdk', '@docento/ui'],
 
   images: {
     formats: ['image/avif', 'image/webp'],

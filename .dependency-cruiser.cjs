@@ -13,7 +13,7 @@ module.exports = {
       name: 'apache-cannot-depend-on-agpl',
       severity: 'error',
       comment:
-        'packages/contracts and packages/sdk are Apache-2.0 so they stay usable in proprietary software. If either imported an AGPL-3.0 package, the permissive licence would become a lie. Dependency direction is one-way: the AGPL application imports these, never the reverse. See docs/adr/0006-licensing-boundary.md.',
+        'packages/contracts and packages/sdk are Apache-2.0 so they stay usable in proprietary software. If either imported an AGPL-3.0 package, the permissive licence would become a lie. Dependency direction is one-way: the AGPL application imports these, never the reverse. packages/ui is in the forbidden list for the same reason: the shared design system is AGPL-3.0 with the rest of the application, and an Apache package importing a button from it would carry the licence into code that is meant to be permissively usable. See docs/adr/0006-licensing-boundary.md.',
       from: {
         path: '^packages/(contracts|sdk)/',
         // Root-level tooling config only. These are devDependencies, and both
@@ -23,16 +23,16 @@ module.exports = {
         pathNot: '^packages/(contracts|sdk)/(eslint|vitest|tsup)\\.config\\.',
       },
       to: {
-        path: '^(apps/|packages/(domain|integrations|config)/)',
+        path: '^(apps/|packages/(domain|integrations|config|ui)/)',
       },
     },
     {
       name: 'frontends-cannot-import-domain',
       severity: 'error',
       comment:
-        'Business rules live behind the API. A frontend that imports packages/domain would reach Prisma directly and reimplement pricing, grading, or enrollment — which is how a second code path ends up making a different authorization decision than the first. See ARCHITECTURE.md.',
-      from: { path: '^(apps/studio|apps/learn)/' },
-      to: { path: '^packages/domain/' },
+        'Business rules live behind the API. A frontend that imports packages/domain would reach Prisma directly and reimplement pricing, grading, or enrollment — which is how a second code path ends up making a different authorization decision than the first. The marketing site and the shared design system are in the same rule: the design system is presentation only, and a component that needed a domain query is a component that belongs in an application. See ARCHITECTURE.md.',
+      from: { path: '^(apps/studio|apps/learn|apps/www)/' },
+      to: { path: '^(packages/domain|packages/integrations)/' },
     },
     {
       name: 'prisma-client-only-in-domain',

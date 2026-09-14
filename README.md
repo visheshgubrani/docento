@@ -13,11 +13,12 @@ proprietary edition: everything in this repository is the whole product.
 Be aware of what you are cloning. **The foundation is complete and verified; the
 product is being built on top of it.**
 
-|                                                                      | State             |
-| -------------------------------------------------------------------- | ----------------- |
-| Monorepo, licensing, governance, CI                                  | Done              |
-| Database schema, authentication, authorization, jobs, rate limiting  | Done, with tests  |
-| The application itself (authoring, publishing, learning, assessment) | API done, UI next |
+|                                                                      | State                             |
+| -------------------------------------------------------------------- | --------------------------------- |
+| Monorepo, licensing, governance, CI                                  | Done                              |
+| Database schema, authentication, authorization, jobs, rate limiting  | Done, with tests                  |
+| The application itself (authoring, publishing, learning, assessment) | API done, UI next                 |
+| The marketing site (`apps/www`)                                      | Built on the shared design system |
 
 Milestone A — the foundation — is complete and verified. Milestone B is done: a
 staff member authors a course, publishes it as an immutable release, and a learner
@@ -36,6 +37,11 @@ What you _can_ do right now is real: install, migrate the database, **seed a
 working workspace, academy and owner account**, run the whole stack from a
 checkout or from the container images, and run the test suite — which includes the
 free-learning loop driven end to end over HTTP.
+
+The marketing site is a separate application (`apps/www`) and the first surface
+built on `packages/ui`: no database, no session, no API call, and a browser suite
+that checks it is readable without JavaScript, reachable by keyboard and free of
+serious accessibility violations. Run it with `pnpm --filter @docento/www dev`.
 
 If you want a working LMS today, this is not it yet. If you want to help build
 one, the foundation is a good place to start.

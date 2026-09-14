@@ -4,11 +4,9 @@ import { useState } from 'react'
 import Link from 'next/link'
 
 import type { OutlineLesson } from '@docento/sdk'
+import { Button, Input, Label } from '@docento/ui'
 
 import { browserApiClient } from '@/lib/client-api'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { useAsyncAction } from '@/hooks/use-async-action'
 
 /**

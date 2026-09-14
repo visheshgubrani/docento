@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 
+import { Button } from '@docento/ui'
+
 import { browserApiClient } from '@/lib/client-api'
-import { Button } from '@/components/ui/button'
 import { useAsyncAction } from '@/hooks/use-async-action'
 
 /**

@@ -3,12 +3,9 @@
 import { useState } from 'react'
 
 import type { AuthorAssignment } from '@docento/sdk'
+import { Button, Input, Label, Textarea } from '@docento/ui'
 
 import { browserApiClient } from '@/lib/client-api'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { useAsyncAction } from '@/hooks/use-async-action'
 
 /**

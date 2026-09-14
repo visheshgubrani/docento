@@ -1,0 +1,55 @@
+/**
+ * The marketing site's stylesheet.
+ *
+ * Everything that is a *decision* lives in `@docento/ui`; this file only states
+ * which parts of the system this application loads, and in what order. When
+ * Studio and Learn adopt the same package they will import the same two files
+ * and add the application layer on top — which is what makes the marketing page
+ * and the product look like one product.
+ */
+
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import '@docento/ui/styles/tokens.css';
+@import '@docento/ui/styles/base.css';
+
+@layer base {
+  /**
+   * Marketing only: a slightly tighter optical rhythm for the long editorial
+   * sections, and the measure the reading content is held to.
+   */
+  .measure {
+    max-width: var(--container-measure);
+  }
+
+  /**
+   * The one dark band on the page.
+   *
+   * It is a section, not a theme: the marketing site has no theme switch, and
+   * giving this band a `.dark` class would claim it does. Overriding the two
+   * variables the band actually needs keeps the exception to two lines instead
+   * of a second palette.
+   */
+  .band-dark {
+    background-color: #151a17;
+    color: #f1f3ed;
+    --canvas: #151a17;
+    --surface: #1e2621;
+    --surface-subtle: #27332c;
+    --ink: #f1f3ed;
+    --ink-muted: #adb8ac;
+    --brand: #a8c8ad;
+    --on-brand: #15231a;
+    --border-decorative: #39483e;
+    --border-control: #81917f;
+    --accent-decorative: #344b39;
+    --background: var(--canvas);
+    --foreground: var(--ink);
+    --card: var(--surface);
+    --card-foreground: var(--ink);
+    --muted-foreground: var(--ink-muted);
+    --primary: var(--brand);
+    --primary-foreground: var(--on-brand);
+    --border: var(--border-decorative);
+  }
+}

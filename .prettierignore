@@ -18,6 +18,12 @@ coverage/
 # Fumadocs generates its own source tree from the content directory.
 apps/docs/.source/
 
+# Playwright writes these on every run: a report, traces and a JSON record of the
+# last run. Nothing here is hand-written, so formatting it would be a diff that
+# the next test run replaces.
+apps/www/test-results/
+apps/www/playwright-report/
+
 # Next.js writes this on every build and explicitly asks that it not be edited.
 **/next-env.d.ts
 

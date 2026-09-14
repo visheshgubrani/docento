@@ -3,13 +3,9 @@
 import { useState } from 'react'
 
 import type { AuthorQuiz, AuthorQuizQuestion } from '@docento/sdk'
+import { Button, Input, Label, Switch, Textarea } from '@docento/ui'
 
 import { browserApiClient } from '@/lib/client-api'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { Textarea } from '@/components/ui/textarea'
 import { useAsyncAction } from '@/hooks/use-async-action'
 
 /**

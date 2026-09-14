@@ -1,0 +1,235 @@
+/**
+ * The design system's own sources.
+ *
+ * Tailwind generates a utility class only from files it has scanned, and a
+ * consuming application scans *its own* source — not this package's, which it
+ * reaches through `node_modules`. The failure is silent and specific: a `Button`
+ * shipped from here renders with no background, because `bg-brand` was never
+ * generated, while every class the application happens to use itself still works.
+ * It is the kind of bug that looks like a styling mistake in the component and is
+ * actually a build configuration.
+ *
+ * Declaring the sources here rather than in each application means a new consumer
+ * inherits them, and that the package cannot be adopted in a way that half works.
+ */
+@source '../components';
+@source '../brand';
+
+/**
+ * The base layer: page defaults, the marketing layout classes, and the
+ * recurring graphic motif.
+ *
+ * Deliberately small. Anything that can be a Tailwind utility in a component is
+ * one; what lives here is the handful of shapes that must be identical wherever
+ * they appear, and that a utility class could only express by being copied.
+ */
+
+/**
+ * Disclosure animation.
+ *
+ * Radix measures the open panel's height and publishes it as
+ * `--radix-accordion-content-height`, which is the only way to animate a
+ * disclosure whose content the component does not know. Tailwind's own
+ * `animate-accordion-*` utilities read these two theme entries.
+ *
+ * `@theme` is top level rather than inside `@layer base`: a theme block nested in
+ * a layer is not a theme declaration, and the utilities it defines would simply
+ * not exist.
+ */
+@theme {
+  --animate-accordion-down: accordion-down 200ms ease-out;
+  --animate-accordion-up: accordion-up 200ms ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+
+    to {
+      height: 0;
+    }
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* One focus treatment, visible on every surface. */
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background-color: var(--accent-decorative);
+    color: var(--ink);
+  }
+
+  /* Native smooth scrolling only when nothing else is driving the scroll and
+     the visitor has not asked for less motion. Lenis disables it while it is
+     active — see the `.lenis-smooth` rule below. */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/**
+ * Lenis's own recommended stylesheet.
+ *
+ * Vendored rather than imported from `lenis/dist/lenis.css` because the
+ * `.lenis-stopped` rule is what stops background scrolling when a menu opens,
+ * and a rule that load-bearing should be visible where the rest of the base
+ * layer is. Source: https://github.com/darkroomengineering/lenis
+ */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+@layer components {
+  /**
+   * The marketing container: 1240px with 20/24/40px gutters.
+   */
+  .marketing-container {
+    width: 100%;
+    max-width: var(--container-marketing);
+    margin-inline: auto;
+    padding-inline: 20px;
+  }
+
+  @media (min-width: 768px) {
+    .marketing-container {
+      padding-inline: 24px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .marketing-container {
+      padding-inline: 40px;
+    }
+  }
+
+  /** Section rhythm: 56px mobile, 80px tablet, 112px desktop. */
+  .section-y {
+    padding-block: var(--section-space);
+  }
+
+  /** An anchored section, offset so the sticky header never covers its title. */
+  .anchor-target {
+    scroll-margin-top: var(--anchor-offset);
+  }
+
+  /**
+   * The page-edge motif.
+   *
+   * The recurring graphic idea in this design system is the edge of a page: a
+   * fine rule, an inset panel, an offset sheet. These three classes are that
+   * idea and nothing more — the point is that they read as paper rather than as
+   * a shadow, so there is no blur, no gradient and no drop shadow anywhere in
+   * them.
+   */
+  .edge-rule {
+    border-top: 1px solid var(--border-decorative);
+  }
+
+  .edge-panel {
+    background-color: var(--surface-subtle);
+    border: 1px solid var(--border-decorative);
+    border-radius: var(--radius-card);
+  }
+
+  /**
+   * An offset sheet: a panel with a second sheet peeking out behind it. The
+   * pseudo-element is decorative only, which is why it is `aria-hidden` by
+   * construction — pseudo-elements are not in the accessibility tree.
+   */
+  .edge-sheet {
+    position: relative;
+    background-color: var(--surface);
+    border: 1px solid var(--border-decorative);
+    border-radius: var(--radius-frame);
+  }
+
+  .edge-sheet::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    transform: translate(10px, 10px);
+    border: 1px solid var(--border-decorative);
+    border-radius: var(--radius-frame);
+    background-color: var(--surface-subtle);
+  }
+
+  /**
+   * A small chapter number, as on a printed page.
+   */
+  .chapter-number {
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-size: var(--text-micro);
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /** Interface previews are labelled, and the label looks like a label. */
+  .preview-label {
+    font-size: var(--text-micro);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+}

@@ -51,11 +51,13 @@ apps/
   worker/        durable jobs, outbox delivery, scheduled maintenance
   studio/        staff and creator application
   learn/         multi-tenant learner application
+  www/           marketing site. No database, no session, no API call.
   docs/          documentation site
 packages/
   domain/        business rules, authorization, Prisma schema, migrations
   contracts/     Apache-2.0. Zod schemas — the public API's source of truth
   sdk/           Apache-2.0. Typed client, derived from contracts
+  ui/            shared design system: tokens, typefaces, brand, primitives
   integrations/  jobs today; AI, media, storage, payments, email next
   config/        validated environment and the shared ESLint preset
 docs/adr/        architecture decision records
@@ -74,6 +76,13 @@ pnpm test                 # turbo, all packages
 pnpm typecheck
 pnpm lint
 pnpm boundaries           # architecture rules — run before pushing
+```
+
+The marketing site has its own browser suite, which needs no services:
+
+```bash
+pnpm --filter @docento/www build        # the suite drives a production build
+pnpm --filter @docento/www test:e2e
 ```
 
 To run the product itself in containers rather than from the checkout — the API,

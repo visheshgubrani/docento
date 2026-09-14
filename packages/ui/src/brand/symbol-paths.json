@@ -1,0 +1,10 @@
+{
+  "$comment": "The Docento symbol, as data rather than as a JSX file, so that the asset generator in scripts/build-wordmark.mjs and the React component in symbol.tsx draw the same mark instead of two copies of it. Ink box: x 3.9 -> 31.4, y 4.6 -> 27.5 (both pages sit on one baseline). Edited deliberately or not at all.",
+  "viewBox": "0 0 34 34",
+  "ink": { "x": 3.9, "y": 4.6, "width": 27.5, "height": 22.9 },
+  "paths": {
+    "leftPage": "M15.6 11.4C12.7 9.2 9.2 8 5.6 7.8A1.7 1.7 0 0 0 3.9 9.5v16.3a1.7 1.7 0 0 0 1.7 1.7c3.4-.2 6.9-1.4 10-3.6V11.4Z",
+    "bowl": "M23.8 13.1a7.2 7.2 0 1 0 0 14.4 7.2 7.2 0 0 0 0-14.4Z",
+    "rightPage": "M29.8 4.6a1.6 1.6 0 0 1 1.6 1.6v19.7a1.6 1.6 0 0 1-1.6 1.6h-.2a1.6 1.6 0 0 1-1.6-1.6V6.2a1.6 1.6 0 0 1 1.6-1.6h.2Z"
+  }
+}
